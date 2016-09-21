@@ -1,0 +1,158 @@
+---
+meta:
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: "3262.12"
+
+  zone: (( grab terraform_outputs.zone0 ))
+
+name: concourse
+
+director_uuid: ~
+
+releases:
+  - name: concourse
+    version: 2.2.1
+    url: https://bosh.io/d/github.com/concourse/concourse?v=2.2.1
+    sha1: 879d5cb45d12f173ff4c7912c7c7cdcd3e18c442
+  - name: garden-runc
+    version: 0.8.0
+    url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=0.8.0
+    sha1: 20e98ea84c8f4426bba00bbca17d931e27d3c07d
+
+properties:
+  aws:
+    credentials_source: env_or_profile
+    region: (( grab terraform_outputs.region ))
+
+resource_pools:
+  - name: concourse
+    network: concourse
+    stemcell:
+      name: (( grab meta.stemcell.name ))
+      version: (( grab meta.stemcell.version ))
+    cloud_properties:
+      instance_type: m4.large
+      availability_zone: (( grab meta.zone ))
+      iam_instance_profile: bosh-managed
+      elbs:
+      - (( grab terraform_outputs.concourse_elb_name ))
+      ephemeral_disk:
+        size: 102400
+        type: gp2
+      key_name: (( grab terraform_outputs.concourse_key_pair_name ))
+      security_groups:
+      - (( grab terraform_outputs.bosh_managed_security_group ))
+      - (( grab terraform_outputs.concourse_security_group ))
+      - (( grab terraform_outputs.ssh_security_group ))
+      - (( grab terraform_outputs.bosh_api_client_security_group ))
+    env:
+      bosh:
+        password: (( grab secrets.concourse_vcap_password ))
+
+disk_pools:
+  - name: db
+    disk_size: 10240
+    cloud_properties:
+      type: gp2
+
+networks:
+  - name: concourse
+    type: manual
+    subnets:
+      - range: 10.0.0.0/24
+        dns: [10.0.0.2]
+        gateway: 10.0.0.1
+        reserved:
+        - 10.0.0.0 - 10.0.0.9
+        static:
+        - 10.0.0.10 - 10.0.0.20
+
+        cloud_properties:
+          subnet: (( grab terraform_outputs.subnet0_id ))
+  - name: public
+    type: vip
+
+jobs:
+  - name: concourse
+    instances: 1
+    resource_pool: concourse
+    persistent_disk_pool: db
+
+    templates:
+      - name: postgresql
+        release: concourse
+        properties:
+          databases:
+            - name: atc
+              role: atc
+              password: dummy-password
+
+      - name: atc
+        release: concourse
+        properties:
+          external_url: (( concat "https://" terraform_outputs.concourse_dns_name ))
+          basic_auth_username: admin
+          basic_auth_password: (( grab secrets.concourse_atc_password ))
+
+          postgresql:
+            address: 127.0.0.1:5432
+            database: atc
+            role:
+              name: atc
+              password: dummy-password
+
+      - name: groundcrew
+        release: concourse
+        properties:
+          baggageclaim:
+            url: "http://127.0.0.1:7788"
+          tsa:
+            host: 127.0.0.1
+            port: 2222
+
+      - name: tsa
+        release: concourse
+        properties:
+          forward_host: 127.0.0.1
+          atc:
+            address: 127.0.0.1:8080
+
+      - name: baggageclaim
+        release: concourse
+
+      - name: garden
+        release: garden-runc
+        properties:
+          garden:
+            listen_network: tcp
+            listen_address: 0.0.0.0:7777
+            graph_cleanup_threshold_in_mb: 3072
+            max_containers: 1024
+            network_pool: "10.254.0.0/20"
+
+    networks:
+      - name: public
+        static_ips:
+        - (( grab terraform_outputs.concourse_elastic_ip ))
+      - name: concourse
+        static_ips: (( static_ips(0) ))
+        default: [dns, gateway]
+
+    properties: {}
+
+compilation:
+  workers: 1
+  network: concourse
+  reuse_compilation_vms: true
+  cloud_properties:
+    instance_type: c3.large
+    availability_zone: (( grab meta.zone ))
+    iam_instance_profile: bosh-director
+    auto_assign_public_ip: true
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  canary_watch_time: 30000-600000
+  update_watch_time: 5000-600000
