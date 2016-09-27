@@ -1,0 +1,5 @@
+AllCops:
+  Exclude:
+    - 'vendor/**/*'
+    - 'scripts/vendor/**/*'
+  TargetRubyVersion: 2.2
