@@ -1,3 +1,2 @@
 vagrant/.vagrant/
 bin/fly*
-*.tfstate.backup
