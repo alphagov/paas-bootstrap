@@ -935,6 +935,31 @@ jobs:
           params:
             file: updated-concourse-manifest/concourse-manifest.yml
 
+      - task: add-env-specific-team
+        config:
+          image: docker:///governmentpaas/self-update-pipelines
+          inputs:
+            - name: paas-bootstrap
+            - name: concourse-manifest
+          params:
+            CONCOURSE_HOSTNAME: {{concourse_hostname}}
+            SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
+            CONCOURSE_ATC_PASSWORD: {{concourse_atc_password}}
+            CONCOURSE_ATC_USER: admin
+            FLY_TEAM: {{aws_account}}
+            FLY_TARGET: {{deploy_env}}
+            FLY_CMD: ./paas-bootstrap/bin/fly
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
+                ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
+                echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
+                           --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
+
       - task: test-bosh-vms
         config:
           platform: linux
