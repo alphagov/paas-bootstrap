@@ -46,6 +46,7 @@ bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 enable_datadog: ${ENABLE_DATADOG}
 datadog_api_key: ${datadog_api_key:-}
+concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
 EOF
 }
 
