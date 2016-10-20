@@ -14,7 +14,13 @@ module ManifestHelpers
 
 private
 
+  def fake_env_vars
+    ENV["AWS_ACCOUNT"] = "dev"
+    ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
+  end
+
   def load_default_manifest
+    fake_env_vars
     output, error, status = Open3.capture3(
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),

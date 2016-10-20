@@ -24,6 +24,8 @@ bosh_manifest_state: bosh-manifest-state-${BOSH_AZ:-eu-west-1a}.json
 bosh_fqdn: bosh.${SYSTEM_DNS_ZONE_NAME}
 bosh_fqdn_external: bosh-external.${SYSTEM_DNS_ZONE_NAME}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
+bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
+concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 EOF
 }
 

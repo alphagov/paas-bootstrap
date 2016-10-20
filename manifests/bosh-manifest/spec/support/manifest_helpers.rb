@@ -17,6 +17,8 @@ private
   def fake_env_vars
     ENV["BOSH_FQDN_EXTERNAL"] = "bosh-external.domain"
     ENV["BOSH_FQDN"] = "bosh.domain"
+    ENV["AWS_ACCOUNT"] = "dev"
+    ENV["BOSH_INSTANCE_PROFILE"] = "bosh-director-build"
   end
 
   def load_default_manifest

@@ -61,6 +61,8 @@ ci: globals check-env-vars ## Set Environment to CI
 
 .PHONY: bootstrap
 bootstrap: ## Start bootstrap
+	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
+	$(if ${CONCOURSE_INSTANCE_PROFILE},,$(error Must pass CONCOURSE_INSTANCE_PROFILE=<name>))
 	vagrant/deploy.sh
 
 .PHONY: bootstrap-destroy
