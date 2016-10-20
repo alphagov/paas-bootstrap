@@ -148,7 +148,7 @@ compilation:
   cloud_properties:
     instance_type: c3.large
     availability_zone: (( grab meta.zone ))
-    iam_instance_profile: bosh-director
+    iam_instance_profile: compilation-vm
     auto_assign_public_ip: true
 
 update:
