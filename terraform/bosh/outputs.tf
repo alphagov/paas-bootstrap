@@ -26,14 +26,6 @@ output "microbosh_static_public_ip" {
   value = "${aws_eip.bosh.public_ip}"
 }
 
-output "compiled_cache_bucket_host" {
-  value = "s3-${var.region}.amazonaws.com"
-}
-
-output "compiled_cache_bucket_name" {
-  value = "shared-cf-bosh-blobstore-${var.aws_account}"
-}
-
 output "bosh_blobstore_bucket_name" {
   value = "${aws_s3_bucket.bosh-blobstore.id}"
 }
