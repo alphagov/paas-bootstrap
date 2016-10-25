@@ -173,7 +173,6 @@ jobs:
               < vpc-tfstate/vpc.tfstate \
               > vpc-terraform-outputs/tfvars.sh
               ls -l vpc-terraform-outputs/tfvars.sh
-              cat vpc-terraform-outputs/tfvars.sh
 
       - task: destroy-concourse-terraform
         config:

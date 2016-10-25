@@ -585,6 +585,8 @@ jobs:
               ./terraform-outputs/vpc.terraform-outputs.yml
             BOSH_FQDN: {{bosh_fqdn}}
             BOSH_FQDN_EXTERNAL: {{bosh_fqdn_external}}
+            BOSH_INSTANCE_PROFILE: {{bosh_instance_profile}}
+            AWS_ACCOUNT: {{aws_account}}
           run:
             path: sh
             args:
@@ -843,6 +845,7 @@ jobs:
               terraform-outputs/concourse-terraform-outputs.yml
               terraform-outputs/vpc-terraform-outputs.yml
               terraform-outputs/bosh-terraform-outputs.yml
+            CONCOURSE_INSTANCE_PROFILE: {{concourse_instance_profile}}
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets

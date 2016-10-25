@@ -34,7 +34,7 @@ resource_pools:
     cloud_properties:
       instance_type: m4.large
       availability_zone: (( grab meta.zone ))
-      iam_instance_profile: bosh-managed
+      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
       elbs:
       - (( grab terraform_outputs.concourse_elb_name ))
       ephemeral_disk:
@@ -148,7 +148,7 @@ compilation:
   cloud_properties:
     instance_type: c3.large
     availability_zone: (( grab meta.zone ))
-    iam_instance_profile: bosh-director
+    iam_instance_profile: compilation-vm
     auto_assign_public_ip: true
 
 update:

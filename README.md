@@ -21,6 +21,9 @@ or destroyed.
 
 In order to use this repository you will need:
 
+* Predefined [IAM instance profiles](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) that will be assigned to Concourse-lite, BOSH and Concourse. `concourse-lite` is a hard coded name, whereas the BOSH and Concourse roles can be any name and must be exported with respective variables `BOSH_INSTANCE_PROFILE` and `CONCOURSE_INSTANCE_PROFILE`. See [aws-account-wide-terraform](https://github.gds/government-paas/aws-account-wide-terraform) for details
+(not public because it also contains state files).
+
 * [AWS Command Line tool (`awscli`)](https://aws.amazon.com/cli/). You can
 install it using [any of the official methods](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 or by using [`virtualenv`](https://virtualenv.pypa.io/en/latest/) and pip `pip install -r requirements.txt`
@@ -206,4 +209,3 @@ Stop the tunnel with: `make <env> stop-tunnel`
 
 ## Other useful commands
 Type `make` to get the list of all available commands.
-
