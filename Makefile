@@ -30,9 +30,9 @@ spec:
 lint_yaml:
 	find . -name '*.yml' -not -path '*/vendor/*' | xargs $(YAMLLINT) -c yamllint.yml
 
-lint_terraform: dev
-	$(eval export TF_VAR_system_dns_zone_name=$SYSTEM_DNS_ZONE_NAME)
-	$(eval export TF_VAR_apps_dns_zone_name=$APPS_DNS_ZONE_NAME)
+lint_terraform:
+	$(eval export TF_VAR_system_dns_zone_name=service.com)
+	$(eval export TF_VAR_apps_dns_zone_name=apps.com)
 	find terraform -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 -n 1 -t terraform graph > /dev/null
 
 lint_shellcheck:
