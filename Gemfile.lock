@@ -110,6 +110,3 @@ DEPENDENCIES
   json-minify (~> 0.0.2)
   rspec (~> 3.3)
   webmock (~> 1.24)
-
-BUNDLED WITH
-   1.13.1

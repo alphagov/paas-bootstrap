@@ -577,8 +577,7 @@ jobs:
             - name: bosh-manifest
           params:
             BOSH_MANIFEST_STUBS: |
-              ./paas-bootstrap/manifests/bosh-manifest/deployments/*.yml
-              ./paas-bootstrap/manifests/bosh-manifest/deployments/aws/*.yml
+              ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./bosh-secrets/bosh-secrets.yml
               ./bosh-CA-yml/bosh-ca-cert.yml
               ./terraform-outputs/bosh.terraform-outputs.yml
