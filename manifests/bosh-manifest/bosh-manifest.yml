@@ -19,8 +19,8 @@ meta:
 
 releases:
 - name: bosh
-  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=255.8
-  sha1: 6b12652650b87810dcef1be1f6a6d23f1c0c13a7
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=258
+  sha1: 66f7ce02eda71d63fc13e86a6d49fa5a8398c906
 - name: bosh-aws-cpi
   version: 60
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=60
@@ -32,7 +32,6 @@ jobs:
 
   templates:
   - {name: nats, release: bosh}
-  - {name: redis, release: bosh}
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
   - {name: registry, release: bosh}
@@ -55,9 +54,6 @@ jobs:
       address: 127.0.0.1
       user: nats
       password: (( grab secrets.bosh_nats_password ))
-
-    redis:
-      password: (( grab secrets.bosh_redis_password ))
 
     director:
       address: 127.0.0.1
