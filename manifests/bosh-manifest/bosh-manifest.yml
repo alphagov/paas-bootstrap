@@ -10,21 +10,9 @@ meta:
     password: (( grab secrets.bosh_postgres_password ))
     database: (( grab terraform_outputs.bosh_db_dbname ))
   aws:
-    common:
-      default_security_groups:
-      - (( grab terraform_outputs.bosh_managed_security_group ))
-      region: (( grab terraform_outputs.region ))
-    cloud_provider:
-      credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.bosh_ssh_key_pair_name ))
-      default_security_groups: (( grab meta.aws.common.default_security_groups ))
-      region: (( grab meta.aws.common.region ))
-    bosh_properties:
-      credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.key_pair_name ))
-      default_security_groups: (( grab meta.aws.common.default_security_groups ))
-      default_iam_instance_profile: bosh-managed
-      region: (( grab meta.aws.common.region ))
+    default_security_groups:
+    - (( grab terraform_outputs.bosh_managed_security_group ))
+    region: (( grab terraform_outputs.region ))
 
   bosh_private_ip: (( grab terraform_outputs.microbosh_static_private_ip ))
   bosh_public_ip: (( grab terraform_outputs.microbosh_static_public_ip ))
@@ -37,12 +25,6 @@ releases:
   version: 60
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=60
   sha1: 8e40a9ff892204007889037f094a1b0d23777058
-
-disk_pools:
-- name: disks
-  disk_size: 32768
-  cloud_properties:
-    type: gp2
 
 jobs:
 - name: bosh
@@ -120,9 +102,14 @@ jobs:
       provider: s3
       credentials_source: env_or_profile
       bucket_name: (( grab terraform_outputs.bosh_blobstore_bucket_name ))
-      s3_region: (( grab terraform_outputs.region ))
+      s3_region: (( grab meta.aws.region ))
 
-    aws: (( grab meta.aws.bosh_properties ))
+    aws:
+      credentials_source: env_or_profile
+      default_key_name: (( grab terraform_outputs.key_pair_name ))
+      default_security_groups: (( grab meta.aws.default_security_groups ))
+      default_iam_instance_profile: bosh-managed
+      region: (( grab meta.aws.region ))
 
 properties: ~
 
@@ -145,7 +132,17 @@ cloud_provider:
     blobstore:
       provider: local
       path: /var/vcap/micro_bosh/data/cache
-    aws: (( grab meta.aws.cloud_provider ))
+    aws:
+      credentials_source: env_or_profile
+      default_key_name: (( grab terraform_outputs.bosh_ssh_key_pair_name ))
+      default_security_groups: (( grab meta.aws.default_security_groups ))
+      region: (( grab meta.aws.region ))
+
+disk_pools:
+- name: disks
+  disk_size: 32768
+  cloud_properties:
+    type: gp2
 
 resource_pools:
 - name: bosh
