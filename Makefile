@@ -53,11 +53,13 @@ globals:
 dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=dev)
+	$(eval export ENABLE_DATADOG ?= false)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=ci)
+	$(eval export ENABLE_DATADOG=true)
 
 .PHONY: fly-login
 fly-login: ## Do a fly login and sync

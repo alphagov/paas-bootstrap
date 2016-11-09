@@ -17,6 +17,7 @@ private
   def fake_env_vars
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
+    ENV["DATADOG_API_KEY"] = "abcd1234"
   end
 
   def load_default_manifest
@@ -25,11 +26,13 @@ private
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../concourse-base.yml", __FILE__),
+        File.expand_path("../../../extensions/datadog-agent.yml", __FILE__),
         File.expand_path("../../fixtures/predefined-concourse-secrets.yml", __FILE__),
         File.expand_path("../../fixtures/generated-concourse-secrets.yml", __FILE__),
         File.expand_path("../../fixtures/concourse-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/vpc-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/deployments/datadog-agent.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"

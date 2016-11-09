@@ -50,6 +50,10 @@ output "bosh_az" {
   value = "${var.bosh_az}"
 }
 
+output "bosh_az_label" {
+  value = "${lookup(var.zone_labels, var.bosh_az)}"
+}
+
 output "bosh_ssh_key_pair_name" {
   value = "${aws_key_pair.bosh_ssh_key_pair.key_name}"
 }
