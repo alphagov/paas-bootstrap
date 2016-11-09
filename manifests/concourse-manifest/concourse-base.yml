@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-    version: "3262.12"
+    version: "3263.10"
 
   zone: (( grab terraform_outputs.zone0 ))
 
@@ -12,9 +12,9 @@ director_uuid: ~
 
 releases:
   - name: concourse
-    version: 2.2.1
-    url: https://bosh.io/d/github.com/concourse/concourse?v=2.2.1
-    sha1: 879d5cb45d12f173ff4c7912c7c7cdcd3e18c442
+    version: 2.4.0
+    url: https://bosh.io/d/github.com/concourse/concourse?v=2.4.0
+    sha1: 8eb1e707594b47adc7bfa10c89fe17524caf8461
   - name: garden-runc
     version: 0.8.0
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=0.8.0
