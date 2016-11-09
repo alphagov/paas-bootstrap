@@ -59,6 +59,13 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=ci)
 
+.PHONY: fly-login
+fly-login: ## Do a fly login and sync
+	$(eval export TARGET_CONCOURSE=deployer)
+	$$("./concourse/scripts/environment.sh") && \
+		./concourse/scripts/fly_sync_and_login.sh
+
+
 .PHONY: bootstrap
 bootstrap: ## Start bootstrap
 	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
