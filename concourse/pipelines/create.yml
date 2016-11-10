@@ -118,6 +118,13 @@ resources:
       region_name: {{aws_region}}
       versioned_file: concourse-secrets.yml
 
+  - name: concourse-manifest
+    type: s3-iam
+    source:
+      bucket: {{state_bucket}}
+      region_name: {{aws_region}}
+      versioned_file: concourse-manifest.yml
+
 jobs:
   - name: init-bucket
     serial: true
@@ -875,6 +882,10 @@ jobs:
               ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
                 > concourse-manifest/concourse-manifest.yml
               ls -l concourse-manifest/concourse-manifest.yml
+        on_success:
+          put: concourse-manifest
+          params:
+            file: concourse-manifest/concourse-manifest.yml
 
       - task: get-and-upload-stemcell
         config:
@@ -917,6 +928,10 @@ jobs:
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
+        on_success:
+          put: concourse-manifest
+          params:
+            file: updated-concourse-manifest/concourse-manifest.yml
 
       - task: test-bosh-vms
         config:

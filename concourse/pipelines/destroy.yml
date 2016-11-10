@@ -62,6 +62,13 @@ resources:
       versioned_file: concourse.tfstate
       region_name: {{aws_region}}
 
+  - name: concourse-manifest
+    type: s3-iam
+    source:
+      bucket: {{state_bucket}}
+      region_name: {{aws_region}}
+      versioned_file: concourse-manifest.yml
+
 jobs:
 
   - name: enable-bosh-access
@@ -139,6 +146,7 @@ jobs:
         - get: bosh-secrets
         - get: vpc-tfstate
         - get: concourse-tfstate
+        - get: concourse-manifest
 
       - task: destroy-concourse
         config:
@@ -146,6 +154,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
+          - name: concourse-manifest
           run:
             path: sh
             args:
@@ -153,7 +162,8 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
-              bosh -n delete deployment --force concourse
+              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
+              bosh -n delete deployment --force "$DEPLOYMENT_NAME"
 
       - task: vpc-terraform-outputs-to-sh
         config:
