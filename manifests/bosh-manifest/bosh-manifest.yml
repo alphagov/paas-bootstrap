@@ -1,5 +1,5 @@
 ---
-name: (( grab meta.environment ))
+name: bosh
 
 meta:
   environment: (( grab terraform_outputs.environment ))

@@ -7,6 +7,23 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 env=${DEPLOY_ENV}
 
+get_datadog_secrets() {
+  # shellcheck disable=SC2154
+  secrets_uri="s3://gds-paas-${env}-bootstrap/datadog-secrets.yml"
+  export datadog_api_key
+  export datadog_app_key
+  if aws s3 ls "${secrets_uri}" > /dev/null ; then
+    secrets_file=$(mktemp -t datadog-secrets.XXXXXX)
+
+    aws s3 cp "${secrets_uri}" "${secrets_file}"
+    datadog_api_key=$("${SCRIPT_DIR}"/val_from_yaml.rb datadog_api_key "${secrets_file}")
+    datadog_app_key=$("${SCRIPT_DIR}"/val_from_yaml.rb datadog_app_key "${secrets_file}")
+
+    rm -f "${secrets_file}"
+  fi
+}
+get_datadog_secrets
+
 generate_vars_file() {
    cat <<EOF
 ---
@@ -26,6 +43,8 @@ bosh_fqdn_external: bosh-external.${SYSTEM_DNS_ZONE_NAME}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
 bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
+enable_datadog: ${ENABLE_DATADOG}
+datadog_api_key: ${datadog_api_key:-}
 EOF
 }
 

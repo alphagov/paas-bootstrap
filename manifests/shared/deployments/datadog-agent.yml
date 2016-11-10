@@ -1,0 +1,16 @@
+---
+releases:
+- name: datadog-agent
+  sha1: 14c7f9be2eb534fda1f4c70ea2355865ac93a87b
+  url: https://github.com/alphagov/paas-datadog-agent-boshrelease/releases/download/v5.8.5.3-gds/datadog-agent-v5.8.5.3-gds.tgz
+  version: "v5.8.5.3-gds"
+
+meta:
+  datadog:
+    api_key: (( grab $DATADOG_API_KEY || "undefined" ))
+    use_dogstatsd: false
+    include_bosh_tags: true
+    tags:
+      aws_account: (( grab $AWS_ACCOUNT ))
+      deploy_env: (( grab terraform_outputs.environment ))
+

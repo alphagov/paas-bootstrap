@@ -118,6 +118,13 @@ resources:
       region_name: {{aws_region}}
       versioned_file: concourse-secrets.yml
 
+  - name: concourse-manifest
+    type: s3-iam
+    source:
+      bucket: {{state_bucket}}
+      region_name: {{aws_region}}
+      versioned_file: concourse-manifest.yml
+
 jobs:
   - name: init-bucket
     serial: true
@@ -576,6 +583,9 @@ jobs:
           outputs:
             - name: bosh-manifest
           params:
+            AWS_ACCOUNT: {{aws_account}}
+            DATADOG_API_KEY: {{datadog_api_key}}
+            ENABLE_DATADOG: {{enable_datadog}}
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./bosh-secrets/bosh-secrets.yml
@@ -585,13 +595,17 @@ jobs:
             BOSH_FQDN: {{bosh_fqdn}}
             BOSH_FQDN_EXTERNAL: {{bosh_fqdn_external}}
             BOSH_INSTANCE_PROFILE: {{bosh_instance_profile}}
-            AWS_ACCOUNT: {{aws_account}}
           run:
             path: sh
             args:
               - -e
               - -c
               - |
+                if [ "${ENABLE_DATADOG}" = "true" ] ; then
+                   BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
+                                        ./paas-bootstrap/manifests/bosh-manifest/extensions/datadog-agent.yml
+                                        ./paas-bootstrap/manifests/shared/deployments/datadog-agent.yml"
+                fi
                 ./paas-bootstrap/manifests/shared/build_manifest.sh $BOSH_MANIFEST_STUBS > bosh-manifest/bosh-manifest.yml
         on_success:
           put: bosh-manifest
@@ -838,6 +852,9 @@ jobs:
         config:
           image: docker:///governmentpaas/spruce
           params:
+            AWS_ACCOUNT: {{aws_account}}
+            DATADOG_API_KEY: {{datadog_api_key}}
+            ENABLE_DATADOG: {{enable_datadog}}
             CONCOURSE_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/concourse-manifest/concourse-base.yml
               concourse-secrets/concourse-secrets.yml
@@ -857,9 +874,18 @@ jobs:
             - -e
             - -c
             - |
+              if [ "${ENABLE_DATADOG}" = "true" ] ; then
+                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/concourse-manifest/extensions/datadog-agent.yml
+                                ./paas-bootstrap/manifests/shared/deployments/datadog-agent.yml"
+              fi
               ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
                 > concourse-manifest/concourse-manifest.yml
               ls -l concourse-manifest/concourse-manifest.yml
+        on_success:
+          put: concourse-manifest
+          params:
+            file: concourse-manifest/concourse-manifest.yml
 
       - task: get-and-upload-stemcell
         config:
@@ -902,6 +928,10 @@ jobs:
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
+        on_success:
+          put: concourse-manifest
+          params:
+            file: updated-concourse-manifest/concourse-manifest.yml
 
       - task: test-bosh-vms
         config:
