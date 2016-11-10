@@ -26,4 +26,6 @@ jobs:
           riemann:
             host: '127.0.0.1'
             service_prefix: 'concourse.'
-
+            tags:
+              aws_account: (( grab $AWS_ACCOUNT ))
+              deploy_env: (( grab terraform_outputs.environment ))
