@@ -30,7 +30,7 @@ generate_vars_file() {
 aws_account: ${AWS_ACCOUNT}
 vagrant_ip: ${VAGRANT_IP}
 deploy_env: ${env}
-state_bucket: gds-paas-${env}-bootstrap
+state_bucket: gds-paas-${env}-state
 branch_name: ${BRANCH:-master}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
