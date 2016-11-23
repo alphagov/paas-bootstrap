@@ -21,8 +21,7 @@ or destroyed.
 
 In order to use this repository you will need:
 
-* Predefined [IAM instance profiles](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) that will be assigned to Concourse-lite, BOSH and Concourse. `concourse-lite` is a hard coded name, whereas the BOSH and Concourse roles can be any name and must be exported with respective variables `BOSH_INSTANCE_PROFILE` and `CONCOURSE_INSTANCE_PROFILE`. See [aws-account-wide-terraform](https://github.gds/government-paas/aws-account-wide-terraform) for details
-(not public because it also contains state files).
+* Predefined [IAM instance profiles](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) that will be assigned to Concourse-lite, BOSH and Concourse. See below for details.
 
 * [AWS Command Line tool (`awscli`)](https://aws.amazon.com/cli/). You can
 install it using [any of the official methods](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
@@ -68,12 +67,18 @@ $ export DEPLOY_ENV=environment-name
 
 ### Deploy
 
-Create Concourse Lite with `make`. Select the target based on which AWS account you want to work with. For instance for a DEV bootstrap:
+Create Concourse Lite with `make`. There are targets to select the target AWS account, and to select the profiles to apply. For instance for a DEV build concourse bootstrap:
 
 ```
-make dev bootstrap
+make dev build-concourse bootstrap
 ```
+
 `make help` will show all available options.
+
+To deploy a concourse with custom profiles, it's necessary to set corresponding ENV vars. eg:
+```
+BOSH_INSTANCE_PROFILE=bosh-director-foo CONCOURSE_INSTANCE_PROFILE=concourse-foo make dev bootstrap
+```
 
 NB: This will [auto-delete overnight](#overnight-deletion-of-environments)
 by default.
