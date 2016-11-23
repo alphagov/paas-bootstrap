@@ -49,6 +49,8 @@ globals:
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 	@true
 
+## Environments
+
 .PHONY: dev
 dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
@@ -61,12 +63,21 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
 
+
+## Concourse profiles
+
+.PHONY: build-concourse ## Setup profiles for deploying a build concourse
+build-concourse:
+	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
+	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
+
+## Actions
+
 .PHONY: fly-login
 fly-login: ## Do a fly login and sync
 	$(eval export TARGET_CONCOURSE=deployer)
 	$$("./concourse/scripts/environment.sh") && \
 		./concourse/scripts/fly_sync_and_login.sh
-
 
 .PHONY: bootstrap
 bootstrap: ## Start bootstrap
