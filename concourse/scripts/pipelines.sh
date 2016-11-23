@@ -5,11 +5,9 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 "${SCRIPT_DIR}/fly_sync_and_login.sh"
 
-env=${DEPLOY_ENV}
-
 get_datadog_secrets() {
   # shellcheck disable=SC2154
-  secrets_uri="s3://gds-paas-${env}-bootstrap/datadog-secrets.yml"
+  secrets_uri="s3://gds-paas-${DEPLOY_ENV}-bootstrap/datadog-secrets.yml"
   export datadog_api_key
   export datadog_app_key
   if aws s3 ls "${secrets_uri}" > /dev/null ; then
@@ -29,8 +27,8 @@ generate_vars_file() {
 ---
 aws_account: ${AWS_ACCOUNT}
 vagrant_ip: ${VAGRANT_IP}
-deploy_env: ${env}
-state_bucket: gds-paas-${env}-bootstrap
+deploy_env: ${DEPLOY_ENV}
+state_bucket: gds-paas-${DEPLOY_ENV}-state
 branch_name: ${BRANCH:-master}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
@@ -52,7 +50,7 @@ generate_vars_file > /dev/null # Check for missing vars
 
 for ACTION in create destroy; do
   bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
-    "${env}" "${ACTION}" \
+    "${DEPLOY_ENV}" "${ACTION}" \
     "${SCRIPT_DIR}/../pipelines/${ACTION}.yml" \
     <(generate_vars_file)
 done
