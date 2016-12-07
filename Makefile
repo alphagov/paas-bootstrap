@@ -66,10 +66,11 @@ ci: globals check-env-vars ## Set Environment to CI
 
 ## Concourse profiles
 
-.PHONY: build-concourse ## Setup profiles for deploying a build concourse
-build-concourse:
+.PHONY: build-concourse
+build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
+	@true
 
 ## Actions
 
