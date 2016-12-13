@@ -33,6 +33,7 @@ branch_name: ${BRANCH:-master}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
 log_level: ${LOG_LEVEL:-}
+concourse_hostname: ${CONCOURSE_HOSTNAME}
 system_dns_zone_name: ${SYSTEM_DNS_ZONE_NAME}
 bosh_az: ${BOSH_AZ:-eu-west-1a}
 bosh_manifest_state: bosh-manifest-state-${BOSH_AZ:-eu-west-1a}.json
