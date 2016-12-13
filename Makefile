@@ -79,6 +79,13 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	@true
 
+.PHONY: deployer-concourse
+deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
+	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-cf)
+	$(eval export CONCOURSE_HOSTNAME=deployer)
+	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
+	@true
+
 ## Actions
 
 .PHONY: fly-login
