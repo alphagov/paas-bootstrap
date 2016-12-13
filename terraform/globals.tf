@@ -107,42 +107,10 @@ variable "admin_cidrs" {
   default     = "80.194.77.90/32,80.194.77.100/32,85.133.67.244/32"
 }
 
-/* Note: This is overridden in prod.tfvars to allow specific tenant access */
-variable "tenant_cidrs" {
-  description = "CSV of CIDR addresses of tenants with access to CloudFoundry API"
-  default     = ""
-}
-
-/* Note: This is overridden in prod.tfvars to allow world access */
-variable "web_access_cidrs" {
-  description = "CSV of CIDR addresses with access to "
-  default     = ""
-}
-
 /* See https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html */
 variable "default_elb_security_policy" {
   description = "Which Security policy to use for ELBs. This controls things like available SSL protocols/ciphers."
   default     = "ELBSecurityPolicy-2016-08"
-}
-
-# List of Elastic Load Balancing Account ID to configure ELB access log policies
-# Provided by AWS in http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-access-logs.html
-variable "elb_account_ids" {
-  default = {
-    us-east-1      = "127311923021"
-    us-west-1      = "027434742980"
-    us-west-2      = "797873946194"
-    eu-west-1      = "156460612806"
-    eu-central-1   = "054676820928"
-    ap-northeast-1 = "582318560864"
-    ap-northeast-2 = "600734575887"
-    ap-southeast-1 = "114774131450"
-    ap-southeast-2 = "783225319266"
-    ap-south-1     = "718504428378"
-    sa-east-1      = "507241528517"
-    us-gov-west-1  = "048591011584"
-    cn-north-1     = "638102146993"
-  }
 }
 
 variable "assets_prefix" {
