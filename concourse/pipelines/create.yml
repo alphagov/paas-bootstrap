@@ -585,6 +585,7 @@ jobs:
           params:
             AWS_ACCOUNT: {{aws_account}}
             DATADOG_API_KEY: {{datadog_api_key}}
+            DATADOG_APP_KEY: {{datadog_app_key}}
             ENABLE_DATADOG: {{enable_datadog}}
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
@@ -858,6 +859,7 @@ jobs:
           params:
             AWS_ACCOUNT: {{aws_account}}
             DATADOG_API_KEY: {{datadog_api_key}}
+            DATADOG_APP_KEY: {{datadog_app_key}}
             ENABLE_DATADOG: {{enable_datadog}}
             CONCOURSE_AUTH_DURATION: {{concourse_auth_duration}}
             CONCOURSE_MANIFEST_STUBS: |

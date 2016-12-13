@@ -20,6 +20,8 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["BOSH_INSTANCE_PROFILE"] = "bosh-director-build"
     ENV["DATADOG_API_KEY"] = "abcd1234"
+    ENV["DATADOG_APP_KEY"] = "abcd4321"
+    ENV["ENABLE_DATADOG"] = "true"
   end
 
   def load_default_manifest
