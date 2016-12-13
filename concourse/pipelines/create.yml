@@ -804,7 +804,7 @@ jobs:
             - |
               aws iam add-user-to-group --user-name git-${DEPLOY_ENV} --group-name concourse-pool-git-rw
 
-  - name: concourse-deploy
+  - name: generate-concourse-config
     serial: true
     plan:
       - aggregate:
@@ -812,7 +812,7 @@ jobs:
           passed: ['concourse-terraform']
         - get: pipeline-trigger
           trigger: true
-          passed: ['concourse-terraform', 'bosh-deploy']
+          passed: ['concourse-terraform']
         - get: vpc-tfstate
           passed: ['concourse-terraform']
         - get: concourse-tfstate
@@ -820,7 +820,6 @@ jobs:
         - get: concourse-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
-        - get: bosh-secrets
 
       - task: terraform-outputs-to-yaml
         config:
@@ -893,6 +892,19 @@ jobs:
           put: concourse-manifest
           params:
             file: concourse-manifest/concourse-manifest.yml
+
+  - name: concourse-deploy
+    serial: true
+    plan:
+      - aggregate:
+        - get: paas-bootstrap
+          passed: ['generate-concourse-config']
+        - get: pipeline-trigger
+          trigger: true
+          passed: ['generate-concourse-config', 'bosh-deploy']
+        - get: bosh-secrets
+        - get: concourse-manifest
+          passed: ['generate-concourse-config']
 
       - task: get-and-upload-stemcell
         config:
