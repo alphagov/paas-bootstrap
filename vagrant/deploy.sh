@@ -9,7 +9,7 @@ cd "$SCRIPT_DIR"
 # Load environment variables
 export TARGET_CONCOURSE=bootstrap
 # shellcheck disable=SC2091
-$("${PROJECT_DIR}/concourse/scripts/environment.sh" "$@")
+$("${PROJECT_DIR}/concourse/scripts/environment.sh")
 
 export VAGRANT_DEFAULT_PROVIDER="aws"
 export VAGRANT_BOX_NAME="aws_vagrant_box"

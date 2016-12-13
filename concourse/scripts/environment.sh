@@ -9,9 +9,9 @@ hashed_password() {
   echo "$1" | shasum -a 256 | base64 | head -c 32
 }
 
-DEPLOY_ENV=${1:-${DEPLOY_ENV:-}}
+DEPLOY_ENV=${DEPLOY_ENV:-}
 if [ -z "${DEPLOY_ENV}" ]; then
-  echo "Must specify DEPLOY_ENV as \$1 or environment variable" 1>&2
+  echo "Must specify DEPLOY_ENV environment variable" 1>&2
   exit 1
 fi
 
