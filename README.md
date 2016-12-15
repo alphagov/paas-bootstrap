@@ -175,7 +175,7 @@ You can also learn the credentials from the `atc` process arguments:
 
  1. SSH to the Concourse server:
     * For *Concourse Lite*: `cd vagrant && vagrant ssh`
-    * [For *Concourse*](#ssh-to-deployer-concourse-and-microbosh)
+    * [For *Concourse*](#ssh-to-concourse-and-tunnel)
  2. Get the password from `atc` arguments: `ps -fea | sed -n 's/.*--basic-auth[-]password \([^ ]*\).*/\1/p'`
 
 ## Overnight deletion of environments
