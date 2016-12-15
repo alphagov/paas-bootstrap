@@ -65,3 +65,7 @@ output "key_pair_name" {
 output "bosh_api_client_security_group" {
   value = "${aws_security_group.bosh_api_client.name}"
 }
+
+output "default_security_group" {
+  value = "${aws_security_group.bosh_managed.name}"
+}
