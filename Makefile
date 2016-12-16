@@ -34,6 +34,11 @@ lint_terraform:
 	$(eval export TF_VAR_system_dns_zone_name=service.com)
 	$(eval export TF_VAR_apps_dns_zone_name=apps.com)
 	find terraform -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 -n 1 -t terraform graph > /dev/null
+	@if [ "$$(terraform fmt -write=false terraform)" != "" ] ; then \
+		echo "Use 'terraform fmt' to fix HCL formatting:"; \
+		terraform fmt -write=false -diff=true terraform ; \
+		exit 1; \
+	fi
 
 lint_shellcheck:
 	find . -name '*.sh' -not -path '*/vendor/*' | xargs $(SHELLCHECK)
