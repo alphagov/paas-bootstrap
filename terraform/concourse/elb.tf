@@ -1,7 +1,8 @@
 resource "aws_iam_server_certificate" "concourse" {
-  name_prefix = "${var.env}-concourse-"
+  name_prefix      = "${var.env}-concourse-"
   certificate_body = "${file("concourse.crt")}"
-  private_key = "${file("concourse.key")}"
+  private_key      = "${file("concourse.key")}"
+
   lifecycle {
     create_before_destroy = true
   }
@@ -22,11 +23,11 @@ resource "aws_elb" "concourse" {
   }
 
   listener {
-    instance_port       = 8080
-    instance_protocol   = "tcp"
-    lb_port             = 443
-    lb_protocol         = "ssl"
-    ssl_certificate_id  = "${aws_iam_server_certificate.concourse.arn}"
+    instance_port      = 8080
+    instance_protocol  = "tcp"
+    lb_port            = 443
+    lb_protocol        = "ssl"
+    ssl_certificate_id = "${aws_iam_server_certificate.concourse.arn}"
   }
 
   tags {
@@ -57,21 +58,20 @@ resource "aws_security_group" "concourse-elb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   /* FIXME: Merge these two ingress block back together once */
   /* https://github.com/hashicorp/terraform/issues/5301 is resolved. */
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    cidr_blocks     = ["${compact(split(",", var.admin_cidrs))}"]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["${compact(split(",", var.admin_cidrs))}"]
   }
 
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    cidr_blocks     = ["${aws_eip.concourse.public_ip}/32"]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["${aws_eip.concourse.public_ip}/32"]
   }
 
   tags {

@@ -1,8 +1,8 @@
 resource "aws_codecommit_repository" "concourse-pool" {
-  provider = "aws.codecommit"
+  provider        = "aws.codecommit"
   repository_name = "concourse-pool-${var.env}"
-  description = "Git repository to keep concourse pool resource locks"
-  default_branch = "master"
+  description     = "Git repository to keep concourse pool resource locks"
+  default_branch  = "master"
 }
 
 resource "aws_iam_user" "git" {
@@ -33,7 +33,7 @@ resource "aws_iam_user" "git" {
 #}
 
 resource "aws_iam_user_ssh_key" "git" {
-  username = "${aws_iam_user.git.name}"
-  encoding = "PEM"
+  username   = "${aws_iam_user.git.name}"
+  encoding   = "PEM"
   public_key = "${var.git_rsa_id_pub}"
 }
