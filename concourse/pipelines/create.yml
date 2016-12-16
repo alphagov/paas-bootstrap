@@ -176,7 +176,7 @@ jobs:
             file: create-init-bucket/bucket.tfstate
 
       # FIXME: Remove this task when everything has migrated across.
-      - task: migrate-from-old-bucket
+      - task: migrate-from-old-buckets
         config:
           image: docker:///governmentpaas/awscli
           params:
@@ -192,12 +192,14 @@ jobs:
                 state_bucket={{state_bucket}}
                 old_state_bucket="${DEPLOY_ENV}-state"
 
-                if aws s3 ls "s3:///${state_bucket}/bucket-migrated.flag"; then
+                migration_flag_file=buckets-migrated.flag
+
+                if aws s3 ls "s3://${state_bucket}/${migration_flag_file}"; then
                   echo "Bucket already migrated. Skipping..."
                   exit 0
                 fi
 
-                if ! aws s3api head-bucket --bucket "${old_state_bucket}"; then
+                if ! aws s3 ls "s3://${old_state_bucket}/" > /dev/null; then
                   echo "Old state bucket does not exist, skipping migration"
                   exit 0
                 fi
@@ -210,11 +212,25 @@ jobs:
                 aws s3 mv "s3://${state_bucket}/generated-concourse-secrets.yml" "s3://${state_bucket}/concourse-secrets.yml"
 
                 echo "Fixing up tfstate files to handle renamed resources"
+
                 aws s3 cp "s3://${state_bucket}/vpc.tfstate" .
                 sed s/myvpc/paas/ < vpc.tfstate > vpc-updated.tfstate
                 aws s3 cp vpc-updated.tfstate "s3://${state_bucket}/vpc.tfstate"
 
-                echo "true" | aws s3 cp - "s3://${state_bucket}/bucket-migrated.flag"
+                aws s3 cp "s3://${state_bucket}/bosh.tfstate" .
+                sed "s/${DEPLOY_ENV}-bosh-blobstore/gds-paas-${DEPLOY_ENV}-bosh-blobstore/" < bosh.tfstate > bosh-updated.tfstate
+                aws s3 cp bosh-updated.tfstate "s3://${state_bucket}/bosh.tfstate"
+
+                echo "Syncing bosh bolbstore to new bucket"
+                bosh_blobstore_bucket="gds-paas-${DEPLOY_ENV}-bosh-blobstore"
+                old_bosh_blobstore_bucket="${DEPLOY_ENV}-bosh-blobstore"
+                aws s3 mb "s3://${bosh_blobstore_bucket}"
+                aws s3 sync "s3://${old_bosh_blobstore_bucket}/" "s3://${bosh_blobstore_bucket}"
+
+                echo "Data has been migrated from old blobstore bucket. Remember to delete it: aws s3 rb 's3://${old_bosh_blobstore_bucket}' --force "
+
+                # Flag to prevent this task re-running.
+                echo "true" | aws s3 cp - "s3://${state_bucket}/${migration_flag_file}"
 
       - task: s3init-concourse
         config:
