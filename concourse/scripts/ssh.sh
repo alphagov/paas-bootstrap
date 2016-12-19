@@ -5,6 +5,7 @@ TUNNEL=${1:-}
 SOCKET_DIR=~/.ssh
 SOCKET_DEF=%r@%h:%p
 SOCKET=$SOCKET_DIR/$SOCKET_DEF
+state_bucket=gds-paas-${DEPLOY_ENV}-state
 
 download_key() {
   key=/tmp/concourse_id_rsa.$RANDOM
@@ -12,12 +13,12 @@ download_key() {
 
   eval "$(make dev showenv | grep CONCOURSE_IP=)"
 
-  aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-bootstrap/concourse_id_rsa" $key && chmod 400 $key
+  aws s3 cp "s3://${state_bucket}/concourse_id_rsa" $key && chmod 400 $key
 }
 
 ssh_concourse() {
   echo
-  aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-bootstrap/concourse-secrets.yml" - | \
+  aws s3 cp "s3://${state_bucket}/concourse-secrets.yml" - | \
     ruby -ryaml -e 'puts "Sudo password is " + YAML.load(STDIN)["secrets"]["concourse_vcap_password_orig"]'
   echo
 

@@ -5,9 +5,11 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 "${SCRIPT_DIR}/fly_sync_and_login.sh"
 
+state_bucket=gds-paas-${DEPLOY_ENV}-state
+
 get_datadog_secrets() {
   # shellcheck disable=SC2154
-  secrets_uri="s3://gds-paas-${DEPLOY_ENV}-bootstrap/datadog-secrets.yml"
+  secrets_uri="s3://${state_bucket}/datadog-secrets.yml"
   export datadog_api_key
   export datadog_app_key
   if aws s3 ls "${secrets_uri}" > /dev/null ; then
@@ -28,7 +30,7 @@ generate_vars_file() {
 aws_account: ${AWS_ACCOUNT}
 vagrant_ip: ${VAGRANT_IP}
 deploy_env: ${DEPLOY_ENV}
-state_bucket: gds-paas-${DEPLOY_ENV}-state
+state_bucket: ${state_bucket}
 branch_name: ${BRANCH:-master}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
