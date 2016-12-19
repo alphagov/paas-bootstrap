@@ -994,7 +994,8 @@ jobs:
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              bosh vms | tee vms.txt
+              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
+              bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
               [ $(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)") -eq 0 ]
 
   - name: expunge-vagrant
