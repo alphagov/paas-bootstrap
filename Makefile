@@ -61,6 +61,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export ENABLE_DATADOG ?= false)
+	$(eval export CONCOURSE_AUTH_DURATION=48h)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI

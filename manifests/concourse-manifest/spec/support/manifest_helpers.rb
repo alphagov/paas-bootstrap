@@ -18,6 +18,7 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
     ENV["DATADOG_API_KEY"] = "abcd1234"
+    ENV["CONCOURSE_AUTH_DURATION"] = "5m"
   end
 
   def load_default_manifest
