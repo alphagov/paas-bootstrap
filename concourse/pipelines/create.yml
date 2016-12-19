@@ -758,6 +758,7 @@ jobs:
           - name: git-ssh-public-key
           - name: concourse-ssh-key
           params:
+            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
             TF_VAR_concourse_hostname: {{concourse_hostname}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
@@ -775,7 +776,8 @@ jobs:
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
 
-              terraform apply \
+              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              terraform apply ${terraform_params} \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
                 -state-out=concourse.tfstate \
@@ -990,15 +992,18 @@ jobs:
           passed: ['concourse-deploy']
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: concourse-tfstate
 
-      - task: vpc-terraform-outputs-to-sh
+      - task: terraform-outputs-to-sh
         config:
           image: docker:///ruby#2.2-slim
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          - name: bosh-tfstate
           outputs:
           - name: vpc-terraform-outputs
+          - name: bosh-terraform-outputs
           run:
             path: sh
             args:
@@ -1009,6 +1014,10 @@ jobs:
               < vpc-tfstate/vpc.tfstate \
               > vpc-terraform-outputs/tfvars.sh
               ls -l vpc-terraform-outputs/tfvars.sh
+              ruby paas-bootstrap/concourse/scripts/extract_tf_vars_from_terraform_state.rb \
+              < bosh-tfstate/bosh.tfstate \
+              > bosh-terraform-outputs/tfvars.sh
+              ls -l bosh-terraform-outputs/tfvars.sh
 
       - task: remove-vagrant-IP-from-ssh-SG
         config:
@@ -1067,3 +1076,36 @@ jobs:
           params:
             file: remove-vagrant-IP-from-BOSH-SG/bosh.tfstate
 
+      - task: remove-vagrant-IP-from-Concourse-SG
+        config:
+          platform: linux
+          image: docker:///governmentpaas/terraform
+          inputs:
+          - name: paas-bootstrap
+          - name: vpc-terraform-outputs
+          - name: bosh-terraform-outputs
+          - name: concourse-tfstate
+          params:
+            TF_VAR_env: {{deploy_env}}
+            TF_VAR_concourse_hostname: {{concourse_hostname}}
+            TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
+            TF_VAR_git_rsa_id_pub: ""
+            AWS_DEFAULT_REGION: {{aws_region}}
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              . vpc-terraform-outputs/tfvars.sh
+              . bosh-terraform-outputs/tfvars.sh
+
+              terraform apply -target=aws_security_group.concourse \
+                -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                -state=concourse-tfstate/concourse.tfstate \
+                -state-out=concourse.tfstate \
+                paas-bootstrap/terraform/concourse
+        ensure:
+          put: concourse-tfstate
+          params:
+            file: remove-vagrant-IP-from-Concourse-SG/concourse.tfstate
