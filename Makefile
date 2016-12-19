@@ -74,6 +74,7 @@ ci: globals check-env-vars ## Set Environment to CI
 .PHONY: build-concourse
 build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
+	$(eval export CONCOURSE_HOSTNAME=concourse)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	@true
 
@@ -88,6 +89,7 @@ fly-login: ## Do a fly login and sync
 .PHONY: bootstrap
 bootstrap: ## Start bootstrap
 	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
+	$(if ${CONCOURSE_HOSTNAME},,$(error Must pass CONCOURSE_HOSTNAME=<name>))
 	$(if ${CONCOURSE_INSTANCE_PROFILE},,$(error Must pass CONCOURSE_INSTANCE_PROFILE=<name>))
 	vagrant/deploy.sh
 

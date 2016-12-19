@@ -194,6 +194,7 @@ jobs:
           params:
             AWS_DEFAULT_REGION: {{aws_region}}
             TF_VAR_env: {{deploy_env}}
+            TF_VAR_concourse_hostname: {{concourse_hostname}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
             TF_VAR_git_rsa_id_pub: anything
           run:

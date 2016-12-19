@@ -702,6 +702,7 @@ jobs:
           outputs:
           - name: generated-concourse-cert
           params:
+            CONCOURSE_HOSTNAME: {{concourse_hostname}}
             SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
           run:
             path: sh
@@ -717,7 +718,7 @@ jobs:
               fi
               openssl req -x509 -newkey rsa:2048 -keyout concourse.key \
                 -out concourse.crt -days 365 -nodes -subj \
-                "/C=UK/ST=London/L=London/O=GDS/CN=concourse.${SYSTEM_DNS_ZONE_NAME}"
+                "/C=UK/ST=London/L=London/O=GDS/CN=${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
               tar czvf generated-concourse-cert/concourse-cert.tar.gz concourse.crt concourse.key
         on_success:
           put: concourse-cert
@@ -758,6 +759,7 @@ jobs:
           - name: concourse-ssh-key
           params:
             TF_VAR_env: {{deploy_env}}
+            TF_VAR_concourse_hostname: {{concourse_hostname}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
             AWS_DEFAULT_REGION: {{aws_region}}
           run:
