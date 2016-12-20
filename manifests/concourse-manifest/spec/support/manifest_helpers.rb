@@ -18,6 +18,8 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
     ENV["DATADOG_API_KEY"] = "abcd1234"
+    ENV["DATADOG_APP_KEY"] = "abcd4321"
+    ENV["ENABLE_DATADOG"] = "true"
     ENV["CONCOURSE_AUTH_DURATION"] = "5m"
   end
 
