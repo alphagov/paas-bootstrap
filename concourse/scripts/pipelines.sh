@@ -54,7 +54,7 @@ generate_vars_file > /dev/null # Check for missing vars
 
 for ACTION in create destroy; do
   bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
-    "${DEPLOY_ENV}" "${ACTION}" \
+    "${ACTION}" \
     "${SCRIPT_DIR}/../pipelines/${ACTION}.yml" \
     <(generate_vars_file)
 done
