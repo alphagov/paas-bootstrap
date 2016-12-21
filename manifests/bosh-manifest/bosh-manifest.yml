@@ -57,7 +57,7 @@ jobs:
 
     director:
       address: 127.0.0.1
-      name: paas
+      name: (( grab $DEPLOY_ENV ))
       db: (( grab meta.rds ))
       disks:
         max_orphaned_age_in_days: 0

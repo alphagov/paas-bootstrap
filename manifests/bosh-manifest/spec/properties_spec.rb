@@ -36,4 +36,8 @@ RSpec.describe "manifest properties validations" do
   it "configures datadog tag bosh-job" do
     expect(bosh_properties["tags"]["bosh-job"]).to eq("bosh")
   end
+
+  it "sets the bosh director name to the value of DEPLOY_ENV" do
+    expect(bosh_properties["director"]["name"]).to eq(ManifestHelpers.deploy_env)
+  end
 end

@@ -12,6 +12,10 @@ module ManifestHelpers
     Cache.instance.manifest_with_defaults ||= load_default_manifest
   end
 
+  def self.deploy_env
+    "spec"
+  end
+
 private
 
   def fake_env_vars
@@ -22,6 +26,7 @@ private
     ENV["DATADOG_API_KEY"] = "abcd1234"
     ENV["DATADOG_APP_KEY"] = "abcd4321"
     ENV["ENABLE_DATADOG"] = "true"
+    ENV["DEPLOY_ENV"] = ManifestHelpers.deploy_env
   end
 
   def load_default_manifest
