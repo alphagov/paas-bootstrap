@@ -964,6 +964,23 @@ jobs:
         - get: concourse-manifest
           passed: ['generate-concourse-config']
 
+      - task: migrate-concourse-step1
+        config:
+          platform: linux
+          image: docker:///governmentpaas/awscli
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                apk -U add bash jq
+                ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step1
+
       - task: get-and-upload-stemcell
         config:
           platform: linux
@@ -1034,6 +1051,23 @@ jobs:
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                 echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
                            --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
+
+      - task: migrate-concourse-step2
+        config:
+          platform: linux
+          image: docker:///governmentpaas/awscli
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                apk -U add bash jq postgresql-client openssh-client ruby make
+                ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step2
 
   - name: post-deploy
     plan:
