@@ -978,13 +978,25 @@ jobs:
                 echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
                            --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
 
+  - name: post-deploy
+    plan:
+      - aggregate:
+        - get: pipeline-trigger
+          passed: ['bosh-deploy', 'concourse-deploy']
+          trigger: true
+        - get: paas-bootstrap
+          passed: ['bosh-deploy', 'concourse-deploy']
+        - get: bosh-secrets
+        - get: concourse-manifest
+          passed: ['concourse-deploy']
+
       - task: test-bosh-vms
         config:
           platform: linux
           image: docker:///governmentpaas/bosh-cli
           inputs:
           - name: paas-bootstrap
-          - name: updated-concourse-manifest
+          - name: concourse-manifest
           - name: bosh-secrets
           run:
             path: sh
@@ -993,6 +1005,8 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              mkdir -p updated-concourse-manifest
+              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
               bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
@@ -1003,10 +1017,10 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
-          passed: ['concourse-deploy']
+          passed: ['post-deploy']
         - get: pipeline-trigger
           trigger: true
-          passed: ['concourse-deploy']
+          passed: ['post-deploy']
         - get: vpc-tfstate
         - get: bosh-tfstate
         - get: concourse-tfstate
