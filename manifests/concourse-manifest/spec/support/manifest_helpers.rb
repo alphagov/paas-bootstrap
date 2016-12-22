@@ -16,6 +16,7 @@ private
 
   def fake_env_vars
     ENV["AWS_ACCOUNT"] = "dev"
+    ENV["CONCOURSE_INSTANCE_TYPE"] = "t2.small"
     ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
     ENV["DATADOG_API_KEY"] = "abcd1234"
     ENV["DATADOG_APP_KEY"] = "abcd4321"

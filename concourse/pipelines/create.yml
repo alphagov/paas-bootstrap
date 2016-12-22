@@ -985,6 +985,7 @@ jobs:
               terraform-outputs/concourse-terraform-outputs.yml
               terraform-outputs/vpc-terraform-outputs.yml
               terraform-outputs/bosh-terraform-outputs.yml
+            CONCOURSE_INSTANCE_TYPE: {{concourse_instance_type}}
             CONCOURSE_INSTANCE_PROFILE: {{concourse_instance_profile}}
           inputs:
           - name: paas-bootstrap
