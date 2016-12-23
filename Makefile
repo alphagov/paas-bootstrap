@@ -69,6 +69,18 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
 
+.PHONY: staging
+staging: globals check-env-vars ## Set Environment to Staging
+	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
+	$(eval export AWS_ACCOUNT=staging)
+	$(eval export ENABLE_DATADOG=true)
+
+.PHONY: prod
+prod: globals check-env-vars ## Set Environment to Production
+	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
+	$(eval export AWS_ACCOUNT=prod)
+	$(eval export ENABLE_DATADOG=true)
+
 
 ## Concourse profiles
 
