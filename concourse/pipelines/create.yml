@@ -196,6 +196,11 @@ jobs:
               - -u
               - -c
               - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
                 state_bucket={{state_bucket}}
                 old_state_bucket="${DEPLOY_ENV}-state"
 
@@ -750,6 +755,11 @@ jobs:
               - -e
               - -c
               - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
                 if [ "$(cat vms-migrated-flag/vms-migrated.flag)" = "true" ]; then
                   echo "VMs already migrated to new blobstore. Skipping..."
                   echo 'true' > migration-flag/value
@@ -1042,6 +1052,11 @@ jobs:
               - -e
               - -c
               - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
                 apk -U add bash jq
                 ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step1
 
@@ -1130,6 +1145,11 @@ jobs:
               - -e
               - -c
               - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
                 apk -U add bash jq postgresql-client openssh-client ruby make
                 ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step2
 
