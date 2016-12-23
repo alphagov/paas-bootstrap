@@ -50,8 +50,10 @@ lint_ruby:
 	bundle exec govuk-lint-ruby
 
 .PHONY: globals
+PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
+	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	@true
 
 ## Environments
@@ -68,18 +70,21 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=ci_deployments/${DEPLOY_ENV})
 
 .PHONY: staging
 staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=staging_deployment)
 
 .PHONY: prod
 prod: globals check-env-vars ## Set Environment to Production
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=prod_deployment)
 
 
 ## Concourse profiles
