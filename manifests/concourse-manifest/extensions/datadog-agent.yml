@@ -7,13 +7,6 @@ releases:
 jobs:
   - name: concourse
     templates:
-      - name: datadog-agent
-        release: datadog-agent
-        properties:
-          datadog: (( inject meta.datadog ))
-          tags:
-            bosh-job: concourse
-            bosh-az: z1
       - name: riemann
         release: riemann
         properties:
