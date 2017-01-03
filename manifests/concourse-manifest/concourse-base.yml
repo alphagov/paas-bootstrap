@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-    version: "3263.12"
+    version: "3263.14"
 
   zone: (( grab terraform_outputs.zone0 ))
 
@@ -32,7 +32,7 @@ resource_pools:
       name: (( grab meta.stemcell.name ))
       version: (( grab meta.stemcell.version ))
     cloud_properties:
-      instance_type: m4.large
+      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
       availability_zone: (( grab meta.zone ))
       iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
       elbs:

@@ -43,6 +43,7 @@ bosh_fqdn: bosh.${SYSTEM_DNS_ZONE_NAME}
 bosh_fqdn_external: bosh-external.${SYSTEM_DNS_ZONE_NAME}
 concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
 bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
+concourse_instance_type: ${CONCOURSE_INSTANCE_TYPE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 enable_datadog: ${ENABLE_DATADOG}
 datadog_api_key: ${datadog_api_key:-}

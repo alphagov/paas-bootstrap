@@ -125,6 +125,13 @@ resources:
       region_name: {{aws_region}}
       versioned_file: concourse-manifest.yml
 
+  - name: vms-migrated-flag
+    type: s3-iam
+    source:
+      bucket: {{state_bucket}}
+      region_name: {{aws_region}}
+      versioned_file: vms-migrated.flag
+
 jobs:
   - name: init-bucket
     serial: true
@@ -175,6 +182,68 @@ jobs:
           params:
             file: create-init-bucket/bucket.tfstate
 
+      # FIXME: Remove this task when everything has migrated across.
+      - task: migrate-from-old-buckets
+        config:
+          image: docker:///governmentpaas/awscli
+          params:
+            AWS_DEFAULT_REGION: {{aws_region}}
+            DEPLOY_ENV: {{deploy_env}}
+          run:
+            path: sh
+            args:
+              - -e
+              - -u
+              - -c
+              - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
+                state_bucket={{state_bucket}}
+                old_state_bucket="${DEPLOY_ENV}-state"
+
+                migration_flag_file=buckets-migrated.flag
+
+                if aws s3 ls "s3://${state_bucket}/${migration_flag_file}"; then
+                  echo "Bucket already migrated. Skipping..."
+                  exit 0
+                fi
+
+                if ! aws s3 ls "s3://${old_state_bucket}/" > /dev/null; then
+                  echo "Old state bucket does not exist, skipping migration"
+                  exit 0
+                fi
+
+                echo "Syncing state from old bucket"
+                aws s3 sync "s3://${old_state_bucket}/" "s3://${state_bucket}/" --exclude bucket.tfstate
+
+                echo "Renaming files to match new pipelines"
+                aws s3 mv "s3://${state_bucket}/create-bosh-cloudfoundry.trigger" "s3://${state_bucket}/create-cloudfoundry.trigger"
+                aws s3 mv "s3://${state_bucket}/generated-concourse-secrets.yml" "s3://${state_bucket}/concourse-secrets.yml"
+
+                echo "Fixing up tfstate files to handle renamed resources"
+
+                aws s3 cp "s3://${state_bucket}/vpc.tfstate" .
+                sed s/myvpc/paas/ < vpc.tfstate > vpc-updated.tfstate
+                aws s3 cp vpc-updated.tfstate "s3://${state_bucket}/vpc.tfstate"
+
+                aws s3 cp "s3://${state_bucket}/bosh.tfstate" .
+                sed "s/${DEPLOY_ENV}-bosh-blobstore/gds-paas-${DEPLOY_ENV}-bosh-blobstore/" < bosh.tfstate > bosh-updated.tfstate
+                aws s3 cp bosh-updated.tfstate "s3://${state_bucket}/bosh.tfstate"
+
+                echo "Syncing bosh bolbstore to new bucket"
+                bosh_blobstore_bucket="gds-paas-${DEPLOY_ENV}-bosh-blobstore"
+                old_bosh_blobstore_bucket="${DEPLOY_ENV}-bosh-blobstore"
+                aws s3 mb "s3://${bosh_blobstore_bucket}"
+                aws s3 sync "s3://${old_bosh_blobstore_bucket}/" "s3://${bosh_blobstore_bucket}"
+
+                echo "Data has been migrated from old blobstore bucket. Remember to delete it: aws s3 rb 's3://${old_bosh_blobstore_bucket}' --force "
+
+                # Flag to prevent this task re-running.
+                echo "true" | aws s3 cp - "s3://${state_bucket}/${migration_flag_file}"
+
       - task: s3init-concourse
         config:
           image: docker:///governmentpaas/curl-ssl
@@ -196,6 +265,7 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-cert.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} vms-migrated.flag paas-bootstrap/concourse/init_files/zero_bytes
 
           inputs:
           - name: paas-bootstrap
@@ -583,6 +653,7 @@ jobs:
           outputs:
             - name: bosh-manifest
           params:
+            DEPLOY_ENV: {{deploy_env}}
             AWS_ACCOUNT: {{aws_account}}
             DATADOG_API_KEY: {{datadog_api_key}}
             DATADOG_APP_KEY: {{datadog_app_key}}
@@ -619,6 +690,8 @@ jobs:
         - get: pipeline-trigger
           passed: ['generate-bosh-config']
           trigger: true
+        - get: paas-bootstrap
+          passed: ['generate-bosh-config']
         - get: bosh-manifest
           passed: ['generate-bosh-config']
         - get: bosh-init-state
@@ -632,6 +705,7 @@ jobs:
             - name: bosh-manifest
             - name: bosh-init-state
             - name: bosh-ssh-private-key
+            - name: paas-bootstrap
           outputs:
             - name: bosh-init-working-dir
           params:
@@ -652,6 +726,63 @@ jobs:
           put: bosh-init-state
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
+
+  # FIXME: Remove this once it's run everywhere
+  - name: migrate-deployed-vms
+    plan:
+      - aggregate:
+        - get: pipeline-trigger
+          passed: ['bosh-deploy']
+          trigger: true
+        - get: paas-bootstrap
+          passed: ['generate-bosh-config']
+        - get: bosh-secrets
+        - get: vms-migrated-flag
+
+      - task: migrate-deployed-vms
+        config:
+          platform: linux
+          image: docker:///governmentpaas/bosh-cli
+          inputs:
+            - name: paas-bootstrap
+            - name: bosh-secrets
+            - name: vms-migrated-flag
+          outputs:
+            - name: migration-flag
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
+                if [ "$(cat vms-migrated-flag/vms-migrated.flag)" = "true" ]; then
+                  echo "VMs already migrated to new blobstore. Skipping..."
+                  echo 'true' > migration-flag/value
+                  exit 0
+                fi
+
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+
+                if ! bosh download manifest {{deploy_env}} manifest.yml; then
+                  echo "No CF deployment in this bosh. Nothing to migrate."
+                  echo 'true' > migration-flag/value
+                  exit 0
+                fi
+
+                bosh deployment manifest.yml
+
+                echo 'yes' | bosh recreate
+
+                echo 'true' > migration-flag/value
+        on_success:
+          put: vms-migrated-flag
+          params:
+            file: migration-flag/value
 
   - name: concourse-terraform
     serial: true
@@ -804,7 +935,7 @@ jobs:
             - |
               aws iam add-user-to-group --user-name git-${DEPLOY_ENV} --group-name concourse-pool-git-rw
 
-  - name: concourse-deploy
+  - name: generate-concourse-config
     serial: true
     plan:
       - aggregate:
@@ -812,7 +943,7 @@ jobs:
           passed: ['concourse-terraform']
         - get: pipeline-trigger
           trigger: true
-          passed: ['concourse-terraform', 'bosh-deploy']
+          passed: ['concourse-terraform']
         - get: vpc-tfstate
           passed: ['concourse-terraform']
         - get: concourse-tfstate
@@ -820,7 +951,6 @@ jobs:
         - get: concourse-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
-        - get: bosh-secrets
 
       - task: terraform-outputs-to-yaml
         config:
@@ -868,6 +998,7 @@ jobs:
               terraform-outputs/concourse-terraform-outputs.yml
               terraform-outputs/vpc-terraform-outputs.yml
               terraform-outputs/bosh-terraform-outputs.yml
+            CONCOURSE_INSTANCE_TYPE: {{concourse_instance_type}}
             CONCOURSE_INSTANCE_PROFILE: {{concourse_instance_profile}}
           inputs:
           - name: paas-bootstrap
@@ -893,6 +1024,41 @@ jobs:
           put: concourse-manifest
           params:
             file: concourse-manifest/concourse-manifest.yml
+
+  - name: concourse-deploy
+    serial: true
+    plan:
+      - aggregate:
+        - get: paas-bootstrap
+          passed: ['generate-concourse-config']
+        - get: pipeline-trigger
+          trigger: true
+          passed: ['generate-concourse-config', 'bosh-deploy']
+        - get: bosh-secrets
+        - get: concourse-manifest
+          passed: ['generate-concourse-config']
+
+      - task: migrate-concourse-step1
+        config:
+          platform: linux
+          image: docker:///governmentpaas/awscli
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
+                apk -U add bash jq
+                ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step1
 
       - task: get-and-upload-stemcell
         config:
@@ -965,13 +1131,47 @@ jobs:
                 echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
                            --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
 
+      - task: migrate-concourse-step2
+        config:
+          platform: linux
+          image: docker:///governmentpaas/awscli
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                if [ "{{concourse_hostname}}" != "deployer" ]; then
+                  echo "Migration only is required for deployer from paas-cf. Skipping..."
+                  exit 0
+                fi
+
+                apk -U add bash jq postgresql-client openssh-client ruby make
+                ./paas-bootstrap/concourse/scripts/migrate_concourse_volume.sh step2
+
+  - name: post-deploy
+    plan:
+      - aggregate:
+        - get: pipeline-trigger
+          passed: ['migrate-deployed-vms', 'concourse-deploy']
+          trigger: true
+        - get: paas-bootstrap
+          passed: ['migrate-deployed-vms', 'concourse-deploy']
+        - get: bosh-secrets
+        - get: concourse-manifest
+          passed: ['concourse-deploy']
+
       - task: test-bosh-vms
         config:
           platform: linux
           image: docker:///governmentpaas/bosh-cli
           inputs:
           - name: paas-bootstrap
-          - name: updated-concourse-manifest
+          - name: concourse-manifest
           - name: bosh-secrets
           run:
             path: sh
@@ -980,8 +1180,11 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              mkdir -p updated-concourse-manifest
+              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              bosh vms | tee vms.txt
+              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
+              bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
               [ $(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)") -eq 0 ]
 
   - name: expunge-vagrant
@@ -989,10 +1192,10 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
-          passed: ['concourse-deploy']
+          passed: ['post-deploy']
         - get: pipeline-trigger
           trigger: true
-          passed: ['concourse-deploy']
+          passed: ['post-deploy']
         - get: vpc-tfstate
         - get: bosh-tfstate
         - get: concourse-tfstate

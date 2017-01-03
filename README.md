@@ -73,6 +73,12 @@ Create Concourse Lite with `make`. There are targets to select the target AWS ac
 make dev build-concourse bootstrap
 ```
 
+Or a DEV deployer concourse bootstrap:
+
+```
+make dev deployer-concourse bootstrap
+```
+
 `make help` will show all available options.
 
 To deploy a concourse with custom profiles, it's necessary to set corresponding ENV vars. eg:
@@ -107,11 +113,11 @@ You will need a working [Concourse Lite](#concourse-lite).
 
 Run the `create` pipeline from your *Concourse Lite*.
 
-When complete you can access the UI from a browser with the same credentials as
-your *Concourse Lite* on the following URL:
+When complete, you can access the new Concourse from your browser. The URL
+and credentials can be found from:
 
 ```
-https://concourse.${DEPLOY_ENV}.dev.cloudpipeline.digital/
+make dev <profile>-concourse showenv
 ```
 
 ### Destroy
