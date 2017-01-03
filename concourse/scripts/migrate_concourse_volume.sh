@@ -213,6 +213,12 @@ clone_volume_via_snapsot() {
   echo "${new_volume_id}"
 }
 
+check_concourse_bosh_init_state () {
+  aws s3 ls \
+    --region "${AWS_REGION}" \
+    "${BOSH_INIT_CONCOURSE_STATE}" > /dev/null
+}
+
 get_concourse_bosh_init_state () {
   aws s3 cp \
     --region "${AWS_REGION}" \
@@ -230,6 +236,11 @@ get_concourse_bosh_init_state_volume_id () {
 
 ##########################################################################
 stop_old_concourse() {
+  if ! check_concourse_bosh_init_state; then
+    echo "Cannot find a old bosh-init concourse state file, skipping"
+    exit 0
+  fi
+
   origin_concourse_instance_id="$(get_concourse_bosh_init_state_instance_id)"
   echo "bosh-init state origin concourse instance ID: ${origin_concourse_instance_id}"
 
@@ -261,6 +272,11 @@ stop_old_concourse() {
 }
 
 attach_old_volume_to_new_concourse() {
+  if ! check_concourse_bosh_init_state; then
+    echo "Cannot find a old bosh-init concourse state file, skipping"
+    exit 0
+  fi
+
   origin_concourse_instance_id="$(get_concourse_bosh_init_state_instance_id)"
   echo "bosh-init state origin concourse instance ID: ${origin_concourse_instance_id}"
 
