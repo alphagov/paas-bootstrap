@@ -1,2 +1,5 @@
 aws_account = "prod"
 system_dns_zone_id = "Z39UURGVWSYTHL"
+bosh_db_multi_az = "true"
+bosh_db_backup_retention_period = "35"
+bosh_db_skip_final_snapshot = "false"
