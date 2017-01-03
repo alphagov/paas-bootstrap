@@ -55,17 +55,4 @@ RSpec.describe "manifest generation" do
     job_level_properties = concourse_job["properties"]
     expect(job_level_properties).to be_a(Hash)
   end
-
-  it "configures datadog tag bosh-job" do
-    job_level_properties = datadog_template["properties"]
-    expect(job_level_properties["tags"]["bosh-job"]).to eq("concourse")
-  end
-
-  it "configures datadog tag bosh-az with the right AZ as it is defined in the deployment" do
-    concourse_resource_pool = manifest_with_defaults.fetch("resource_pools").find { |job| job["name"] == "concourse" }
-    expect(concourse_resource_pool["cloud_properties"]["availability_zone"]).to eq("eu-west-1a")
-
-    job_level_properties = datadog_template["properties"]
-    expect(job_level_properties["tags"]["bosh-az"]).to eq("z1")
-  end
 end
