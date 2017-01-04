@@ -620,8 +620,6 @@ jobs:
         - get: pipeline-trigger
           passed: ['generate-bosh-config']
           trigger: true
-        - get: paas-bootstrap
-          passed: ['generate-bosh-config']
         - get: bosh-manifest
           passed: ['generate-bosh-config']
         - get: bosh-init-state
@@ -635,7 +633,6 @@ jobs:
             - name: bosh-manifest
             - name: bosh-init-state
             - name: bosh-ssh-private-key
-            - name: paas-bootstrap
           outputs:
             - name: bosh-init-working-dir
           params:
