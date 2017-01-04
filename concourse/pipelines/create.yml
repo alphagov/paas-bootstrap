@@ -214,11 +214,6 @@ jobs:
                 aws s3 mv "s3://${state_bucket}/create-bosh-cloudfoundry.trigger" "s3://${state_bucket}/create-cloudfoundry.trigger"
                 aws s3 mv "s3://${state_bucket}/generated-concourse-secrets.yml" "s3://${state_bucket}/concourse-secrets.yml"
 
-                echo "Fixing up tfstate files to handle renamed resources"
-                aws s3 cp "s3://${state_bucket}/vpc.tfstate" .
-                sed s/myvpc/paas/ < vpc.tfstate > vpc-updated.tfstate
-                aws s3 cp vpc-updated.tfstate "s3://${state_bucket}/vpc.tfstate"
-
                 echo "true" | aws s3 cp - "s3://${state_bucket}/bucket-migrated.flag"
 
       - task: s3init-concourse
