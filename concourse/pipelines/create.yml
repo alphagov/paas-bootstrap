@@ -175,47 +175,6 @@ jobs:
           params:
             file: create-init-bucket/bucket.tfstate
 
-      # FIXME: Remove this task when everything has migrated across.
-      - task: migrate-from-old-bucket
-        config:
-          image: docker:///governmentpaas/awscli
-          params:
-            AWS_DEFAULT_REGION: {{aws_region}}
-            DEPLOY_ENV: {{deploy_env}}
-          run:
-            path: sh
-            args:
-              - -e
-              - -u
-              - -c
-              - |
-                if [ "{{concourse_hostname}}" != "deployer" ]; then
-                  echo "Migration only is required for deployer from paas-cf. Skipping..."
-                  exit 0
-                fi
-
-                state_bucket={{state_bucket}}
-                old_state_bucket="${DEPLOY_ENV}-state"
-
-                if aws s3 ls "s3:///${state_bucket}/bucket-migrated.flag"; then
-                  echo "Bucket already migrated. Skipping..."
-                  exit 0
-                fi
-
-                if ! aws s3api head-bucket --bucket "${old_state_bucket}"; then
-                  echo "Old state bucket does not exist, skipping migration"
-                  exit 0
-                fi
-
-                echo "Syncing state from old bucket"
-                aws s3 sync "s3://${old_state_bucket}/" "s3://${state_bucket}/" --exclude bucket.tfstate
-
-                echo "Renaming files to match new pipelines"
-                aws s3 mv "s3://${state_bucket}/create-bosh-cloudfoundry.trigger" "s3://${state_bucket}/create-cloudfoundry.trigger"
-                aws s3 mv "s3://${state_bucket}/generated-concourse-secrets.yml" "s3://${state_bucket}/concourse-secrets.yml"
-
-                echo "true" | aws s3 cp - "s3://${state_bucket}/bucket-migrated.flag"
-
       - task: s3init-concourse
         config:
           image: docker:///governmentpaas/curl-ssl
