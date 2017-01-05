@@ -983,10 +983,10 @@ jobs:
     plan:
       - aggregate:
         - get: pipeline-trigger
-          passed: ['bosh-deploy', 'concourse-deploy']
+          passed: ['concourse-deploy']
           trigger: true
         - get: paas-bootstrap
-          passed: ['bosh-deploy', 'concourse-deploy']
+          passed: ['concourse-deploy']
         - get: bosh-secrets
         - get: concourse-manifest
           passed: ['concourse-deploy']
