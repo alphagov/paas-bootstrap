@@ -963,8 +963,7 @@ jobs:
             - |
               if [ "${ENABLE_DATADOG}" = "true" ] ; then
                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/concourse-manifest/extensions/datadog-agent.yml
-                                ./paas-bootstrap/manifests/shared/deployments/datadog-agent.yml"
+                                ./paas-bootstrap/manifests/concourse-manifest/addons/datadog-concourse-integration.yml"
               fi
               ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
                 > concourse-manifest/concourse-manifest.yml
