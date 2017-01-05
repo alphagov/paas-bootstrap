@@ -592,6 +592,7 @@ jobs:
             DATADOG_API_KEY: {{datadog_api_key}}
             DATADOG_APP_KEY: {{datadog_app_key}}
             ENABLE_DATADOG: {{enable_datadog}}
+            ENABLE_COLLECTD_ADDON: {{enable_collectd_addon}}
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./bosh-secrets/bosh-secrets.yml
@@ -611,6 +612,12 @@ jobs:
                    BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
                                         ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent.yml
                                         ./paas-bootstrap/manifests/runtime-config/addons-meta/datadog-agent.yml"
+                fi
+
+                if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
+                   BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
+                                        ./paas-bootstrap/manifests/bosh-manifest/addons/collectd.yml
+                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/collectd.yml"
                 fi
 
                 ./paas-bootstrap/manifests/shared/build_manifest.sh $BOSH_MANIFEST_STUBS > bosh-manifest/bosh-manifest.yml
