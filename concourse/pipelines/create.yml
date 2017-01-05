@@ -673,6 +673,7 @@ jobs:
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
                 bosh update runtime-config runtime-config/runtime-config.yml
+                ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
   - name: concourse-terraform
     serial: true
