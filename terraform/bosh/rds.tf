@@ -23,14 +23,6 @@ resource "aws_security_group" "bosh_rds" {
     ]
   }
 
-  # FIXME: Remove after the migration. Required to be able to connect.
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["${values(var.infra_cidrs)}"]
-  }
-
   tags {
     Name = "${var.env}-bosh-rds"
   }
