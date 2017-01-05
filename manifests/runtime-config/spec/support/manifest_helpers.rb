@@ -40,10 +40,11 @@ private
     runtime_config = render([
       File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
       File.expand_path("../../../runtime-config-base.yml", __FILE__),
-      File.expand_path("../../../datadog-agent-addon.yml", __FILE__),
-      File.expand_path("../../../../shared/deployments/datadog-agent.yml", __FILE__),
-      File.expand_path("../../../../shared/deployments/collectd.yml", __FILE__),
-      File.expand_path("../../../../shared/deployments/syslog.yml", __FILE__),
+      File.expand_path("../../../addons/datadog-agent.yml", __FILE__),
+      File.expand_path("../../../addons-meta/datadog-agent.yml", __FILE__),
+      File.expand_path("../../../addons/collectd.yml", __FILE__),
+      File.expand_path("../../../addons-meta/collectd.yml", __FILE__),
+      File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
       File.expand_path("../../../../shared/spec/fixtures/terraform/*.yml", __FILE__),
     ])
 

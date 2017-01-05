@@ -7,7 +7,7 @@ RSpec.describe "Runtime config" do
     expect(collectd_addon.fetch("properties").fetch("collectd").fetch("interval")).to eq 10
   end
 
-  describe "in order to monitor all hosts via datadog" do
+  describe "datadog addon" do
     let(:datadog_addon) { runtime_config.fetch("addons").find { |addon| addon["name"] == "datadog-agent" } }
 
     it "has datadog included with properties from shared config" do
@@ -26,10 +26,20 @@ RSpec.describe "Runtime config" do
     end
   end
 
-  it "has syslog_forwarder configured with the address from terraform output" do
-    syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
-    syslog_forwarder_address = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("address")
+  describe "syslog_forwarder addon" do
+    it "has the syslog_forwarder is configured as a addon" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
 
-    expect(syslog_forwarder_address).to eq terraform_fixture("logsearch_ingestor_elb_dns_name")
+      expect(syslog_forwarder_addon).not_to be_nil
+      syslog_forwarder_job = syslog_forwarder_addon.fetch("jobs").find { |job| job["name"] == "syslog_forwarder" }
+      expect(syslog_forwarder_job).not_to be_nil
+    end
+
+    it "has syslog_forwarder configured with a address based on the variable $SYSTEM_DNS_ZONE_NAME" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_address = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("address")
+
+      expect(syslog_forwarder_address).to eq "logsearch-ingestor.#{ManifestHelpers::SYSTEM_DNS_ZONE_NAME}"
+    end
   end
 end

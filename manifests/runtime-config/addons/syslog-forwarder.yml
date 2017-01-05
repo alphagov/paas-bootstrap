@@ -1,0 +1,18 @@
+---
+releases:
+  - name: syslog
+    version: 0.1.1
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.1.1.tgz
+    sha1: 6f2dae6c44cbd326fde2081983a3bdebac3825b4
+
+addons:
+  - name: syslog_forwarder
+    jobs:
+      - name: syslog_forwarder
+        release: syslog
+    properties:
+      syslog:
+        address: (( concat "logsearch-ingestor." $SYSTEM_DNS_ZONE_NAME ))
+        port: 5514
+        transport: 'tcp'
+        log_template: 'metron_agent'
