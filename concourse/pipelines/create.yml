@@ -617,7 +617,13 @@ jobs:
         - get: pipeline-trigger
           passed: ['generate-bosh-config']
           trigger: true
+        - get: paas-bootstrap
+          passed: ['generate-bosh-config']
+        - get: bosh-secrets
+          passed: ['generate-bosh-config']
         - get: bosh-manifest
+          passed: ['generate-bosh-config']
+        - get: runtime-config
           passed: ['generate-bosh-config']
         - get: bosh-init-state
         - get: bosh-ssh-private-key
@@ -650,6 +656,23 @@ jobs:
           put: bosh-init-state
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
+
+      - task: update-runtime-config
+        config:
+          platform: linux
+          image: docker:///governmentpaas/bosh-cli
+          inputs:
+            - name: paas-bootstrap
+            - name: bosh-secrets
+            - name: runtime-config
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                bosh update runtime-config runtime-config/runtime-config.yml
 
   - name: concourse-terraform
     serial: true
