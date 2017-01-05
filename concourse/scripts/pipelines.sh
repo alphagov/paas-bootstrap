@@ -29,6 +29,8 @@ concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 enable_datadog: ${ENABLE_DATADOG}
 datadog_api_key: ${DATADOG_API_KEY:-}
 datadog_app_key: ${DATADOG_APP_KEY:-}
+enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
+enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
 EOF
 }
