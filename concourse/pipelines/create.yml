@@ -609,9 +609,10 @@ jobs:
               - |
                 if [ "${ENABLE_DATADOG}" = "true" ] ; then
                    BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/bosh-manifest/extensions/datadog-agent.yml
-                                        ./paas-bootstrap/manifests/shared/deployments/datadog-agent.yml"
+                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent.yml
+                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/datadog-agent.yml"
                 fi
+
                 ./paas-bootstrap/manifests/shared/build_manifest.sh $BOSH_MANIFEST_STUBS > bosh-manifest/bosh-manifest.yml
         on_success:
           put: bosh-manifest
