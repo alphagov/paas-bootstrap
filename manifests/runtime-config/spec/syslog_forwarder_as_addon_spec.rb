@@ -1,5 +1,5 @@
 RSpec.describe "Runtime config" do
-  let(:runtime_config) { load_runtime_config }
+  let(:runtime_config) { default_runtime_config }
 
   it "the syslog_forwarder is configured as a addon" do
     syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }

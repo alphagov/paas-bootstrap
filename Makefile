@@ -24,6 +24,8 @@ spec:
 		bundle exec rspec
 	cd manifests/bosh-manifest &&\
 		bundle exec rspec
+	cd manifests/runtime-config &&\
+		bundle exec rspec
 	cd manifests/concourse-manifest &&\
 		bundle exec rspec
 
