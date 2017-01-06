@@ -1,28 +1,11 @@
 #!/bin/bash
-set -eu
+set -eu -o pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 "${SCRIPT_DIR}/fly_sync_and_login.sh"
 
 state_bucket=gds-paas-${DEPLOY_ENV}-state
-
-get_datadog_secrets() {
-  # shellcheck disable=SC2154
-  secrets_uri="s3://${state_bucket}/datadog-secrets.yml"
-  export datadog_api_key
-  export datadog_app_key
-  if aws s3 ls "${secrets_uri}" > /dev/null ; then
-    secrets_file=$(mktemp -t datadog-secrets.XXXXXX)
-
-    aws s3 cp "${secrets_uri}" "${secrets_file}"
-    datadog_api_key=$("${SCRIPT_DIR}"/val_from_yaml.rb datadog_api_key "${secrets_file}")
-    datadog_app_key=$("${SCRIPT_DIR}"/val_from_yaml.rb datadog_app_key "${secrets_file}")
-
-    rm -f "${secrets_file}"
-  fi
-}
-get_datadog_secrets
 
 generate_vars_file() {
    cat <<EOF
@@ -46,11 +29,15 @@ bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
 concourse_instance_type: ${CONCOURSE_INSTANCE_TYPE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 enable_datadog: ${ENABLE_DATADOG}
-datadog_api_key: ${datadog_api_key:-}
-datadog_app_key: ${datadog_app_key:-}
+datadog_api_key: ${DATADOG_API_KEY:-}
+datadog_app_key: ${DATADOG_APP_KEY:-}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
 EOF
 }
+
+if [ "${ENABLE_DATADOG}" = "true" ] ; then
+  eval "$("${SCRIPT_DIR}"/../../scripts/manage-datadog-secrets.sh retrieve)"
+fi
 
 generate_vars_file > /dev/null # Check for missing vars
 
