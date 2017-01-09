@@ -30,12 +30,11 @@ private
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../concourse-base.yml", __FILE__),
-        File.expand_path("../../../extensions/datadog-agent.yml", __FILE__),
-        File.expand_path("../../fixtures/generated-concourse-secrets.yml", __FILE__),
+        File.expand_path("../../fixtures/concourse-secrets.yml", __FILE__),
         File.expand_path("../../fixtures/concourse-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/vpc-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../../../shared/deployments/datadog-agent.yml", __FILE__),
+        File.expand_path("../../../addons/datadog-concourse-integration.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"

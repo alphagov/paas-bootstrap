@@ -12,7 +12,7 @@ jobs:
         properties:
           riemann:
             datadog:
-              api_key: (( grab meta.datadog.api_key ))
+              api_key: (( grab $DATADOG_API_KEY ))
 
       - name: atc
         properties:
