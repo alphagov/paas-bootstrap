@@ -16,7 +16,6 @@ deploy_env: ${DEPLOY_ENV}
 state_bucket: ${state_bucket}
 branch_name: ${BRANCH:-master}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
-concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
 log_level: ${LOG_LEVEL:-}
 concourse_hostname: ${CONCOURSE_HOSTNAME}
 system_dns_zone_name: ${SYSTEM_DNS_ZONE_NAME}
@@ -24,7 +23,6 @@ bosh_az: ${BOSH_AZ:-eu-west-1a}
 bosh_manifest_state: bosh-manifest-state-${BOSH_AZ:-eu-west-1a}.json
 bosh_fqdn: bosh.${SYSTEM_DNS_ZONE_NAME}
 bosh_fqdn_external: bosh-external.${SYSTEM_DNS_ZONE_NAME}
-concourse_atc_password: ${CONCOURSE_ATC_PASSWORD}
 bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
 concourse_instance_type: ${CONCOURSE_INSTANCE_TYPE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}

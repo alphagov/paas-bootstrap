@@ -9,38 +9,22 @@ hashed_password() {
   echo "$1" | shasum -a 256 | base64 | head -c 32
 }
 
-DEPLOY_ENV=${DEPLOY_ENV:-}
+DEPLOY_ENV=${1:-${DEPLOY_ENV:-}}
 if [ -z "${DEPLOY_ENV}" ]; then
-  echo "Must specify DEPLOY_ENV environment variable" 1>&2
+  echo "Must specify DEPLOY_ENV as \$1 or environment variable" 1>&2
   exit 1
 fi
 
 AWS_ACCOUNT=${AWS_ACCOUNT:-dev}
 
-case $TARGET_CONCOURSE in
-  deployer)
-    CONCOURSE_URL="${CONCOURSE_URL:-https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}}"
-    FLY_TARGET=${FLY_TARGET:-$DEPLOY_ENV}
-    FLY_CMD="${PROJECT_DIR}/bin/fly"
-    ;;
-  bootstrap)
-    CONCOURSE_URL="${CONCOURSE_URL:-http://localhost:8080}"
-    FLY_TARGET="${FLY_TARGET:-${DEPLOY_ENV}-bootstrap}"
-    FLY_CMD="${PROJECT_DIR}/bin/fly-bootstrap"
-    ;;
-  *)
-    echo "Unrecognized TARGET_CONCOURSE: '${TARGET_CONCOURSE}'. Must be set to 'deployer' or 'bootstrap'" 1>&2
-    exit 1
-    ;;
-esac
+CONCOURSE_URL="${CONCOURSE_URL:-http://localhost:8080}"
+FLY_TARGET="${FLY_TARGET:-${DEPLOY_ENV}-bootstrap}"
+FLY_CMD="${PROJECT_DIR}/bin/fly-bootstrap"
 
 CONCOURSE_ATC_USER=${CONCOURSE_ATC_USER:-admin}
 if [ -z "${CONCOURSE_ATC_PASSWORD:-}" ]; then
-  if [ -n "${DECRYPT_CONCOURSE_ATC_PASSWORD:-}" ]; then
-    CONCOURSE_ATC_PASSWORD=$(pass "${DECRYPT_CONCOURSE_ATC_PASSWORD}/concourse_password")
-  else
-    CONCOURSE_ATC_PASSWORD=$(hashed_password "${AWS_SECRET_ACCESS_KEY}:${DEPLOY_ENV}:atc")
-  fi
+    user_id=$(aws sts get-caller-identity | awk '$1 ~ /UserId/ {print $2}')
+    CONCOURSE_ATC_PASSWORD=$(hashed_password "${user_id}")
 fi
 
 cat <<EOF

@@ -409,8 +409,6 @@ jobs:
       - task: generate-concourse-secrets
         config:
           image: docker:///ruby#2.2-slim
-          params:
-            concourse_atc_password: {{concourse_atc_password}}
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -425,7 +423,6 @@ jobs:
               ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-concourse-secrets.rb \
                 --existing-secrets concourse-secrets/concourse-secrets.yml \
                 > generated-concourse-secrets/concourse-secrets.yml
-              echo "  concourse_atc_password: ${concourse_atc_password}" >> generated-concourse-secrets/concourse-secrets.yml
               ls -l generated-concourse-secrets/concourse-secrets.yml
         on_success:
           put: concourse-secrets
@@ -907,6 +904,7 @@ jobs:
         - get: bosh-secrets
         - get: concourse-manifest
           passed: ['generate-concourse-config']
+        - get: concourse-secrets
 
       - task: get-and-upload-stemcell
         config:
@@ -960,10 +958,10 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: concourse-manifest
+            - name: concourse-secrets
           params:
             CONCOURSE_HOSTNAME: {{concourse_hostname}}
             SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
-            CONCOURSE_ATC_PASSWORD: {{concourse_atc_password}}
             CONCOURSE_ATC_USER: admin
             FLY_TEAM: {{aws_account}}
             FLY_TARGET: {{deploy_env}}
@@ -975,6 +973,7 @@ jobs:
               - -c
               - |
                 export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
+                export CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                 echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
                            --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}

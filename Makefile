@@ -71,22 +71,18 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
-	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=ci_deployments/${DEPLOY_ENV})
 
 .PHONY: staging
 staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
-	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=staging_deployment)
 
 .PHONY: prod
 prod: globals check-env-vars ## Set Environment to Production
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
-	$(eval export DECRYPT_CONCOURSE_ATC_PASSWORD=prod_deployment)
-
 
 ## Concourse profiles
 
@@ -110,7 +106,6 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 
 .PHONY: fly-login
 fly-login: ## Do a fly login and sync
-	$(eval export TARGET_CONCOURSE=deployer)
 	$$("./concourse/scripts/environment.sh") && \
 		./concourse/scripts/fly_sync_and_login.sh
 
@@ -128,7 +123,6 @@ bootstrap-destroy: ## Destroy bootstrap
 
 .PHONY: showenv
 showenv: ## Display environment information
-	$(eval export TARGET_CONCOURSE=deployer)
 	@echo CONCOURSE_IP=$$(aws ec2 describe-instances \
 		--filters 'Name=tag:Name,Values=concourse/*' "Name=key-name,Values=${DEPLOY_ENV}_concourse_key_pair" \
 		--query 'Reservations[].Instances[].PublicIpAddress' --output text)

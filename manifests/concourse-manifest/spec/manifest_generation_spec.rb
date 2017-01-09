@@ -14,7 +14,6 @@ RSpec.describe "manifest generation" do
     merge_fixtures [
       "../fixtures/concourse-terraform-outputs.yml",
       "../fixtures/generated-concourse-secrets.yml",
-      "../fixtures/predefined-concourse-secrets.yml",
       "../fixtures/vpc-terraform-outputs.yml",
     ]
   }
@@ -40,12 +39,6 @@ RSpec.describe "manifest generation" do
 
     expect(
       manifest_with_defaults["jobs"][0]["templates"][1]["properties"]["basic_auth_password"]
-    ).to eq(fixtures["secrets"]["concourse_atc_password"])
-  end
-
-  it "gets values from predefined secrets" do
-    expect(
-      atc_template.fetch("properties").fetch("basic_auth_password")
     ).to eq(fixtures["secrets"]["concourse_atc_password"])
   end
 
