@@ -18,6 +18,16 @@ resource "aws_security_group" "bosh" {
   }
 
   ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+
+    security_groups = [
+      "${aws_security_group.bosh_ssh_client.id}",
+    ]
+  }
+
+  ingress {
     from_port   = 6868
     to_port     = 6868
     protocol    = "tcp"
@@ -83,6 +93,16 @@ resource "aws_security_group" "bosh_api_client" {
 
   tags {
     Name = "${var.env}-bosh-api-client"
+  }
+}
+
+resource "aws_security_group" "bosh_ssh_client" {
+  name        = "${var.env}-bosh-ssh-client"
+  description = "Security group for VMs that can SSH into BOSH"
+  vpc_id      = "${var.vpc_id}"
+
+  tags {
+    Name = "${var.env}-bosh-ssh-client"
   }
 }
 
