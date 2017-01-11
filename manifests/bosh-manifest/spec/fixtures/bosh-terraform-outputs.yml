@@ -19,3 +19,4 @@ terraform_outputs:
   bosh_ssh_key_pair_name: bosh_keypair
   key_pair_name: ssh_key_pair
   bosh_api_client_security_group: bosh_api_client_sg
+  bosh_ssh_client_security_group: bosh_ssh_client_sg
