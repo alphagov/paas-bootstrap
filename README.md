@@ -216,3 +216,9 @@ Stop the tunnel with: `make <env> stop-tunnel`
 
 ## Other useful commands
 Type `make` to get the list of all available commands.
+
+### Grafana/graphite metrics note
+Bosh server metrics are shipped under 'collectd' name instead of 'bosh'.
+This is because we use bosh-init to deploy bosh and it populates spec.name
+differently than BOSH. We accept this as otherwise we'd have to introduce
+a separate collectd config just for bosh or make the config composable.
