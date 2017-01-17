@@ -12,9 +12,8 @@ end
 RSpec.describe "manifest generation" do
   let(:fixtures) {
     merge_fixtures [
-      "../fixtures/concourse-terraform-outputs.yml",
-      "../fixtures/concourse-secrets.yml",
-      "../fixtures/vpc-terraform-outputs.yml",
+      "../../../shared/spec/fixtures/concourse-terraform-outputs.yml",
+      "../../../shared/spec/fixtures/vpc-terraform-outputs.yml",
     ]
   }
 
@@ -34,18 +33,10 @@ RSpec.describe "manifest generation" do
     ).to eq("https://" + fixtures["terraform_outputs"]["concourse_dns_name"])
   end
 
-  it "gets values from generated secrets" do
-    # fixture_atc_password = fixtures["jobs"][0]["templates"][2]["properties"]["basic_auth_password"]
-
-    expect(
-      manifest_with_defaults["jobs"][0]["templates"][1]["properties"]["basic_auth_password"]
-    ).to eq(fixtures["secrets"]["concourse_atc_password"])
-  end
-
-  it "gets values from predefined secrets" do
+  it "gets values from secrets" do
     expect(
       atc_template.fetch("properties").fetch("basic_auth_password")
-    ).to eq(fixtures["secrets"]["concourse_atc_password"])
+    ).to eq(concourse_secrets_value("concourse_atc_password"))
   end
 
   it "has a job-level properties block that's a hash" do

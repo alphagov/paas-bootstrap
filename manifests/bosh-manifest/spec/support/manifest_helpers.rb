@@ -1,15 +1,28 @@
 require 'singleton'
 require 'open3'
 require 'yaml'
+require 'tempfile'
 
 module ManifestHelpers
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
+    attr_accessor :bosh_secrets_file
+    attr_accessor :bosh_secrets_data
   end
 
   def manifest_with_defaults
     Cache.instance.manifest_with_defaults ||= load_default_manifest
+  end
+
+  def bosh_secrets_file
+    Cache.instance.bosh_secrets_file ||= generate_bosh_secrets
+    Cache.instance.bosh_secrets_file.path
+  end
+
+  def bosh_secrets_value(key)
+    Cache.instance.bosh_secrets_data ||= YAML.load_file(bosh_secrets_file).fetch('secrets')
+    Cache.instance.bosh_secrets_data.fetch(key)
   end
 
   def self.deploy_env
@@ -35,9 +48,10 @@ private
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../bosh-manifest.yml", __FILE__),
-        File.expand_path("../../fixtures/bosh-secrets.yml", __FILE__),
+        bosh_secrets_file,
         File.expand_path("../../fixtures/bosh-ssl-certificates.yml", __FILE__),
-        File.expand_path("../../fixtures/bosh-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../addons/datadog-agent.yml", __FILE__),
         File.expand_path("../../../../runtime-config/addons-meta/datadog-agent.yml", __FILE__),
         File.expand_path("../../../addons/collectd.yml", __FILE__),
@@ -49,6 +63,18 @@ private
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
     deep_freeze(YAML.load(output))
+  end
+
+  def generate_bosh_secrets
+    file = Tempfile.new(['test-bosh-secrets', '.yml'])
+    output, error, status = Open3.capture3(File.expand_path("../../../scripts/generate-bosh-secrets.rb", __FILE__))
+    unless status.success?
+      raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
+    end
+    file.write(output)
+    file.flush
+    file.rewind
+    file
   end
 
   def deep_freeze(object)
