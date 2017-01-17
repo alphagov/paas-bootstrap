@@ -1,15 +1,28 @@
 require 'singleton'
 require 'open3'
 require 'yaml'
+require 'tempfile'
 
 module ManifestHelpers
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
+    attr_accessor :concourse_secrets_file
+    attr_accessor :concourse_secrets_data
   end
 
   def manifest_with_defaults
     Cache.instance.manifest_with_defaults ||= load_default_manifest
+  end
+
+  def concourse_secrets_file
+    Cache.instance.concourse_secrets_file ||= generate_concourse_secrets
+    Cache.instance.concourse_secrets_file.path
+  end
+
+  def concourse_secrets_value(key)
+    Cache.instance.concourse_secrets_data ||= YAML.load_file(concourse_secrets_file).fetch('secrets')
+    Cache.instance.concourse_secrets_data.fetch(key)
   end
 
 private
@@ -30,7 +43,7 @@ private
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../concourse-base.yml", __FILE__),
-        File.expand_path("../../fixtures/concourse-secrets.yml", __FILE__),
+        concourse_secrets_file,
         File.expand_path("../../fixtures/concourse-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../fixtures/vpc-terraform-outputs.yml", __FILE__),
@@ -42,6 +55,18 @@ private
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
     deep_freeze(YAML.load(output))
+  end
+
+  def generate_concourse_secrets
+    file = Tempfile.new(['test-concourse-secrets', '.yml'])
+    output, error, status = Open3.capture3(File.expand_path("../../../scripts/generate-concourse-secrets.rb", __FILE__))
+    unless status.success?
+      raise "Error generating concourse-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
+    end
+    file.write(output)
+    file.flush
+    file.rewind
+    file
   end
 
   def deep_freeze(object)

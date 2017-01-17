@@ -13,7 +13,6 @@ RSpec.describe "manifest generation" do
   let(:fixtures) {
     merge_fixtures [
       "../fixtures/concourse-terraform-outputs.yml",
-      "../fixtures/concourse-secrets.yml",
       "../fixtures/vpc-terraform-outputs.yml",
     ]
   }
@@ -37,7 +36,7 @@ RSpec.describe "manifest generation" do
   it "gets values from secrets" do
     expect(
       atc_template.fetch("properties").fetch("basic_auth_password")
-    ).to eq(fixtures["secrets"]["concourse_atc_password"])
+    ).to eq(concourse_secrets_value("concourse_atc_password"))
   end
 
   it "has a job-level properties block that's a hash" do
