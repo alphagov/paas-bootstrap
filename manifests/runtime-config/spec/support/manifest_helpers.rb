@@ -45,7 +45,8 @@ private
       File.expand_path("../../../addons/collectd.yml", __FILE__),
       File.expand_path("../../../addons-meta/collectd.yml", __FILE__),
       File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
-      File.expand_path("../../../../shared/spec/fixtures/terraform/*.yml", __FILE__),
+      File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
+      File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
     ])
 
     # Deep freeze the object so that it's safe to use across multiple examples
@@ -54,8 +55,20 @@ private
   end
 
   def load_terraform_fixture
-    data = YAML.load_file(File.expand_path("../../../../shared/spec/fixtures/terraform/terraform-outputs.yml", __FILE__))
+    data = merge_fixtures([
+      File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
+      File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
+    ])
     deep_freeze(data)
+  end
+
+  def merge_fixtures(fixtures)
+    final = {}
+    fixtures.each do |fixture|
+      new_fixture = YAML.load_file(File.expand_path(fixture, __FILE__))
+      final.merge!(new_fixture) { |_key, a_val, b_val| a_val.merge b_val }
+    end
+    final
   end
 
   def deep_freeze(object)

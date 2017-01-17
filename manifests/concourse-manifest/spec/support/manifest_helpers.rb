@@ -44,9 +44,9 @@ private
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../concourse-base.yml", __FILE__),
         concourse_secrets_file,
-        File.expand_path("../../fixtures/concourse-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../fixtures/bosh-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../fixtures/vpc-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/spec/fixtures/concourse-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../addons/datadog-concourse-integration.yml", __FILE__),
       ].join(' ')
     )

@@ -12,8 +12,8 @@ end
 RSpec.describe "manifest generation" do
   let(:fixtures) {
     merge_fixtures [
-      "../fixtures/concourse-terraform-outputs.yml",
-      "../fixtures/vpc-terraform-outputs.yml",
+      "../../../shared/spec/fixtures/concourse-terraform-outputs.yml",
+      "../../../shared/spec/fixtures/vpc-terraform-outputs.yml",
     ]
   }
 
