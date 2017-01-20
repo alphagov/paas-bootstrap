@@ -47,7 +47,7 @@ resource "aws_db_instance" "bosh" {
   db_subnet_group_name       = "${aws_db_subnet_group.bosh_rds.name}"
   parameter_group_name       = "${aws_db_parameter_group.default.id}"
   backup_window              = "01:00-02:00"
-  maintenance_window         = "Thu:03:00-Thu:04:00"
+  maintenance_window         = "${var.bosh_db_maintenance_window}"
   multi_az                   = "${var.bosh_db_multi_az}"
   backup_retention_period    = "${var.bosh_db_backup_retention_period}"
   final_snapshot_identifier  = "${var.env}-bosh-rds-final-snapshot"

@@ -17,6 +17,10 @@ variable "bosh_db_skip_final_snapshot" {
   default     = "true"
 }
 
+variable "bosh_db_maintenance_window" {
+  description = "The window during which updates to the Bosh database instance can occur."
+}
+
 variable "bosh_az" {
   description = "A zone used to provision bosh"
 }
