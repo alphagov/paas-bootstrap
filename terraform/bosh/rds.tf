@@ -48,7 +48,7 @@ resource "aws_db_instance" "bosh" {
   storage_type               = "gp2"
   engine                     = "postgres"
   engine_version             = "9.5.4"
-  instance_class             = "db.t2.medium"
+  instance_class             = "db.t2.small"
   username                   = "dbadmin"
   password                   = "${var.secrets_bosh_postgres_password}"
   db_subnet_group_name       = "${aws_db_subnet_group.bosh_rds.name}"
