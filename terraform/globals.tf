@@ -104,7 +104,12 @@ variable "microbosh_static_private_ip" {
 /* Operators will mainly be from the office. See https://sites.google.com/a/digital.cabinet-office.gov.uk/gds-internal-it/news/aviationhouse-sourceipaddresses for details. */
 variable "admin_cidrs" {
   description = "CSV of CIDR addresses with access to operator/admin endpoints"
-  default     = "80.194.77.90/32,80.194.77.100/32,85.133.67.244/32"
+
+  default = [
+    "80.194.77.90/32",
+    "80.194.77.100/32",
+    "85.133.67.244/32",
+  ]
 }
 
 /* See https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html */
