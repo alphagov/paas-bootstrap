@@ -28,13 +28,6 @@ resource "aws_security_group" "bosh_rds" {
   }
 }
 
-# FIXME: Remove this once the upgrade to 9.5 has applied everywhere.
-resource "aws_db_parameter_group" "default" {
-  name        = "${var.env}-bosh"
-  family      = "postgres9.4"
-  description = "RDS Postgres default parameter group"
-}
-
 resource "aws_db_parameter_group" "bosh_pg_9_5" {
   name        = "${var.env}-pg95-bosh"
   family      = "postgres9.5"
@@ -60,9 +53,6 @@ resource "aws_db_instance" "bosh" {
   final_snapshot_identifier  = "${var.env}-bosh-rds-final-snapshot"
   skip_final_snapshot        = "${var.bosh_db_skip_final_snapshot}"
   auto_minor_version_upgrade = false
-
-  # FIXME: Remove this once the upgrade to 9.5 has applied everywhere.
-  allow_major_version_upgrade = true
 
   vpc_security_group_ids = ["${aws_security_group.bosh_rds.id}"]
 
