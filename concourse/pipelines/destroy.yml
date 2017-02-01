@@ -101,7 +101,7 @@ jobs:
       - task: add-vagrant-IP-to-BOSH-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform#update_terraform
+          image: docker:///governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -186,7 +186,7 @@ jobs:
 
       - task: destroy-concourse-terraform
         config:
-          image: docker:///governmentpaas/terraform#update_terraform
+          image: docker:///governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -315,7 +315,7 @@ jobs:
       - task: destroy-terraform
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform#update_terraform
+          image: docker:///governmentpaas/terraform
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -361,7 +361,7 @@ jobs:
 
       - task: tf-destroy-vpc
         config:
-          image: docker:///governmentpaas/terraform#update_terraform
+          image: docker:///governmentpaas/terraform
           params:
               TF_VAR_env: {{deploy_env}}
               AWS_DEFAULT_REGION: {{aws_region}}
@@ -394,7 +394,7 @@ jobs:
 
       - task: tf-destroy-init-bucket
         config:
-          image: docker:///governmentpaas/terraform#update_terraform
+          image: docker:///governmentpaas/terraform
           params:
               TF_VAR_env: {{deploy_env}}
               TF_VAR_state_bucket: {{state_bucket}}
