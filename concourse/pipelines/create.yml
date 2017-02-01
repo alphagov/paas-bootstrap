@@ -159,7 +159,7 @@ jobs:
 
       - task: create-init-bucket
         config:
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           params:
             TF_VAR_env: {{deploy_env}}
             TF_VAR_state_bucket: {{state_bucket}}
@@ -242,7 +242,7 @@ jobs:
       - task: deploy-vpc
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -478,7 +478,7 @@ jobs:
       - task: terraform-apply
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -837,7 +837,7 @@ jobs:
 
       - task: terraform-apply
         config:
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1142,7 +1142,7 @@ jobs:
       - task: remove-vagrant-IP-from-ssh-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -1168,7 +1168,7 @@ jobs:
       - task: remove-vagrant-IP-from-BOSH-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1199,7 +1199,7 @@ jobs:
       - task: remove-vagrant-IP-from-Concourse-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image: docker:///governmentpaas/terraform#update_terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
