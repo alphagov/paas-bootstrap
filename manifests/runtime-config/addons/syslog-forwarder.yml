@@ -13,6 +13,8 @@ addons:
     properties:
       syslog:
         address: (( concat "logsearch-ingestor." $SYSTEM_DNS_ZONE_NAME ))
-        port: 5514
+        port: 6514
         transport: 'tcp'
         log_template: 'metron_agent'
+        tls_enabled: true
+        permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))

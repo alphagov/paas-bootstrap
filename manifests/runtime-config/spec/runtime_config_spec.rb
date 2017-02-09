@@ -41,5 +41,19 @@ RSpec.describe "Runtime config" do
 
       expect(syslog_forwarder_address).to eq "logsearch-ingestor.#{ManifestHelpers::SYSTEM_DNS_ZONE_NAME}"
     end
+
+    it "has syslog_forwarder configured with tls enabled" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_tls_enabled = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("tls_enabled")
+
+      expect(syslog_forwarder_tls_enabled).to be true
+    end
+
+    it "has syslog_forwarder configured with a permitted_peer based on the variable $SYSTEM_DNS_ZONE_NAME" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_permitted_peer = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("permitted_peer")
+
+      expect(syslog_forwarder_permitted_peer).to eq "*.#{ManifestHelpers::SYSTEM_DNS_ZONE_NAME}"
+    end
   end
 end
