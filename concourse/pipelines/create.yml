@@ -1,7 +1,18 @@
 ---
+resource_types:
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/s3-resource
+
+- name: semver-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/semver-resource
+
 resources:
   - name: paas-bootstrap
-    type: git-gpg
+    type: git
     source:
       uri: https://github.com/alphagov/paas-bootstrap.git
       branch: {{branch_name}}
@@ -140,7 +151,11 @@ jobs:
         - get: paas-bootstrap
       - task: try-fetch-bucket-state
         config:
-          image: docker:///governmentpaas/awscli
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/awscli
           params:
             AWS_DEFAULT_REGION: {{aws_region}}
           inputs:
@@ -159,7 +174,11 @@ jobs:
 
       - task: create-init-bucket
         config:
-          image: docker:///governmentpaas/terraform
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           params:
             TF_VAR_env: {{deploy_env}}
             TF_VAR_state_bucket: {{state_bucket}}
@@ -172,19 +191,20 @@ jobs:
             args:
             - -c
             - |
-              if [ -f bucket-state/bucket.tfstate ]; then
-                cp bucket-state/bucket.tfstate .
-              fi
-              terraform apply -state=bucket.tfstate -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+              terraform apply -state=bucket-state/bucket.tfstate -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 paas-bootstrap/terraform/bucket
         on_success:
           put: bucket-terraform-state
           params:
-            file: create-init-bucket/bucket.tfstate
+            file: bucket-state/bucket.tfstate
 
       - task: s3init-concourse
         config:
-          image: docker:///governmentpaas/curl-ssl
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/curl-ssl
           run:
             path: sh
             args:
@@ -223,7 +243,11 @@ jobs:
 
       - task: generate-git-ssh-key
         config:
-          image: docker:///governmentpaas/curl-ssl
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/curl-ssl
           inputs:
           - name: paas-bootstrap
           params:
@@ -242,7 +266,10 @@ jobs:
       - task: deploy-vpc
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -258,11 +285,11 @@ jobs:
             - |
               terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
               terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
-                -state=vpc-tfstate/vpc.tfstate -state-out=vpc.tfstate paas-bootstrap/terraform/vpc
+                -state=vpc-tfstate/vpc.tfstate paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: deploy-vpc/vpc.tfstate
+            file: vpc-tfstate/vpc.tfstate
 
   - name: generate-secrets
     plan:
@@ -283,7 +310,10 @@ jobs:
       - task: generate-bosh-CA
         config:
           platform: linux
-          image: docker:///governmentpaas/certstrap
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/certstrap
           inputs:
             - name: paas-bootstrap
             - name: bosh-CA
@@ -315,7 +345,11 @@ jobs:
         - task: generate-bosh-secrets
           config:
             platform: linux
-            image: docker:///ruby#2.2-slim
+            image_resource:
+              type: docker-image
+              source:
+                repository: ruby
+                tag: 2.2-slim
             inputs:
               - name: paas-bootstrap
               - name: bosh-secrets
@@ -340,7 +374,10 @@ jobs:
         - task: generate-bosh-ssh-keypair
           config:
             platform: linux
-            image: docker:///governmentpaas/git-ssh
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/git-ssh
             inputs:
               - name: paas-bootstrap
               - name: bosh-ssh-private-key
@@ -378,7 +415,10 @@ jobs:
         - task: generate-deployments-ssh-keypair
           config:
             platform: linux
-            image: docker:///governmentpaas/git-ssh
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/git-ssh
             inputs:
               - name: paas-bootstrap
               - name: ssh-private-key
@@ -415,7 +455,12 @@ jobs:
 
       - task: generate-concourse-secrets
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -457,7 +502,11 @@ jobs:
       - task: extract-terraform-variables
         config:
           platform: linux
-          image: docker:///ruby#2.2-slim
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
             - name: paas-bootstrap
             - name: vpc-tfstate
@@ -478,7 +527,10 @@ jobs:
       - task: terraform-apply
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -535,7 +587,11 @@ jobs:
       - task: extract_terraform_outputs
         config:
           platform: linux
-          image: docker:///ruby#2.2-slim
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
             - name: paas-bootstrap
             - name: vpc-tfstate
@@ -558,7 +614,10 @@ jobs:
       - task: extract-bosh-CA
         config:
           platform: linux
-          image: docker:///governmentpaas/certstrap
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/certstrap
           inputs:
             - name: paas-bootstrap
             - name: bosh-CA
@@ -578,7 +637,10 @@ jobs:
       - task: render-bosh-manifest
         config:
           platform: linux
-          image: docker:///governmentpaas/spruce
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/spruce
           inputs:
             - name: paas-bootstrap
             - name: terraform-outputs
@@ -629,7 +691,10 @@ jobs:
       - task: render-runtime-config
         config:
           platform: linux
-          image: docker:///governmentpaas/spruce
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/spruce
           inputs:
             - name: paas-bootstrap
             - name: terraform-outputs
@@ -697,7 +762,10 @@ jobs:
       - task: bosh-init-microbosh
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-init
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-init
           inputs:
             - name: bosh-manifest
             - name: bosh-init-state
@@ -726,7 +794,10 @@ jobs:
       - task: update-runtime-config
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-cli
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -760,7 +831,12 @@ jobs:
 
       - task: terraform-outputs-to-sh
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -785,7 +861,11 @@ jobs:
 
       - task: generate-concourse-cert
         config:
-          image: docker:///governmentpaas/curl-ssl
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/curl-ssl
           inputs:
           - name: concourse-cert
           outputs:
@@ -816,7 +896,11 @@ jobs:
 
       - task: generate-concourse-ssh-key
         config:
-          image: docker:///governmentpaas/curl-ssl
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/curl-ssl
           inputs:
           - name: paas-bootstrap
           outputs:
@@ -837,7 +921,11 @@ jobs:
 
       - task: terraform-apply
         config:
-          image: docker:///governmentpaas/terraform
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -869,17 +957,20 @@ jobs:
               terraform apply ${terraform_params} \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
-                -state-out=concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: terraform-apply/concourse.tfstate
+            file: concourse-tfstate/concourse.tfstate
 
       # Temporary task to add the git-${DEPLOY_ENV} user to git group
       - task: add-git-user-to-group
         config:
-          image: docker:///governmentpaas/awscli
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/awscli
           inputs:
           - name: paas-bootstrap
           params:
@@ -911,7 +1002,12 @@ jobs:
 
       - task: terraform-outputs-to-yaml
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
           - name: paas-bootstrap
           - name: concourse-tfstate
@@ -942,7 +1038,11 @@ jobs:
 
       - task: generate-concourse-manifest
         config:
-          image: docker:///governmentpaas/spruce
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/spruce
           params:
             AWS_ACCOUNT: {{aws_account}}
             DATADOG_API_KEY: {{datadog_api_key}}
@@ -998,7 +1098,10 @@ jobs:
       - task: get-and-upload-stemcell
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-cli
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
@@ -1019,7 +1122,11 @@ jobs:
 
       - task: deploy-concourse
         config:
-          image: docker:///governmentpaas/bosh-cli
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
           - name: concourse-manifest
           - name: bosh-secrets
@@ -1043,7 +1150,11 @@ jobs:
 
       - task: add-env-specific-team
         config:
-          image: docker:///governmentpaas/self-update-pipelines
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
           inputs:
             - name: paas-bootstrap
             - name: concourse-manifest
@@ -1082,7 +1193,10 @@ jobs:
       - task: test-bosh-vms
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-cli
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
           - name: paas-bootstrap
           - name: concourse-manifest
@@ -1116,7 +1230,12 @@ jobs:
 
       - task: terraform-outputs-to-sh
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ruby
+              tag: 2.2-slim
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -1142,7 +1261,10 @@ jobs:
       - task: remove-vagrant-IP-from-ssh-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -1158,17 +1280,20 @@ jobs:
               terraform apply -target=aws_security_group.office-access-ssh \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -target=aws_subnet.infra \
-                -state=vpc-tfstate/vpc.tfstate -state-out=vpc.tfstate \
+                -state=vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: remove-vagrant-IP-from-ssh-SG/vpc.tfstate
+            file: vpc-tfstate/vpc.tfstate
 
       - task: remove-vagrant-IP-from-BOSH-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1189,17 +1314,20 @@ jobs:
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
               terraform apply -target=aws_security_group.bosh \
-                -state=bosh-tfstate/bosh.tfstate -state-out=bosh.tfstate \
+                -state=bosh-tfstate/bosh.tfstate \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
-            file: remove-vagrant-IP-from-BOSH-SG/bosh.tfstate
+            file: bosh-tfstate/bosh.tfstate
 
       - task: remove-vagrant-IP-from-Concourse-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1223,9 +1351,8 @@ jobs:
               terraform apply -target=aws_security_group.concourse \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
-                -state-out=concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: remove-vagrant-IP-from-Concourse-SG/concourse.tfstate
+            file: concourse-tfstate/concourse.tfstate
