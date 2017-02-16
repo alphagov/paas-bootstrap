@@ -31,7 +31,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision "shell" do |s|
       s.privileged = true
       s.env = ENV.select { |key|
-        %w(CONCOURSE_ATC_PASSWORD CONCOURSE_ATC_USER).include? key
+        %w(CONCOURSE_ATC_PASSWORD CONCOURSE_ATC_USER CONCOURSE_DATABASE_NAME CONCOURSE_URL BRANCH DEPLOY_ENV).include? key
       }
       s.name = post_deploy_file
       s.path = post_deploy_file
@@ -44,13 +44,16 @@ Vagrant.configure(2) do |config|
     aws.session_token = ENV['AWS_SESSION_TOKEN']
     aws.associate_public_ip = true
     aws.tags = { 'Name' => (ENV['DEPLOY_ENV'] || ENV['USER']) + " concourse" }
+    aws.keypair_name = ENV['VAGRANT_SSH_KEY_NAME']
+
+    aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 50 }]
 
     # The Concourse AMI is currently only available in us-east-1, this is v. 0.70
-    aws.ami = 'ami-5c104436'
+    aws.ami = 'ami-f0768de6'
     aws.region = 'us-east-1'
 
     # Only HVM instances with ephemeral disks can be used
-    aws.instance_type = 'm3.large'
+    aws.instance_type = 'm4.large'
 
     aws.subnet_id = AWS_ACCOUNT_VARIABLES.fetch(:subnet_id)
     aws.security_groups = [AWS_ACCOUNT_VARIABLES.fetch(:security_group)]
@@ -60,6 +63,7 @@ Vagrant.configure(2) do |config|
 
     # We will rely on vagrant generating a ssh key, but this must be the ubuntu user, as the vagrant user does not exist on the vm
     override.ssh.username = "ubuntu"
+    override.ssh.private_key_path = ENV['VAGRANT_SSH_KEY']
 
     # Fix issue on osx: https://github.com/mitchellh/vagrant/issues/5401#issuecomment-115240904
     override.nfs.functional = false

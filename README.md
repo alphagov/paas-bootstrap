@@ -104,7 +104,7 @@ Run the following script:
 make dev bootstrap-destroy
 ```
 
-## Deployment
+## Environment Deployment
 
 ### Prerequisites
 
@@ -216,6 +216,24 @@ Stop the tunnel with: `make <env> stop-tunnel`
 
 ## Other useful commands
 Type `make` to get the list of all available commands.
+
+## Known caveats
+
+### Fly version
+
+Current mechanism of updating fly binary only checks if the date of your local
+binary is older than one on the server. If you have been using previous fly
+version recently, it won't get updated. In that case, delete the binary in /bin
+directory and most recent one will be downloaded next time you run the scripts.
+
+### SSH tunnel
+
+The startup of docker compose is a bit non-deterministic. It needs to download
+containers and start them. By default, we give it 180s timeout to do that. Most
+of the times this will be long enough for concourse to start. But sometimes it
+can happen that this is not long enough. In that case, re-run your makefile
+action again. The scripts will attempt to connect to concourse again and if
+succeeded, will continue with the script and upload the pipelines to concourse.
 
 ### Grafana/graphite metrics note
 Bosh server metrics are shipped under 'collectd' name instead of 'bosh'.
