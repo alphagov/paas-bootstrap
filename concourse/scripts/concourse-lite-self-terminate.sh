@@ -17,5 +17,6 @@ EOF
 
 generate_vars_file > /dev/null # Check for missing vars
 
+export EXPOSE_PIPELINE=1
 bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
    "${pipeline}" "${config}" <(generate_vars_file)

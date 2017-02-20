@@ -41,6 +41,7 @@ fi
 
 generate_vars_file > /dev/null # Check for missing vars
 
+export EXPOSE_PIPELINE=1
 for ACTION in create destroy; do
   bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
     "${ACTION}" \
