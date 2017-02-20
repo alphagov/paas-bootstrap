@@ -9,10 +9,9 @@ pipeline="self-terminate"
 config="${SCRIPT_DIR}/../pipelines/concourse-lite-self-terminate.yml"
 
 generate_vars_file() {
-   cat <<EOF
+  cat <<EOF
 ---
-deploy_env: ${DEPLOY_ENV}
-log_level: ${LOG_LEVEL:-}
+vagrant_ssh_key_name: ${VAGRANT_SSH_KEY_NAME}
 EOF
 }
 
