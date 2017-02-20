@@ -13,9 +13,9 @@ $("${PROJECT_DIR}/concourse/scripts/environment.sh")
 export VAGRANT_DEFAULT_PROVIDER="aws"
 export VAGRANT_BOX_NAME="aws_vagrant_box"
 
-if ! AWS_DEFAULT_REGION=us-east-1 aws ec2 describe-key-pairs --key-name "${VAGRANT_SSH_KEY_NAME}" >/dev/null 2>&1 ; then
+if ! aws ec2 describe-key-pairs --key-name "${VAGRANT_SSH_KEY_NAME}" >/dev/null 2>&1 ; then
   # Create the key pair online.
-  AWS_DEFAULT_REGION=us-east-1 aws ec2 create-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}" | jq -r ".KeyMaterial" > "${VAGRANT_SSH_KEY}"
+  aws ec2 create-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}" | jq -r ".KeyMaterial" > "${VAGRANT_SSH_KEY}"
 
   # Secure the local key.
   chmod 600 "${VAGRANT_SSH_KEY}"

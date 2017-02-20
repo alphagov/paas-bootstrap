@@ -15,7 +15,7 @@ if ! [[ ${REPLY:0:1} == [Yy] ]]; then
 fi
 
 echo "About to delete bootstrap ssh pub key from AWS..."
-AWS_DEFAULT_REGION=us-east-1 aws ec2 delete-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}"
+aws ec2 delete-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}"
 
 if [[ -f ${VAGRANT_SSH_KEY} ]] ; then
  echo "About to delete bootstrap ssh private key from disk..."

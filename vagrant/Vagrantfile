@@ -3,23 +3,24 @@
 
 Vagrant.require_version ">= 1.8.0"
 
+# We use bootstrap concourse SG and a subnet in default VPC in each region
 AWS_ACCOUNT = ENV.fetch("AWS_ACCOUNT", "dev")
 AWS_ACCOUNT_DATA = {
   "dev" => {
-    subnet_id: "subnet-c417d3b2", # us-east-1b in default VPC
-    security_group: "sg-99e0c0e0", # "Bootstrap Concourse" security group
+    subnet_id: "subnet-56a69a33",
+    security_group: "sg-63323c05",
   },
   "ci" => {
-    subnet_id: "subnet-68bb7e30", # us-east-1a in default VPC
-    security_group: "sg-23e1c15a", # "Bootstrap Concourse" security group
+    subnet_id: "subnet-0ebfab6b",
+    security_group: "sg-0bcac46d",
   },
   "staging" => {
-    subnet_id: "subnet-9034fbc8", # us-east-1c in default VPC
-    security_group: "sg-87e1c1fe", # "Bootstrap Concourse" security group
+    subnet_id: "subnet-dd7776b8",
+    security_group: "sg-a9cac4cf",
   },
   "prod" => {
-    subnet_id: "subnet-bc34fbe4", # us-east-1a in default VPC
-    security_group: "sg-14e2c26d", # "Bootstrap Concourse" security group
+    subnet_id: "subnet-a56297c1",
+    security_group: "sg-10cbc576",
   },
 }.freeze
 AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT)
@@ -48,9 +49,9 @@ Vagrant.configure(2) do |config|
 
     aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 50 }]
 
-    # The Concourse AMI is currently only available in us-east-1, this is v. 0.70
-    aws.ami = 'ami-f0768de6'
-    aws.region = 'us-east-1'
+    # Ubuntu 16.04
+    aws.ami = 'ami-98ecb7fe'
+    aws.region = 'eu-west-1'
 
     # Only HVM instances with ephemeral disks can be used
     aws.instance_type = 'm4.large'
