@@ -7,6 +7,7 @@ DEPLOY_ENV_VALID_LENGTH=$(shell if [ $$(printf "%s" $(DEPLOY_ENV) | wc -c) -gt $
 DEPLOY_ENV_VALID_CHARS=$(shell if echo $(DEPLOY_ENV) | grep -q '^[a-zA-Z0-9-]*$$'; then echo "OK"; else echo ""; fi)
 YAMLLINT=yamllint
 SHELLCHECK=shellcheck
+VAGRANT_SSH_KEY_NAME=${DEPLOY_ENV}-vagrant-bootstrap-concourse
 
 check-env-vars:
 	$(if ${DEPLOY_ENV},,$(error Must pass DEPLOY_ENV=<name>))
@@ -115,24 +116,30 @@ fly-login: ## Do a fly login and sync
 	$$("./concourse/scripts/environment.sh") && \
 		./concourse/scripts/fly_sync_and_login.sh
 
+pipelines:
+	$$("./concourse/scripts/environment.sh") && \
+                ./concourse/scripts/pipelines.sh
+
 .PHONY: bootstrap
 bootstrap: ## Start bootstrap
 	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
 	$(if ${CONCOURSE_HOSTNAME},,$(error Must pass CONCOURSE_HOSTNAME=<name>))
 	$(if ${CONCOURSE_INSTANCE_TYPE},,$(error Must pass CONCOURSE_INSTANCE_TYPE=<name>))
 	$(if ${CONCOURSE_INSTANCE_PROFILE},,$(error Must pass CONCOURSE_INSTANCE_PROFILE=<name>))
+	$(eval export VAGRANT_SSH_KEY_NAME=$(VAGRANT_SSH_KEY_NAME))
 	vagrant/deploy.sh
 
 .PHONY: bootstrap-destroy
 bootstrap-destroy: ## Destroy bootstrap
+	$(eval export VAGRANT_SSH_KEY_NAME=$(VAGRANT_SSH_KEY_NAME))
 	./vagrant/destroy.sh
 
 .PHONY: showenv
 showenv: ## Display environment information
-	@echo CONCOURSE_IP=$$(aws ec2 describe-instances \
+	@concourse/scripts/environment.sh
+	@echo export CONCOURSE_IP=$$(aws ec2 describe-instances \
 		--filters 'Name=tag:Name,Values=concourse/*' "Name=key-name,Values=${DEPLOY_ENV}_concourse_key_pair" \
 		--query 'Reservations[].Instances[].PublicIpAddress' --output text)
-	@concourse/scripts/environment.sh
 
 ssh_concourse: check-env-vars ## SSH to the concourse server
 	@./concourse/scripts/ssh.sh

@@ -1,7 +1,7 @@
 ---
 resources:
   - name: paas-bootstrap
-    type: git-gpg
+    type: git
     source:
       uri: https://github.com/alphagov/paas-bootstrap.git
       branch: {{branch_name}}
@@ -70,7 +70,6 @@ resources:
       versioned_file: concourse-manifest.yml
 
 jobs:
-
   - name: enable-bosh-access
     serial: true
     plan:
@@ -81,7 +80,12 @@ jobs:
 
       - task: vpc-terraform-outputs-to-sh
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/git-ssh
+              tag: "2.2-slim"
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -101,7 +105,10 @@ jobs:
       - task: add-vagrant-IP-to-BOSH-SG
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -124,12 +131,12 @@ jobs:
               export TF_VAR_bosh_az=""
               terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
               terraform apply ${terraform_params} -target=aws_security_group.bosh \
-                -state=bosh-tfstate/bosh.tfstate -state-out=bosh.tfstate \
+                -state=bosh-tfstate/bosh.tfstate \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
-            file: add-vagrant-IP-to-BOSH-SG/bosh.tfstate
+            file: bosh-tfstate/bosh.tfstate
 
       - put: pipeline-trigger
         params: {bump: patch}
@@ -150,7 +157,11 @@ jobs:
 
       - task: destroy-concourse
         config:
-          image: docker:///governmentpaas/bosh-cli
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
@@ -167,7 +178,12 @@ jobs:
 
       - task: vpc-terraform-outputs-to-sh
         config:
-          image: docker:///ruby#2.2-slim
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/git-ssh
+              tag: "2.2-slim"
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -186,7 +202,11 @@ jobs:
 
       - task: destroy-concourse-terraform
         config:
-          image: docker:///governmentpaas/terraform
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -208,12 +228,11 @@ jobs:
               terraform destroy -force \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
-                -state-out=concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: destroy-concourse-terraform/concourse.tfstate
+            file: concourse-tfstate/concourse.tfstate
 
   - name: destroy-bosh
     serial: true
@@ -232,7 +251,10 @@ jobs:
       - task: check-existing-deployments
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-cli
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -248,7 +270,10 @@ jobs:
       - task: cleanup-orphaned-disks
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-cli
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -264,7 +289,10 @@ jobs:
       - task: destroy-bosh-instance
         config:
           platform: linux
-          image: docker:///governmentpaas/bosh-init#130102001_update_cpi
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-init
           inputs:
             - name: paas-bootstrap
             - name: bosh-manifest
@@ -294,7 +322,11 @@ jobs:
       - task: extract-terraform-variables
         config:
           platform: linux
-          image: docker:///ruby#2.2-slim
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/git-ssh
+              tag: "2.2-slim"
           inputs:
             - name: paas-bootstrap
             - name: vpc-tfstate
@@ -315,7 +347,10 @@ jobs:
       - task: destroy-terraform
         config:
           platform: linux
-          image: docker:///governmentpaas/terraform
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -361,7 +396,11 @@ jobs:
 
       - task: tf-destroy-vpc
         config:
-          image: docker:///governmentpaas/terraform
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           params:
               TF_VAR_env: {{deploy_env}}
               AWS_DEFAULT_REGION: {{aws_region}}
@@ -375,11 +414,11 @@ jobs:
             - -c
             - |
               terraform destroy -force -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
-                -state=vpc-tfstate/vpc.tfstate -state-out=vpc.tfstate paas-bootstrap/terraform/vpc
+                -state=vpc-tfstate/vpc.tfstate paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: tf-destroy-vpc/vpc.tfstate
+            file: vpc-tfstate/vpc.tfstate
 
   - name: destroy-init-bucket
     serial: true
@@ -394,7 +433,11 @@ jobs:
 
       - task: tf-destroy-init-bucket
         config:
-          image: docker:///governmentpaas/terraform
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/terraform
           params:
               TF_VAR_env: {{deploy_env}}
               TF_VAR_state_bucket: {{state_bucket}}
