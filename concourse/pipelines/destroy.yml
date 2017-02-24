@@ -1,4 +1,15 @@
 ---
+resource_types:
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/s3-resource
+
+- name: semver-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/semver-resource
+
 resources:
   - name: paas-bootstrap
     type: git
