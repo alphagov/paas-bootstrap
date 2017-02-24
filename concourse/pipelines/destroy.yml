@@ -110,9 +110,11 @@ jobs:
             source:
               repository: governmentpaas/terraform
           inputs:
-          - name: paas-bootstrap
-          - name: vpc-terraform-outputs
-          - name: bosh-tfstate
+            - name: paas-bootstrap
+            - name: vpc-terraform-outputs
+            - name: bosh-tfstate
+          outputs:
+            - name: updated-bosh-tfstate
           params:
             TF_VAR_env: {{deploy_env}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
@@ -131,12 +133,12 @@ jobs:
               export TF_VAR_bosh_az=""
               terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
               terraform apply ${terraform_params} -target=aws_security_group.bosh \
-                -state=bosh-tfstate/bosh.tfstate \
+                -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
-            file: bosh-tfstate/bosh.tfstate
+            file: updated-bosh-tfstate/bosh.tfstate
 
       - put: pipeline-trigger
         params: {bump: patch}
@@ -208,9 +210,11 @@ jobs:
             source:
               repository: governmentpaas/terraform
           inputs:
-          - name: paas-bootstrap
-          - name: vpc-terraform-outputs
-          - name: concourse-tfstate
+            - name: paas-bootstrap
+            - name: vpc-terraform-outputs
+            - name: concourse-tfstate
+          outputs:
+            - name: updated-concourse-tfstate
           params:
             AWS_DEFAULT_REGION: {{aws_region}}
             TF_VAR_env: {{deploy_env}}
@@ -227,12 +231,12 @@ jobs:
               touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
               terraform destroy -force \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
-                -state=concourse-tfstate/concourse.tfstate \
+                -state=concourse-tfstate/concourse.tfstate -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: concourse-tfstate/concourse.tfstate
+            file: updated-concourse-tfstate/concourse.tfstate
 
   - name: destroy-bosh
     serial: true
@@ -407,6 +411,8 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: vpc-tfstate
+          outputs:
+            - name: updated-vpc-tfstate
           run:
             path: sh
             args:
@@ -414,11 +420,12 @@ jobs:
             - -c
             - |
               terraform destroy -force -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
-                -state=vpc-tfstate/vpc.tfstate paas-bootstrap/terraform/vpc
+                -state=vpc-tfstate/vpc.tfstate -state-out=updated-vpc-tfstate/vpc.tfstate \
+                paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: vpc-tfstate/vpc.tfstate
+            file: updated-vpc-tfstate/vpc.tfstate
 
   - name: destroy-init-bucket
     serial: true
