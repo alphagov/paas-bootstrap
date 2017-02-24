@@ -186,17 +186,21 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bucket-state
+          outputs:
+            - name: updated-bucket-state
           run:
             path: sh
             args:
             - -c
             - |
-              terraform apply -state=bucket-state/bucket.tfstate -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+              terraform apply -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                -state=bucket-state/bucket.tfstate \
+                -state-out=updated-bucket-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket
         on_success:
           put: bucket-terraform-state
           params:
-            file: bucket-state/bucket.tfstate
+            file: updated-bucket-state/bucket.tfstate
 
       - task: s3init-concourse
         config:
@@ -273,6 +277,8 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          outputs:
+          - name: updated-vpc-tfstate
           params:
             VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
@@ -285,11 +291,13 @@ jobs:
             - |
               terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
               terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
-                -state=vpc-tfstate/vpc.tfstate paas-bootstrap/terraform/vpc
+                -state=vpc-tfstate/vpc.tfstate \
+                -state-out=updated-vpc-tfstate/vpc.tfstate \
+                paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: vpc-tfstate/vpc.tfstate
+            file: updated-vpc-tfstate/vpc.tfstate
 
   - name: generate-secrets
     plan:
@@ -934,6 +942,8 @@ jobs:
           - name: generated-concourse-cert
           - name: git-ssh-public-key
           - name: concourse-ssh-key
+          outputs:
+          - name: updated-concourse-tfstate
           params:
             VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
@@ -957,11 +967,12 @@ jobs:
               terraform apply ${terraform_params} \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
+                -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: concourse-tfstate/concourse.tfstate
+            file: updated-concourse-tfstate/concourse.tfstate
 
       # Temporary task to add the git-${DEPLOY_ENV} user to git group
       - task: add-git-user-to-group
@@ -1268,6 +1279,8 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          outputs:
+          - name: updated-vpc-tfstate
           params:
             TF_VAR_env: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
@@ -1281,11 +1294,12 @@ jobs:
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -target=aws_subnet.infra \
                 -state=vpc-tfstate/vpc.tfstate \
+                -state-out=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
           params:
-            file: vpc-tfstate/vpc.tfstate
+            file: updated-vpc-tfstate/vpc.tfstate
 
       - task: remove-vagrant-IP-from-BOSH-SG
         config:
@@ -1298,6 +1312,8 @@ jobs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
           - name: bosh-tfstate
+          outputs:
+          - name: updated-bosh-tfstate
           params:
             TF_VAR_env: {{deploy_env}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
@@ -1315,11 +1331,12 @@ jobs:
               export TF_VAR_bosh_az=""
               terraform apply -target=aws_security_group.bosh \
                 -state=bosh-tfstate/bosh.tfstate \
+                -state-out=updated-bosh-tfstate/bosh.tfstate \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
-            file: bosh-tfstate/bosh.tfstate
+            file: updated-bosh-tfstate/bosh.tfstate
 
       - task: remove-vagrant-IP-from-Concourse-SG
         config:
@@ -1333,6 +1350,8 @@ jobs:
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
+          outputs:
+          - name: updated-concourse-tfstate
           params:
             TF_VAR_env: {{deploy_env}}
             TF_VAR_concourse_hostname: {{concourse_hostname}}
@@ -1351,8 +1370,9 @@ jobs:
               terraform apply -target=aws_security_group.concourse \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
+                -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
           params:
-            file: concourse-tfstate/concourse.tfstate
+            file: updated-concourse-tfstate/concourse.tfstate
