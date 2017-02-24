@@ -1,4 +1,15 @@
 ---
+resource_types:
+- name: s3-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/s3-resource
+
+- name: semver-iam
+  type: docker-image
+  source:
+    repository: governmentpaas/semver-resource
+
 resources:
   - name: paas-bootstrap
     type: git
@@ -84,7 +95,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/git-ssh
+              repository: ruby
               tag: "2.2-slim"
           inputs:
           - name: paas-bootstrap
@@ -184,7 +195,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/git-ssh
+              repository: ruby
               tag: "2.2-slim"
           inputs:
           - name: paas-bootstrap
@@ -329,7 +340,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/git-ssh
+              repository: ruby
               tag: "2.2-slim"
           inputs:
             - name: paas-bootstrap
