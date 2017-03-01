@@ -1,4 +1,24 @@
 ---
+groups:
+  - name: all
+    jobs:
+      - init-bucket
+      - vpc
+      - generate-secrets
+      - bosh-terraform
+      - generate-bosh-config
+      - bosh-deploy
+      - concourse-terraform
+      - generate-concourse-config
+      - concourse-deploy
+      - post-deploy
+      - expunge-vagrant
+
+  - name: credentials
+    jobs:
+      - clear-concourse-credentials
+      - clear-bosh-credentials
+
 resource_types:
 - name: s3-iam
   type: docker-image
@@ -1184,7 +1204,8 @@ jobs:
               - -c
               - |
                 export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
-                export CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
+                export CONCOURSE_ATC_PASSWORD
+                CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                 echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
                            --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
@@ -1376,3 +1397,81 @@ jobs:
           put: concourse-tfstate
           params:
             file: updated-concourse-tfstate/concourse.tfstate
+
+  - name: clear-concourse-credentials
+    plan:
+      - get: paas-bootstrap
+      - get: concourse-secrets
+      - task: clear-passwords
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/spruce
+          inputs:
+            - name: paas-bootstrap
+            - name: concourse-secrets
+          outputs:
+            - name: modified-secrets
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+
+                spruce merge \
+                  concourse-secrets/concourse-secrets.yml \
+                  paas-bootstrap/concourse/resources/concourse-secrets-keep.yml | \
+                  spruce merge - paas-bootstrap/concourse/resources/finalize.yml \
+                  > modified-secrets/concourse-secrets.yml
+        on_success:
+          put: concourse-secrets
+          params:
+            file: modified-secrets/concourse-secrets.yml
+      - task: clear-ssh-keys
+        file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
+        params:
+          AWS_DEFAULT_REGION: {{aws_region}}
+          BUCKET: {{state_bucket}}
+          SSH_KEY_PREFIX: concourse_
+
+  - name: clear-bosh-credentials
+    plan:
+      - get: bosh-secrets
+      - get: paas-bootstrap
+      - task: clear-passwords
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/spruce
+          inputs:
+            - name: paas-bootstrap
+            - name: bosh-secrets
+          outputs:
+            - name: modified-secrets
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+
+                spruce merge \
+                  bosh-secrets/bosh-secrets.yml \
+                  paas-bootstrap/concourse/resources/bosh-secrets-keep.yml | \
+                  spruce merge - paas-bootstrap/concourse/resources/finalize.yml \
+                  > modified-secrets/bosh-secrets.yml
+        on_success:
+          put: bosh-secrets
+          params:
+            file: modified-secrets/bosh-secrets.yml
+      - task: clear-ssh-keys
+        file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
+        params:
+          AWS_DEFAULT_REGION: {{aws_region}}
+          BUCKET: {{state_bucket}}
+          SSH_KEY_PREFIX: bosh_
