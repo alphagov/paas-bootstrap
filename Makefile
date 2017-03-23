@@ -140,9 +140,15 @@ showenv: ## Display environment information
 	@echo export CONCOURSE_IP=$$(aws ec2 describe-instances \
 		--filters 'Name=tag:Name,Values=concourse/*' "Name=key-name,Values=${DEPLOY_ENV}_concourse_key_pair" \
 		--query 'Reservations[].Instances[].PublicIpAddress' --output text)
+	@echo export BOOTSTRAP_CONCOURSE_IP=$$(aws ec2 describe-instances \
+		--filters 'Name=tag:Name,Values=*concourse' "Name=key-name,Values=${VAGRANT_SSH_KEY_NAME}" \
+                --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
 ssh_concourse: check-env-vars ## SSH to the concourse server
 	@./concourse/scripts/ssh.sh
+
+ssh_bootstrap_concourse: check-env-vars ## SSH to the bootstrap concourse server
+	@cd vagrant ; vagrant ssh -- -i ../${VAGRANT_SSH_KEY_NAME}
 
 tunnel: check-env-vars ## SSH tunnel to internal IPs
 	$(if ${TUNNEL},,$(error Must pass TUNNEL=SRC_PORT:HOST:DST_PORT))
