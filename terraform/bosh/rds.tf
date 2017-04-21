@@ -57,6 +57,7 @@ resource "aws_db_instance" "bosh" {
   vpc_security_group_ids = ["${aws_security_group.bosh_rds.id}"]
 
   tags {
-    Name = "${var.env}-bosh"
+    Name       = "${var.env}-bosh"
+    deploy_env = "${var.env}"
   }
 }
