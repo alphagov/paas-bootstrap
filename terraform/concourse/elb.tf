@@ -1,11 +1,6 @@
-resource "aws_iam_server_certificate" "concourse" {
-  name_prefix      = "${var.env}-concourse-"
-  certificate_body = "${file("concourse.crt")}"
-  private_key      = "${file("concourse.key")}"
-
-  lifecycle {
-    create_before_destroy = true
-  }
+data "aws_acm_certificate" "concourse" {
+  domain   = "${var.concourse_hostname}.${var.system_dns_zone_name}"
+  statuses = ["ISSUED"]
 }
 
 resource "aws_elb" "concourse" {
@@ -27,7 +22,7 @@ resource "aws_elb" "concourse" {
     instance_protocol  = "tcp"
     lb_port            = 443
     lb_protocol        = "ssl"
-    ssl_certificate_id = "${aws_iam_server_certificate.concourse.arn}"
+    ssl_certificate_id = "${data.aws_acm_certificate.concourse.arn}"
   }
 
   tags {

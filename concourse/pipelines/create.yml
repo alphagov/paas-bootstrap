@@ -142,13 +142,6 @@ resources:
       versioned_file: git_id_rsa.pub
       region_name: {{aws_region}}
 
-  - name: concourse-cert
-    type: s3-iam
-    source:
-      bucket: {{state_bucket}}
-      versioned_file: concourse-cert.tar.gz
-      region_name: {{aws_region}}
-
   - name: concourse-secrets
     type: s3-iam
     source:
@@ -245,7 +238,6 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} id_rsa paas-bootstrap/concourse/init_files/zero_bytes
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-cert.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
 
           inputs:
@@ -854,7 +846,6 @@ jobs:
         - get: bosh-tfstate
           passed: ['bosh-terraform']
         - get: concourse-tfstate
-        - get: concourse-cert
         - get: git-ssh-public-key
 
       - task: terraform-outputs-to-sh
@@ -893,34 +884,15 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/curl-ssl
+              repository: governmentpaas/awscli
           inputs:
-          - name: concourse-cert
-          outputs:
-          - name: generated-concourse-cert
+            - name: paas-bootstrap
           params:
             CONCOURSE_HOSTNAME: {{concourse_hostname}}
             SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
+            AWS_DEFAULT_REGION: {{aws_region}}
           run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              tar xzvf concourse-cert/concourse-cert.tar.gz
-              if [ -f concourse.crt ] && [ -f concourse.key ]; then
-                echo "Certificate and private key already created, nothing to do"
-                cp concourse-cert/concourse-cert.tar.gz generated-concourse-cert/
-                exit 0
-              fi
-              openssl req -x509 -newkey rsa:2048 -keyout concourse.key \
-                -out concourse.crt -days 365 -nodes -subj \
-                "/C=UK/ST=London/L=London/O=GDS/CN=${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
-              tar czvf generated-concourse-cert/concourse-cert.tar.gz concourse.crt concourse.key
-        on_success:
-          put: concourse-cert
-          params:
-            file: generated-concourse-cert/concourse-cert.tar.gz
+            path: ./paas-bootstrap/concourse/scripts/create_concourse_cert.sh
 
       - task: generate-concourse-ssh-key
         config:
@@ -959,7 +931,6 @@ jobs:
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
-          - name: generated-concourse-cert
           - name: git-ssh-public-key
           - name: concourse-ssh-key
           outputs:
@@ -977,7 +948,6 @@ jobs:
             - -c
             - |
               cp concourse-ssh-key/concourse_id_rsa.pub paas-bootstrap/terraform/concourse
-              tar xzvf generated-concourse-cert/concourse-cert.tar.gz
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
