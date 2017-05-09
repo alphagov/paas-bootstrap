@@ -1,4 +1,7 @@
-#!/bin/sh -eu
+#!/bin/sh
+
+set -eu
+
 sudo apt-get update && sudo apt-get install docker-compose -y
 
 cd /vagrant
