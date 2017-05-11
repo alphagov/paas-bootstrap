@@ -19,8 +19,8 @@ meta:
 
 releases:
 - name: bosh
-  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=258
-  sha1: 66f7ce02eda71d63fc13e86a6d49fa5a8398c906
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=261.4
+  sha1: 4da9cedbcc8fbf11378ef439fb89de08300ad091
 - name: bosh-aws-cpi
   version: 62
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=62
@@ -149,8 +149,8 @@ resource_pools:
 - name: bosh
   network: private
   stemcell:
-    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3263.14
-    sha1: cc3377af8c0bf31d069b32d74ab01ab470b31c7a
+    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3363.20
+    sha1: 16f1aa2a272befe87a9f0805ae9d367c8e2802ea
   cloud_properties:
     instance_type: t2.medium
     ephemeral_disk: {size: 40000, type: gp2}
