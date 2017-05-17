@@ -9,7 +9,7 @@ arn=$(aws acm list-certificates --query "CertificateSummaryList[?DomainName==\`$
 created_cert="false"
 if [ -z "${arn}" ] || [ "${arn}" = "None" ]; then
   echo "Requesting certificate for ${concourse_fqdn}"
-  arn=$(aws acm request-certificate --domain-name "${concourse_fqdn}" --output text)
+  arn=$(aws acm request-certificate --domain-name "${concourse_fqdn}" --domain-validation-options "DomainName=${concourse_fqdn},ValidationDomain=${SYSTEM_DNS_ZONE_NAME}" --output text)
   created_cert="true"
 fi
 
