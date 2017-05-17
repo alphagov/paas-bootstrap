@@ -420,8 +420,8 @@ jobs:
                 - -e
                 - -c
                 - |
-                  if [ -s bosh-ssh-private-key/bosh_id_rsa ] ; then
-                    echo "BOSH private key non-zero size, skipping generation..."
+                  if [ -s bosh-ssh-private-key/bosh_id_rsa ] && [ -s bosh-ssh-private-key/bosh_id_rsa.pub ]; then
+                    echo "BOSH keys non-zero size, skipping generation..."
                     cp bosh-ssh-private-key/bosh_id_rsa bosh-ssh-private-key-to-upload
                     cp bosh-ssh-public-key/bosh_id_rsa.pub bosh-ssh-public-key-to-upload
                     exit 0
@@ -462,8 +462,8 @@ jobs:
                 - -e
                 - -c
                 - |
-                  if [ -s ssh-private-key/id_rsa ] ; then
-                    echo "Deployments private key non-zero size, skipping generation..."
+                  if [ -s ssh-private-key/id_rsa ] && [ -s ssh-private-key/id_rsa.pub ]; then
+                    echo "Deployment keys non-zero size, skipping generation..."
                     cp ssh-private-key/id_rsa ssh-private-key-to-upload
                     cp ssh-public-key/id_rsa.pub ssh-public-key-to-upload
                     exit 0
@@ -800,7 +800,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-init
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 4268307611a4b787e837801b6889890495004618
           inputs:
             - name: bosh-manifest
             - name: bosh-init-state
