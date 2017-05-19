@@ -1,5 +1,6 @@
 concourse-db:
   image: postgres:9.6.2-alpine
+  restart: always
   environment:
     POSTGRES_DB: "${CONCOURSE_DATABASE_NAME}"
     POSTGRES_USER: "${CONCOURSE_DATABASE_USER}"
@@ -10,6 +11,7 @@ concourse-web:
   image: concourse/concourse:2.7.0
   links: [concourse-db]
   command: web
+  restart: always
   ports: ["8080:8080"]
   volumes: ["./keys/web:/concourse-keys"]
   environment:
@@ -24,6 +26,7 @@ concourse-worker:
   privileged: true
   links: [concourse-web]
   command: worker
+  restart: always
   volumes: ["./keys/worker:/concourse-keys"]
   environment:
     CONCOURSE_TSA_HOST: concourse-web
