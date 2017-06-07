@@ -66,6 +66,8 @@ these are defined in the repo [aws-account-wide-terraform][]
 $ export DEPLOY_ENV=environment-name
 ```
 
+It is important that you do not use the same `DEPLOY_ENV` for both build and deployer concourse environments, this is to avoid conflicts in resource allocation.
+
 ### Deploy
 
 Create Concourse Lite with `make`. There are targets to select the target AWS account, and to select the profiles to apply. For instance for a DEV build concourse bootstrap:
