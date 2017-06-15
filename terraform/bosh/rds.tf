@@ -40,7 +40,7 @@ resource "aws_db_instance" "bosh" {
   allocated_storage          = 5
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "9.5.4"
+  engine_version             = "9.5"
   instance_class             = "db.t2.small"
   username                   = "dbadmin"
   password                   = "${var.secrets_bosh_postgres_password}"
@@ -52,7 +52,7 @@ resource "aws_db_instance" "bosh" {
   backup_retention_period    = "${var.bosh_db_backup_retention_period}"
   final_snapshot_identifier  = "${var.env}-bosh-rds-final-snapshot"
   skip_final_snapshot        = "${var.bosh_db_skip_final_snapshot}"
-  auto_minor_version_upgrade = false
+  auto_minor_version_upgrade = true
 
   vpc_security_group_ids = ["${aws_security_group.bosh_rds.id}"]
 
