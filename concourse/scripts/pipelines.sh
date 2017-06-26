@@ -39,12 +39,23 @@ if [ "${ENABLE_DATADOG}" = "true" ] ; then
   eval "$("${SCRIPT_DIR}"/../../scripts/manage-datadog-secrets.sh retrieve)"
 fi
 
+if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
+  gpg_ids="[]"
+else
+  gpg_ids="[$(xargs < "${SCRIPT_DIR}/../../.gpg-id" | tr ' ' ',')]"
+fi
+
 generate_vars_file > /dev/null # Check for missing vars
+
+generate_manifest_file() {
+  sed -e "s/{{gpg_ids}}/${gpg_ids}/" \
+      < "${SCRIPT_DIR}/../pipelines/${ACTION}.yml"
+}
 
 export EXPOSE_PIPELINE=1
 for ACTION in create destroy; do
   bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
     "${ACTION}" \
-    "${SCRIPT_DIR}/../pipelines/${ACTION}.yml" \
+    <(generate_manifest_file) \
     <(generate_vars_file)
 done

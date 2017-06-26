@@ -19,6 +19,8 @@ test: spec lint_yaml lint_terraform lint_shellcheck lint_concourse lint_ruby ## 
 
 .PHONY: spec
 spec:
+	cd scripts &&\
+		BUNDLE_GEMFILE=../Gemfile bundle exec rspec
 	cd concourse/scripts &&\
 		go test
 	cd manifests/shared &&\
@@ -32,6 +34,20 @@ spec:
 
 lint_yaml:
 	find . -name '*.yml' -not -path '*/vendor/*' | xargs $(YAMLLINT) -c yamllint.yml
+
+GPG = $(shell command -v gpg2 || command -v gpg)
+
+.PHONY: list_merge_keys
+list_merge_keys: ## List all GPG keys allowed to sign merge commits.
+	$(if $(GPG),,$(error "gpg2 or gpg not found in PATH"))
+	@for key in $$(cat .gpg-id); do \
+		printf "$${key}: "; \
+		if [ "$$($(GPG) --version | awk 'NR==1 { split($$3,version,"."); print version[1]}')" = "2" ]; then \
+			$(GPG) --list-keys --with-colons $$key 2> /dev/null | awk -F: '/^uid/ {found = 1; print $$10; exit} END {if (found != 1) {print "*** not found in local keychain ***"}}'; \
+		else \
+			$(GPG) --list-keys --with-colons $$key 2> /dev/null | awk -F: '/^pub/ {found = 1; print $$10} END {if (found != 1) {print "*** not found in local keychain ***"}}'; \
+		fi;\
+	done
 
 lint_terraform:
 	$(eval export TF_VAR_system_dns_zone_name=service.com)
@@ -68,6 +84,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export ENABLE_DATADOG ?= false)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
+	$(eval export SKIP_COMMIT_VERIFICATION=true)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
@@ -163,3 +180,7 @@ upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials
 	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-datadog-secrets.sh upload
+
+merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
+	$(if ${PR},,$(error Must pass PR=<number>))
+	./scripts/merge_pr.rb --pr ${PR}

@@ -38,6 +38,7 @@ resources:
     source:
       uri: https://github.com/alphagov/paas-bootstrap.git
       branch: {{branch_name}}
+      commit_verification_key_ids: {{gpg_ids}}
 
   - name: bucket-terraform-state
     type: s3-iam
