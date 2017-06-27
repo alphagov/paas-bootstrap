@@ -35,6 +35,16 @@ resource "aws_security_group" "bosh" {
   }
 
   ingress {
+    from_port = 6868
+    to_port   = 6868
+    protocol  = "tcp"
+
+    security_groups = [
+      "${aws_security_group.bosh_api_client.id}",
+    ]
+  }
+
+  ingress {
     from_port   = 25555
     to_port     = 25555
     protocol    = "tcp"

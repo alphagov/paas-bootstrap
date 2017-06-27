@@ -3,6 +3,7 @@ groups:
   - name: all
     jobs:
       - init-bucket
+      - s3init
       - vpc
       - generate-secrets
       - bosh-terraform
@@ -220,7 +221,39 @@ jobs:
           params:
             file: updated-bucket-state/bucket.tfstate
 
-      - task: s3init-concourse
+      - task: self-update-pipelines
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+            BRANCH: {{branch_name}}
+            AWS_ACCOUNT: {{aws_account}}
+            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
+            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
+            TARGET_CONCOURSE: {{target_concourse}}
+            CONCOURSE_TYPE: {{concourse_type}}
+            VAGRANT_IP: {{vagrant_ip}}
+          run:
+            path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+
+      - put: pipeline-trigger
+        params: {bump: patch}
+
+  - name: s3init
+    serial: true
+    plan:
+      - get: pipeline-trigger
+        trigger: true
+        passed: ['init-bucket']
+      - get: paas-bootstrap
+      - task: s3init
         config:
           platform: linux
           image_resource:
@@ -228,6 +261,8 @@ jobs:
             source:
               repository: governmentpaas/curl-ssl
               tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
           run:
             path: sh
             args:
@@ -246,21 +281,16 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
 
-          inputs:
-          - name: paas-bootstrap
-      - put: pipeline-trigger
-        params: {bump: patch}
-
   - name: vpc
     serial: true
     plan:
       - aggregate:
         - get: paas-bootstrap
           trigger: true
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: pipeline-trigger
           trigger: true
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: vpc-tfstate
 
       - task: generate-git-ssh-key
@@ -323,9 +353,9 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: pipeline-trigger
-          passed: ['init-bucket']
+          passed: ['s3init']
           trigger: true
         - get: bosh-CA
         - get: bosh-secrets
@@ -697,6 +727,7 @@ jobs:
               ./terraform-outputs/vpc.terraform-outputs.yml
             BOSH_FQDN: {{bosh_fqdn}}
             BOSH_FQDN_EXTERNAL: {{bosh_fqdn_external}}
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
             BOSH_INSTANCE_PROFILE: {{bosh_instance_profile}}
           run:
             path: sh
@@ -839,13 +870,15 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
                 bosh update runtime-config runtime-config/runtime-config.yml
                 ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
@@ -1129,6 +1162,8 @@ jobs:
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
@@ -1141,7 +1176,7 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION} -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
                 bosh upload stemcell stemcell.tgz --skip-if-exists
 
       - task: deploy-concourse
@@ -1158,13 +1193,15 @@ jobs:
           - name: paas-bootstrap
           outputs:
           - name: updated-concourse-manifest
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
@@ -1229,19 +1266,46 @@ jobs:
           - name: paas-bootstrap
           - name: concourse-manifest
           - name: bosh-secrets
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
               mkdir -p updated-concourse-manifest
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
               bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
               [ $(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)") -eq 0 ]
+
+      - task: upload-pipeline
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+            BRANCH: {{branch_name}}
+            AWS_ACCOUNT: {{aws_account}}
+            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
+            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
+            CONCOURSE_TYPE: {{concourse_type}}
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              make -C ./paas-bootstrap "${AWS_ACCOUNT}" "${CONCOURSE_TYPE}" pipelines
 
   - name: expunge-vagrant
     serial: true

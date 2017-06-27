@@ -84,10 +84,41 @@ resources:
       versioned_file: concourse-manifest.yml
 
 jobs:
+  - name: self-update-pipeline
+    serial: true
+    plan:
+      - get: paas-bootstrap
+      - task: upload-pipeline
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+            BRANCH: {{branch_name}}
+            AWS_ACCOUNT: {{aws_account}}
+            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
+            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
+            TARGET_CONCOURSE: {{target_concourse}}
+            CONCOURSE_TYPE: {{concourse_type}}
+            VAGRANT_IP: {{vagrant_ip}}
+          run:
+            path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+      - put: pipeline-trigger
+        params: {bump: patch}
+
   - name: enable-bosh-access
     serial: true
     plan:
       - aggregate:
+        - get: pipeline-trigger
+          trigger: true
+          passed: ['self-update-pipeline']
         - get: paas-bootstrap
         - get: vpc-tfstate
         - get: bosh-tfstate
@@ -155,9 +186,6 @@ jobs:
           params:
             file: updated-bosh-tfstate/bosh.tfstate
 
-      - put: pipeline-trigger
-        params: {bump: patch}
-
   - name: destroy-concourse
     serial: true
     plan:
@@ -184,13 +212,15 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-secrets
           - name: concourse-manifest
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
               bosh -n delete deployment --force "$DEPLOYMENT_NAME"
 
@@ -297,13 +327,15 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
                 ./paas-bootstrap/concourse/scripts/bosh_pre_destroy.rb
 
       - task: cleanup-orphaned-disks
@@ -317,13 +349,15 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
+          params:
+            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
                 bosh cleanup --all
 
       - task: destroy-bosh-instance
