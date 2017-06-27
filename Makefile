@@ -131,11 +131,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 
 ## Actions
 
-.PHONY: fly-login
-fly-login: ## Do a fly login and sync
-	$$("./concourse/scripts/environment.sh") && \
-		./concourse/scripts/fly_sync_and_login.sh
-
+.PHONY: pipelines
 pipelines:
 	$(eval export TARGET_CONCOURSE=${CONCOURSE_TYPE})
 	$(if ${TARGET_CONCOURSE},,$(error Must set CONCOURSE_TYPE=deployer-concourse|build-concourse. This can be done with the relevant make target.))
