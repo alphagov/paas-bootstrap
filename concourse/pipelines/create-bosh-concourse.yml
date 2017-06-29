@@ -1139,6 +1139,7 @@ jobs:
 
   - name: concourse-deploy
     serial: true
+    interruptible: true
     plan:
       - aggregate:
         - get: paas-bootstrap
