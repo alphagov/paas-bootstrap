@@ -11,11 +11,15 @@ any kind of deployment environment.
 
 ## Concourse Lite
 
-This runs outside an environment and is responsible for creating and
-destroying a VPC containing Bosh and Concourse.
+Concourse Lite is responsible for bootstrapping a full Bosh and Concourse 
+environment ([paas-cf][]). First it creates a Vagrant instance running on AWS.
+Second this Vagrant instance is used to provision the full environment.
+
 You don't need to keep this running once Concourse is deployed,
 and you can create it again when Concourse needs to be modified
 or destroyed.
+
+[paas-cf]: https://github.com/alphagov/paas-cf
 
 ### Prerequisites
 
@@ -66,7 +70,7 @@ these are defined in the repo [aws-account-wide-terraform][]
 $ export DEPLOY_ENV=environment-name
 ```
 
-It is important that you do not use the same `DEPLOY_ENV` for both build and deployer concourse environments, this is to avoid conflicts in resource allocation.
+If setting up a development environment you will be creating both a build and deployer Concourse environment. These will need separate names to avoid conflict. A pragmatic suggestion if your name is 'Dan Carley' is to have a build environment of `dcarleybuild` and a deploy environment of `dcarley`. At the time of writing the maximum length of a name is 12.
 
 ### Deploy
 
