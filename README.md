@@ -30,6 +30,8 @@ or by using [`virtualenv`](https://virtualenv.pypa.io/en/latest/) and pip `pip i
 * a recent version of [Vagrant installed][]. The exact version
 requirements are listed in the [`Vagrantfile`](vagrant/Vagrantfile).
 
+* a recent version of [jq](https://stedolan.github.io/jq/). 
+
 [Vagrant installed]: https://docs.vagrantup.com/v2/installation/index.html
 
 Install the AWS plugin for Vagrant:
