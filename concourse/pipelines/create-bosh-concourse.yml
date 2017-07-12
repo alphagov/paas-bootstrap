@@ -13,7 +13,7 @@ groups:
       - generate-concourse-config
       - concourse-deploy
       - post-deploy
-      - expunge-vagrant
+      - expunge-concourse
 
   - name: credentials
     jobs:
@@ -239,7 +239,6 @@ jobs:
             SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
             TARGET_CONCOURSE: {{target_concourse}}
             CONCOURSE_TYPE: {{concourse_type}}
-            VAGRANT_IP: {{vagrant_ip}}
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
 
@@ -330,7 +329,6 @@ jobs:
           outputs:
           - name: updated-vpc-tfstate
           params:
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
           run:
@@ -339,7 +337,8 @@ jobs:
             - -e
             - -c
             - |
-              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=vpc-tfstate/vpc.tfstate \
                 -state-out=updated-vpc-tfstate/vpc.tfstate \
@@ -604,7 +603,6 @@ jobs:
           params:
             DEPLOY_ENV: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
             TF_VAR_bosh_az: {{bosh_az}}
             TF_VAR_bosh_fqdn: {{bosh_fqdn}}
@@ -620,7 +618,8 @@ jobs:
 
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
                 cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
-                terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+                terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
                 terraform apply ${terraform_params} -var env={{deploy_env}} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                   -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate paas-bootstrap/terraform/bosh
         ensure:
@@ -727,7 +726,6 @@ jobs:
               ./terraform-outputs/vpc.terraform-outputs.yml
             BOSH_FQDN: {{bosh_fqdn}}
             BOSH_FQDN_EXTERNAL: {{bosh_fqdn_external}}
-            BOSH_LOGIN_HOST: {{bosh_login_host}}
             BOSH_INSTANCE_PROFILE: {{bosh_instance_profile}}
           run:
             path: sh
@@ -870,15 +868,13 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
-          params:
-            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
                 bosh update runtime-config runtime-config/runtime-config.yml
                 ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
@@ -989,7 +985,6 @@ jobs:
           outputs:
           - name: updated-concourse-tfstate
           params:
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
             TF_VAR_concourse_hostname: {{concourse_hostname}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
@@ -1005,8 +1000,8 @@ jobs:
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
-
-              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
@@ -1163,8 +1158,6 @@ jobs:
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
-          params:
-            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
@@ -1177,7 +1170,7 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION} -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
                 bosh upload stemcell stemcell.tgz --skip-if-exists
 
       - task: deploy-concourse
@@ -1194,15 +1187,13 @@ jobs:
           - name: paas-bootstrap
           outputs:
           - name: updated-concourse-manifest
-          params:
-            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
@@ -1267,15 +1258,13 @@ jobs:
           - name: paas-bootstrap
           - name: concourse-manifest
           - name: bosh-secrets
-          params:
-            BOSH_LOGIN_HOST: {{bosh_login_host}}
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
               mkdir -p updated-concourse-manifest
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
@@ -1308,7 +1297,7 @@ jobs:
             - |
               make -C ./paas-bootstrap "${AWS_ACCOUNT}" "${CONCOURSE_TYPE}" pipelines
 
-  - name: expunge-vagrant
+  - name: expunge-concourse
     serial: true
     plan:
       - aggregate:
@@ -1351,7 +1340,7 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
-      - task: remove-vagrant-IP-from-ssh-SG
+      - task: remove-concourse-IP-from-ssh-SG
         config:
           platform: linux
           image_resource:
@@ -1384,7 +1373,7 @@ jobs:
           params:
             file: updated-vpc-tfstate/vpc.tfstate
 
-      - task: remove-vagrant-IP-from-BOSH-SG
+      - task: remove-concourse-IP-from-BOSH-SG
         config:
           platform: linux
           image_resource:
@@ -1422,7 +1411,7 @@ jobs:
           params:
             file: updated-bosh-tfstate/bosh.tfstate
 
-      - task: remove-vagrant-IP-from-Concourse-SG
+      - task: remove-concourse-IP-from-Concourse-SG
         config:
           platform: linux
           image_resource:

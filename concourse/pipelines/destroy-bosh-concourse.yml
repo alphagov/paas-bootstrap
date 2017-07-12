@@ -106,7 +106,6 @@ jobs:
             SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
             TARGET_CONCOURSE: {{target_concourse}}
             CONCOURSE_TYPE: {{concourse_type}}
-            VAGRANT_IP: {{vagrant_ip}}
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
       - put: pipeline-trigger
@@ -147,7 +146,7 @@ jobs:
               > vpc-terraform-outputs/tfvars.sh
               ls -l vpc-terraform-outputs/tfvars.sh
 
-      - task: add-vagrant-IP-to-BOSH-SG
+      - task: add-concourse-IP-to-BOSH-SG
         config:
           platform: linux
           image_resource:
@@ -167,7 +166,6 @@ jobs:
             TF_VAR_bosh_fqdn: {{bosh_fqdn}}
             TF_VAR_bosh_fqdn_external: {{bosh_fqdn_external}}
             AWS_DEFAULT_REGION: {{aws_region}}
-            VAGRANT_IP: {{vagrant_ip}}
           run:
             path: sh
             args:
@@ -177,7 +175,8 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
-              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} -target=aws_security_group.bosh \
                 -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
@@ -436,7 +435,6 @@ jobs:
           params:
             DEPLOY_ENV: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
             TF_VAR_bosh_az: {{bosh_az}}
             TF_VAR_bosh_fqdn: {{bosh_fqdn}}
@@ -451,7 +449,8 @@ jobs:
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 touch paas-bootstrap/terraform/bosh/id_rsa.pub paas-bootstrap/terraform/bosh/bosh_id_rsa.pub
-                terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+                terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
                 terraform destroy ${terraform_params} -force -var env={{deploy_env}} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                   -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate paas-bootstrap/terraform/bosh
         ensure:

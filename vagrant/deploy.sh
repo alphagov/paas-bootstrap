@@ -29,9 +29,6 @@ fi
 
 vagrant up
 
-VAGRANT_IP=$(vagrant ssh -- curl -qs http://169.254.169.254/latest/meta-data/public-ipv4)
-export VAGRANT_IP
-
 # Try to start a SSH tunnel to localhost
 echo "Setting up SSH tunnel to concourse..."
 if ! ( [ -a .vagrant/tunnel-ctrl-socket ] && \

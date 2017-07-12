@@ -91,8 +91,8 @@ variable "infra_subnet_ids" {
   default     = ""
 }
 
-variable "vagrant_cidr" {
-  description = "IP address of the AWS Vagrant bootstrap concourse"
+variable "concourse_egress_cidr" {
+  description = "Public egress IP address of concourse running the pipeline"
   default     = ""
 }
 

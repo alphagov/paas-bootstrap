@@ -14,7 +14,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${compact(list(var.vagrant_cidr))}"]
+    cidr_blocks = ["${compact(list(var.concourse_egress_cidr))}"]
   }
 
   ingress {
@@ -31,7 +31,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 6868
     to_port     = 6868
     protocol    = "tcp"
-    cidr_blocks = ["${compact(list(var.vagrant_cidr))}"]
+    cidr_blocks = ["${compact(list(var.concourse_egress_cidr))}"]
   }
 
   ingress {
@@ -48,7 +48,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 25555
     to_port     = 25555
     protocol    = "tcp"
-    cidr_blocks = ["${compact(list(var.vagrant_cidr))}"]
+    cidr_blocks = ["${compact(list(var.concourse_egress_cidr))}"]
   }
 
   ingress {

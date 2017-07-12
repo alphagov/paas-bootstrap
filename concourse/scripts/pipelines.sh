@@ -11,7 +11,6 @@ generate_vars_file() {
    cat <<EOF
 ---
 aws_account: ${AWS_ACCOUNT}
-vagrant_ip: ${VAGRANT_IP}
 deploy_env: ${DEPLOY_ENV}
 state_bucket: ${state_bucket}
 branch_name: ${BRANCH:-master}
