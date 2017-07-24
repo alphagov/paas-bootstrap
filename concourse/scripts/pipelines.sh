@@ -25,7 +25,7 @@ bosh_fqdn: ${BOSH_FQDN}
 bosh_fqdn_external: ${BOSH_FQDN_EXTERNAL}
 bosh_login_host: ${BOSH_LOGIN_HOST}
 bosh_instance_profile: ${BOSH_INSTANCE_PROFILE}
-skip_commit_verification: ${SKIP_COMMIT_VERIFICATION}
+skip_commit_verification: ${SKIP_COMMIT_VERIFICATION:-}
 self_update_pipeline: ${SELF_UPDATE_PIPELINE:-true}
 target_concourse: ${TARGET_CONCOURSE}
 concourse_type: ${CONCOURSE_TYPE}
