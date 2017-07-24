@@ -200,6 +200,7 @@ providing them to the interactive configure command.
 [access keys using environment variables]: http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-environment
 
 ## SSH to concourse and tunnel
+
 You can ssh to Concourse using the command: `make <env> ssh_concourse`
 This will automatically get the right key and log you in as vcap user.
 
@@ -209,6 +210,7 @@ You can open an SSH tunnel to any TCP socket in the VPC with the command:
 Stop the tunnel with: `make <env> stop-tunnel`
 
 ## Other useful commands
+
 Type `make` to get the list of all available commands.
 
 ## Known caveats
@@ -230,6 +232,7 @@ action again. The scripts will attempt to connect to concourse again and if
 succeeded, will continue with the script and upload the pipelines to concourse.
 
 ### Grafana/graphite metrics note
+
 Bosh server metrics are shipped under 'collectd' name instead of 'bosh'.
 This is because we use bosh-init to deploy bosh and it populates spec.name
 differently than BOSH. We accept this as otherwise we'd have to introduce
