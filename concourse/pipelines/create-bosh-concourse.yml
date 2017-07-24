@@ -3,6 +3,7 @@ groups:
   - name: all
     jobs:
       - init-bucket
+      - s3init
       - vpc
       - generate-secrets
       - bosh-terraform
@@ -12,7 +13,7 @@ groups:
       - generate-concourse-config
       - concourse-deploy
       - post-deploy
-      - expunge-vagrant
+      - expunge-concourse
 
   - name: credentials
     jobs:
@@ -220,7 +221,38 @@ jobs:
           params:
             file: updated-bucket-state/bucket.tfstate
 
-      - task: s3init-concourse
+      - task: self-update-pipelines
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+            BRANCH: {{branch_name}}
+            AWS_ACCOUNT: {{aws_account}}
+            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
+            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
+            TARGET_CONCOURSE: {{target_concourse}}
+            CONCOURSE_TYPE: {{concourse_type}}
+          run:
+            path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+
+      - put: pipeline-trigger
+        params: {bump: patch}
+
+  - name: s3init
+    serial: true
+    plan:
+      - get: pipeline-trigger
+        trigger: true
+        passed: ['init-bucket']
+      - get: paas-bootstrap
+      - task: s3init
         config:
           platform: linux
           image_resource:
@@ -228,6 +260,8 @@ jobs:
             source:
               repository: governmentpaas/curl-ssl
               tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
           run:
             path: sh
             args:
@@ -246,21 +280,16 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
 
-          inputs:
-          - name: paas-bootstrap
-      - put: pipeline-trigger
-        params: {bump: patch}
-
   - name: vpc
     serial: true
     plan:
       - aggregate:
         - get: paas-bootstrap
           trigger: true
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: pipeline-trigger
           trigger: true
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: vpc-tfstate
 
       - task: generate-git-ssh-key
@@ -300,7 +329,6 @@ jobs:
           outputs:
           - name: updated-vpc-tfstate
           params:
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
           run:
@@ -309,7 +337,8 @@ jobs:
             - -e
             - -c
             - |
-              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=vpc-tfstate/vpc.tfstate \
                 -state-out=updated-vpc-tfstate/vpc.tfstate \
@@ -323,9 +352,9 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
-          passed: ['init-bucket']
+          passed: ['s3init']
         - get: pipeline-trigger
-          passed: ['init-bucket']
+          passed: ['s3init']
           trigger: true
         - get: bosh-CA
         - get: bosh-secrets
@@ -574,7 +603,6 @@ jobs:
           params:
             DEPLOY_ENV: {{deploy_env}}
             AWS_DEFAULT_REGION: {{aws_region}}
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
             TF_VAR_bosh_az: {{bosh_az}}
             TF_VAR_bosh_fqdn: {{bosh_fqdn}}
@@ -590,7 +618,8 @@ jobs:
 
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
                 cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
-                terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+                terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
                 terraform apply ${terraform_params} -var env={{deploy_env}} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                   -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate paas-bootstrap/terraform/bosh
         ensure:
@@ -956,7 +985,6 @@ jobs:
           outputs:
           - name: updated-concourse-tfstate
           params:
-            VAGRANT_IP: {{vagrant_ip}}
             TF_VAR_env: {{deploy_env}}
             TF_VAR_concourse_hostname: {{concourse_hostname}}
             TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
@@ -972,8 +1000,8 @@ jobs:
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
-
-              terraform_params=${VAGRANT_IP:+-var vagrant_cidr=$VAGRANT_IP/32}
+              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} \
                 -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
@@ -1106,6 +1134,7 @@ jobs:
 
   - name: concourse-deploy
     serial: true
+    interruptible: true
     plan:
       - aggregate:
         - get: paas-bootstrap
@@ -1243,7 +1272,32 @@ jobs:
               bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
               [ $(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)") -eq 0 ]
 
-  - name: expunge-vagrant
+      - task: upload-pipeline
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+          params:
+            DEPLOY_ENV: {{deploy_env}}
+            BRANCH: {{branch_name}}
+            AWS_ACCOUNT: {{aws_account}}
+            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
+            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
+            CONCOURSE_TYPE: {{concourse_type}}
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              make -C ./paas-bootstrap "${AWS_ACCOUNT}" "${CONCOURSE_TYPE}" pipelines
+
+  - name: expunge-concourse
     serial: true
     plan:
       - aggregate:
@@ -1286,7 +1340,7 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
-      - task: remove-vagrant-IP-from-ssh-SG
+      - task: remove-concourse-IP-from-ssh-SG
         config:
           platform: linux
           image_resource:
@@ -1319,7 +1373,7 @@ jobs:
           params:
             file: updated-vpc-tfstate/vpc.tfstate
 
-      - task: remove-vagrant-IP-from-BOSH-SG
+      - task: remove-concourse-IP-from-BOSH-SG
         config:
           platform: linux
           image_resource:
@@ -1357,7 +1411,7 @@ jobs:
           params:
             file: updated-bosh-tfstate/bosh.tfstate
 
-      - task: remove-vagrant-IP-from-Concourse-SG
+      - task: remove-concourse-IP-from-Concourse-SG
         config:
           platform: linux
           image_resource:

@@ -116,7 +116,7 @@ You will need a working [Concourse Lite](#concourse-lite).
 
 ### Deploy
 
-Run the `create` pipeline from your *Concourse Lite*.
+Run the `create-bosh-concourse` pipeline from your *Concourse Lite*. The pipeline will upload itself to the Concourse it has created, which means future runs of the pipeline can be done from there. In theory, we should only need the *Concourse Lite* for the initial bootstrapping.
 
 When complete, you can access the new Concourse from your browser. The URL
 and credentials can be found from:
@@ -129,20 +129,10 @@ Login credentials can be shown by `make <env> showenv`.
 
 ### Destroy
 
-Run the `destroy` pipeline from your *Concourse Lite*.
+Run the `destroy-bosh-concourse` pipeline from your *Concourse Lite*.
 
 
 # Additional notes
-
-## Optionally override the branch used by pipelines
-
-All of the pipeline scripts (including `vagrant/deploy.sh`) honour a
-`BRANCH` environment variable which allows you to override the git branch
-used within the pipeline. This is useful for development and code review:
-
-```
-BRANCH=$(git rev-parse --abbrev-ref HEAD) make dev pipelines
-```
 
 ## Sharing your Bootstrap Concourse
 
