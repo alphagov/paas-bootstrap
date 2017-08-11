@@ -19,8 +19,6 @@ test: spec lint_yaml lint_terraform lint_shellcheck lint_concourse lint_ruby ## 
 
 .PHONY: spec
 spec:
-	cd scripts &&\
-		BUNDLE_GEMFILE=../Gemfile bundle exec rspec
 	cd concourse/scripts &&\
 		go test
 	cd manifests/shared &&\
@@ -187,4 +185,4 @@ upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials
 
 merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
 	$(if ${PR},,$(error Must pass PR=<number>))
-	./scripts/merge_pr.rb --pr ${PR}
+	bundle exec github_merge_sign --pr ${PR}
