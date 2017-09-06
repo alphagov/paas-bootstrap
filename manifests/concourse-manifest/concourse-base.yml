@@ -96,13 +96,7 @@ jobs:
           basic_auth_username: admin
           basic_auth_password: (( grab secrets.concourse_atc_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
-
-          postgresql:
-            address: 127.0.0.1:5432
-            database: atc
-            role:
-              name: atc
-              password: (( grab secrets.concourse_postgres_password ))
+          postgresql_database: atc
 
       - name: groundcrew
         release: concourse
