@@ -1231,8 +1231,8 @@ jobs:
                 export CONCOURSE_ATC_PASSWORD
                 CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
-                echo y | ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
-                           --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD}
+                ${FLY_CMD} -t ${FLY_TARGET} set-team -n ${FLY_TEAM} \
+                  --basic-auth-username admin --basic-auth-password ${CONCOURSE_ATC_PASSWORD} --non-interactive
 
   - name: post-deploy
     plan:
