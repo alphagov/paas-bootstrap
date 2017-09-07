@@ -450,7 +450,7 @@ jobs:
                 - -e
                 - -c
                 - |
-                  if [ -s bosh-ssh-private-key/bosh_id_rsa ] && [ -s bosh-ssh-private-key/bosh_id_rsa.pub ]; then
+                  if [ -s bosh-ssh-private-key/bosh_id_rsa ] && [ -s bosh-ssh-public-key/bosh_id_rsa.pub ]; then
                     echo "BOSH keys non-zero size, skipping generation..."
                     cp bosh-ssh-private-key/bosh_id_rsa bosh-ssh-private-key-to-upload
                     cp bosh-ssh-public-key/bosh_id_rsa.pub bosh-ssh-public-key-to-upload
@@ -492,7 +492,7 @@ jobs:
                 - -e
                 - -c
                 - |
-                  if [ -s ssh-private-key/id_rsa ] && [ -s ssh-private-key/id_rsa.pub ]; then
+                  if [ -s ssh-private-key/id_rsa ] && [ -s ssh-public-key/id_rsa.pub ]; then
                     echo "Deployment keys non-zero size, skipping generation..."
                     cp ssh-private-key/id_rsa ssh-private-key-to-upload
                     cp ssh-public-key/id_rsa.pub ssh-public-key-to-upload
