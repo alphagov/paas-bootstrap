@@ -50,6 +50,8 @@ resource_pools:
     env:
       bosh:
         password: (( grab secrets.concourse_vcap_password ))
+        ipv6:
+          enable: true
 
 disk_pools:
   - name: db
