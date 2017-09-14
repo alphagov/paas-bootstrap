@@ -40,7 +40,6 @@ resources:
       uri: https://github.com/alphagov/paas-bootstrap.git
       branch: {{branch_name}}
       commit_verification_key_ids: {{gpg_ids}}
-      gpg_keyserver: hkp://ipv4.pool.sks-keyservers.net/
 
   - name: bucket-terraform-state
     type: s3-iam
