@@ -15,11 +15,10 @@ The default one is *eu-west-1a*. To deploy BOSH to another AZ, set the environme
 variable `BOSH_AZ` before uploading the pipelines. Ex:
 
 ```
-BOSH_AZ='eu-west-1b' make prod pipelines
+BOSH_AZ='eu-west-1b' make prod deployer-concourse bootstrap
 ```
 
-Run the `create-bosh-cloudfoundry` pipeline, it should deploy a new BOSH, then run
-`cf-deploy` successfully. Watch for `bosh-tests` that will run basic BOSH validation tests.
+Run the `create-bosh-concourse` pipeline which should deploy a new BOSH.
 
 ## Warning
 
