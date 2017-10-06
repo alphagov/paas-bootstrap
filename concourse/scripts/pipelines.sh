@@ -53,7 +53,7 @@ fi
 generate_vars_file > /dev/null # Check for missing vars
 
 generate_manifest_file() {
-  sed -e "s/{{gpg_ids}}/${gpg_ids}/" \
+  sed -e "s/((gpg_ids))/${gpg_ids}/" \
       < "${SCRIPT_DIR}/../pipelines/${pipeline_name}.yml"
 }
 
