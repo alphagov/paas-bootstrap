@@ -23,7 +23,7 @@ jobs:
             repository: governmentpaas/awscli
             tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
         params:
-          VAGRANT_SSH_KEY_NAME: {{vagrant_ssh_key_name}}
+          VAGRANT_SSH_KEY_NAME: ((vagrant_ssh_key_name))
         run:
           path: sh
           args:

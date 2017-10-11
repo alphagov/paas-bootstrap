@@ -38,126 +38,126 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/paas-bootstrap.git
-      branch: {{branch_name}}
-      commit_verification_key_ids: {{gpg_ids}}
+      branch: ((branch_name))
+      commit_verification_key_ids: ((gpg_ids))
 
   - name: bucket-terraform-state
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: bucket.tfstate
 
   - name: pipeline-trigger
     type: semver-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       key: pipeline-trigger
 
   - name: vpc-tfstate
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: vpc.tfstate
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: bosh-CA
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: bosh-CA.tar.gz
 
   - name: bosh-secrets
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: bosh-secrets.yml
 
   - name: bosh-ssh-private-key
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: bosh_id_rsa
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: bosh-ssh-public-key
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: bosh_id_rsa.pub
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: ssh-private-key
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: id_rsa
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: ssh-public-key
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: id_rsa.pub
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: bosh-tfstate
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: bosh.tfstate
 
   - name: bosh-manifest
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: bosh-manifest.yml
 
   - name: runtime-config
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: runtime-config.yml
 
   - name: bosh-init-state
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
-      versioned_file: {{bosh_manifest_state}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: ((bosh_manifest_state))
 
   - name: concourse-tfstate
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: concourse.tfstate
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: git-ssh-public-key
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
+      bucket: ((state_bucket))
       versioned_file: git_id_rsa.pub
-      region_name: {{aws_region}}
+      region_name: ((aws_region))
 
   - name: concourse-secrets
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: concourse-secrets.yml
 
   - name: concourse-manifest
     type: s3-iam
     source:
-      bucket: {{state_bucket}}
-      region_name: {{aws_region}}
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
 jobs:
@@ -175,7 +175,7 @@ jobs:
               repository: governmentpaas/awscli
               tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
           params:
-            AWS_DEFAULT_REGION: {{aws_region}}
+            AWS_DEFAULT_REGION: ((aws_region))
           inputs:
             - name: paas-bootstrap
           outputs:
@@ -187,7 +187,7 @@ jobs:
             - -e
             - |
               cd bucket-state
-              aws s3 cp s3://{{state_bucket}}/bucket.tfstate . || true
+              aws s3 cp s3://((state_bucket))/bucket.tfstate . || true
               ls -l
 
       - task: create-init-bucket
@@ -199,9 +199,9 @@ jobs:
               repository: governmentpaas/terraform
               tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
           params:
-            TF_VAR_env: {{deploy_env}}
-            TF_VAR_state_bucket: {{state_bucket}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            TF_VAR_env: ((deploy_env))
+            TF_VAR_state_bucket: ((state_bucket))
+            AWS_DEFAULT_REGION: ((aws_region))
           inputs:
             - name: paas-bootstrap
             - name: bucket-state
@@ -212,7 +212,7 @@ jobs:
             args:
             - -c
             - |
-              terraform apply -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+              terraform apply -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                 -state=bucket-state/bucket.tfstate \
                 -state-out=updated-bucket-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket
@@ -232,13 +232,13 @@ jobs:
           inputs:
             - name: paas-bootstrap
           params:
-            DEPLOY_ENV: {{deploy_env}}
-            BRANCH: {{branch_name}}
-            AWS_ACCOUNT: {{aws_account}}
-            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
-            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
-            TARGET_CONCOURSE: {{target_concourse}}
-            CONCOURSE_TYPE: {{concourse_type}}
+            DEPLOY_ENV: ((deploy_env))
+            BRANCH: ((branch_name))
+            AWS_ACCOUNT: ((aws_account))
+            SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
+            SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+            TARGET_CONCOURSE: ((target_concourse))
+            CONCOURSE_TYPE: ((concourse_type))
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
 
@@ -268,17 +268,17 @@ jobs:
             - -e
             - -c
             - |
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} bosh.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} {{bosh_manifest_state}} paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} vpc.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} bosh-CA.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} bosh-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} bosh_id_rsa paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} bosh_id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} id_rsa paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" "((bosh_manifest_state))" paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" vpc.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh_id_rsa paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh_id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" id_rsa paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
 
   - name: vpc
     serial: true
@@ -303,7 +303,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           params:
-            AWS_DEFAULT_REGION: {{aws_region}}
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -312,8 +312,8 @@ jobs:
             - |
               apk add --update openssh
               ssh-keygen -t rsa -b 4096 -f generated_git_id_rsa -N ''
-              ./paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} git_id_rsa generated_git_id_rsa
-              ./paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} git_id_rsa.pub generated_git_id_rsa.pub
+              ./paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" git_id_rsa generated_git_id_rsa
+              ./paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" git_id_rsa.pub generated_git_id_rsa.pub
 
       - task: deploy-vpc
         config:
@@ -329,8 +329,8 @@ jobs:
           outputs:
           - name: updated-vpc-tfstate
           params:
-            TF_VAR_env: {{deploy_env}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            TF_VAR_env: ((deploy_env))
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -339,7 +339,7 @@ jobs:
             - |
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
               terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
-              terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+              terraform apply ${terraform_params} -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                 -state=vpc-tfstate/vpc.tfstate \
                 -state-out=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
@@ -601,12 +601,12 @@ jobs:
           outputs:
             - name: updated-bosh-tfstate
           params:
-            DEPLOY_ENV: {{deploy_env}}
-            AWS_DEFAULT_REGION: {{aws_region}}
-            TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
-            TF_VAR_bosh_az: {{bosh_az}}
-            TF_VAR_bosh_fqdn: {{bosh_fqdn}}
-            TF_VAR_bosh_fqdn_external: {{bosh_fqdn_external}}
+            DEPLOY_ENV: ((deploy_env))
+            AWS_DEFAULT_REGION: ((aws_region))
+            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
+            TF_VAR_bosh_az: ((bosh_az))
+            TF_VAR_bosh_fqdn: ((bosh_fqdn))
+            TF_VAR_bosh_fqdn_external: ((bosh_fqdn_external))
           run:
             path: sh
             args:
@@ -620,7 +620,7 @@ jobs:
                 cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
                 terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
-                terraform apply ${terraform_params} -var env={{deploy_env}} -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                terraform apply ${terraform_params} -var env=((deploy_env)) -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                   -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -712,21 +712,21 @@ jobs:
           outputs:
             - name: bosh-manifest
           params:
-            DEPLOY_ENV: {{deploy_env}}
-            AWS_ACCOUNT: {{aws_account}}
-            DATADOG_API_KEY: {{datadog_api_key}}
-            DATADOG_APP_KEY: {{datadog_app_key}}
-            ENABLE_DATADOG: {{enable_datadog}}
-            ENABLE_COLLECTD_ADDON: {{enable_collectd_addon}}
+            DEPLOY_ENV: ((deploy_env))
+            AWS_ACCOUNT: ((aws_account))
+            DATADOG_API_KEY: ((datadog_api_key))
+            DATADOG_APP_KEY: ((datadog_app_key))
+            ENABLE_DATADOG: ((enable_datadog))
+            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./bosh-secrets/bosh-secrets.yml
               ./bosh-CA-yml/bosh-ca-cert.yml
               ./terraform-outputs/bosh.terraform-outputs.yml
               ./terraform-outputs/vpc.terraform-outputs.yml
-            BOSH_FQDN: {{bosh_fqdn}}
-            BOSH_FQDN_EXTERNAL: {{bosh_fqdn_external}}
-            BOSH_INSTANCE_PROFILE: {{bosh_instance_profile}}
+            BOSH_FQDN: ((bosh_fqdn))
+            BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+            BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
           run:
             path: sh
             args:
@@ -765,15 +765,15 @@ jobs:
           outputs:
             - name: runtime-config
           params:
-            AWS_ACCOUNT: {{aws_account}}
-            SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
+            AWS_ACCOUNT: ((aws_account))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
             MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/runtime-config/runtime-config-base.yml
               ./terraform-outputs/*.yml
-            ENABLE_DATADOG: {{enable_datadog}}
-            DATADOG_API_KEY: {{datadog_api_key}}
-            ENABLE_COLLECTD_ADDON: {{enable_collectd_addon}}
-            ENABLE_SYSLOG_ADDON: {{enable_syslog_addon}}
+            ENABLE_DATADOG: ((enable_datadog))
+            DATADOG_API_KEY: ((datadog_api_key))
+            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
+            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           run:
             path: sh
             args:
@@ -838,7 +838,7 @@ jobs:
           outputs:
             - name: bosh-init-working-dir
           params:
-            BOSH_MANIFEST_STATE: {{bosh_manifest_state}}
+            BOSH_MANIFEST_STATE: ((bosh_manifest_state))
           run:
             path: sh
             args:
@@ -874,7 +874,7 @@ jobs:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
                 bosh update runtime-config runtime-config/runtime-config.yml
                 ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
@@ -935,9 +935,9 @@ jobs:
           inputs:
             - name: paas-bootstrap
           params:
-            CONCOURSE_HOSTNAME: {{concourse_hostname}}
-            SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            CONCOURSE_HOSTNAME: ((concourse_hostname))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: ./paas-bootstrap/concourse/scripts/create_concourse_cert.sh
 
@@ -954,7 +954,7 @@ jobs:
           outputs:
           - name: concourse-ssh-key
           params:
-            AWS_DEFAULT_REGION: {{aws_region}}
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -964,8 +964,8 @@ jobs:
               apk add --update openssh
               cd concourse-ssh-key
               ssh-keygen -t rsa -b 4096 -f generated_concourse_id_rsa -N ''
-              ../paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse_id_rsa generated_concourse_id_rsa
-              ../paas-bootstrap/concourse/scripts/s3init.sh {{state_bucket}} concourse_id_rsa.pub generated_concourse_id_rsa.pub
+              ../paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse_id_rsa generated_concourse_id_rsa
+              ../paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse_id_rsa.pub generated_concourse_id_rsa.pub
 
       - task: terraform-apply
         config:
@@ -985,10 +985,10 @@ jobs:
           outputs:
           - name: updated-concourse-tfstate
           params:
-            TF_VAR_env: {{deploy_env}}
-            TF_VAR_concourse_hostname: {{concourse_hostname}}
-            TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            TF_VAR_env: ((deploy_env))
+            TF_VAR_concourse_hostname: ((concourse_hostname))
+            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -1003,7 +1003,7 @@ jobs:
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
               terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
               terraform apply ${terraform_params} \
-                -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
                 -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
@@ -1024,7 +1024,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           params:
-            DEPLOY_ENV: {{deploy_env}}
+            DEPLOY_ENV: ((deploy_env))
           run:
             path: sh
             args:
@@ -1095,19 +1095,19 @@ jobs:
               repository: governmentpaas/spruce
               tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
           params:
-            AWS_ACCOUNT: {{aws_account}}
-            DATADOG_API_KEY: {{datadog_api_key}}
-            DATADOG_APP_KEY: {{datadog_app_key}}
-            ENABLE_DATADOG: {{enable_datadog}}
-            CONCOURSE_AUTH_DURATION: {{concourse_auth_duration}}
+            AWS_ACCOUNT: ((aws_account))
+            DATADOG_API_KEY: ((datadog_api_key))
+            DATADOG_APP_KEY: ((datadog_app_key))
+            ENABLE_DATADOG: ((enable_datadog))
+            CONCOURSE_AUTH_DURATION: ((concourse_auth_duration))
             CONCOURSE_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/concourse-manifest/concourse-base.yml
               concourse-secrets/concourse-secrets.yml
               terraform-outputs/concourse-terraform-outputs.yml
               terraform-outputs/vpc-terraform-outputs.yml
               terraform-outputs/bosh-terraform-outputs.yml
-            CONCOURSE_INSTANCE_TYPE: {{concourse_instance_type}}
-            CONCOURSE_INSTANCE_PROFILE: {{concourse_instance_profile}}
+            CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
+            CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -1170,7 +1170,7 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION} -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
                 bosh upload stemcell stemcell.tgz --skip-if-exists
 
       - task: deploy-concourse
@@ -1193,7 +1193,7 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
@@ -1215,11 +1215,11 @@ jobs:
             - name: concourse-manifest
             - name: concourse-secrets
           params:
-            CONCOURSE_HOSTNAME: {{concourse_hostname}}
-            SYSTEM_DNS_ZONE_NAME: {{system_dns_zone_name}}
+            CONCOURSE_HOSTNAME: ((concourse_hostname))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
             CONCOURSE_ATC_USER: admin
-            FLY_TEAM: {{aws_account}}
-            FLY_TARGET: {{deploy_env}}
+            FLY_TEAM: ((aws_account))
+            FLY_TARGET: ((deploy_env))
             FLY_CMD: ./paas-bootstrap/bin/fly
           run:
             path: sh
@@ -1264,7 +1264,7 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh {{bosh_fqdn_external}} bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
               mkdir -p updated-concourse-manifest
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
@@ -1283,12 +1283,12 @@ jobs:
           inputs:
             - name: paas-bootstrap
           params:
-            DEPLOY_ENV: {{deploy_env}}
-            BRANCH: {{branch_name}}
-            AWS_ACCOUNT: {{aws_account}}
-            SKIP_COMMIT_VERIFICATION: {{skip_commit_verification}}
-            SELF_UPDATE_PIPELINE: {{self_update_pipeline}}
-            CONCOURSE_TYPE: {{concourse_type}}
+            DEPLOY_ENV: ((deploy_env))
+            BRANCH: ((branch_name))
+            AWS_ACCOUNT: ((aws_account))
+            SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
+            SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+            CONCOURSE_TYPE: ((concourse_type))
           run:
             path: sh
             args:
@@ -1354,8 +1354,8 @@ jobs:
           outputs:
           - name: updated-vpc-tfstate
           params:
-            TF_VAR_env: {{deploy_env}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            TF_VAR_env: ((deploy_env))
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -1363,7 +1363,7 @@ jobs:
             - -c
             - |
               terraform apply -target=aws_security_group.office-access-ssh \
-                -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                 -target=aws_subnet.infra \
                 -state=vpc-tfstate/vpc.tfstate \
                 -state-out=updated-vpc-tfstate/vpc.tfstate \
@@ -1388,11 +1388,11 @@ jobs:
           outputs:
           - name: updated-bosh-tfstate
           params:
-            TF_VAR_env: {{deploy_env}}
-            TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
-            TF_VAR_bosh_fqdn: {{bosh_fqdn}}
-            TF_VAR_bosh_fqdn_external: {{bosh_fqdn_external}}
-            AWS_DEFAULT_REGION: {{aws_region}}
+            TF_VAR_env: ((deploy_env))
+            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
+            TF_VAR_bosh_fqdn: ((bosh_fqdn))
+            TF_VAR_bosh_fqdn_external: ((bosh_fqdn_external))
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -1405,7 +1405,7 @@ jobs:
               terraform apply -target=aws_security_group.bosh \
                 -state=bosh-tfstate/bosh.tfstate \
                 -state-out=updated-bosh-tfstate/bosh.tfstate \
-                -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars paas-bootstrap/terraform/bosh
+                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
@@ -1427,11 +1427,11 @@ jobs:
           outputs:
           - name: updated-concourse-tfstate
           params:
-            TF_VAR_env: {{deploy_env}}
-            TF_VAR_concourse_hostname: {{concourse_hostname}}
-            TF_VAR_system_dns_zone_name: {{system_dns_zone_name}}
+            TF_VAR_env: ((deploy_env))
+            TF_VAR_concourse_hostname: ((concourse_hostname))
+            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
             TF_VAR_git_rsa_id_pub: ""
-            AWS_DEFAULT_REGION: {{aws_region}}
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
@@ -1442,7 +1442,7 @@ jobs:
               . bosh-terraform-outputs/tfvars.sh
 
               terraform apply -target=aws_security_group.concourse \
-                -var-file=paas-bootstrap/terraform/{{aws_account}}.tfvars \
+                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
                 -state=concourse-tfstate/concourse.tfstate \
                 -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
@@ -1487,8 +1487,8 @@ jobs:
       - task: clear-ssh-keys
         file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
         params:
-          AWS_DEFAULT_REGION: {{aws_region}}
-          BUCKET: {{state_bucket}}
+          AWS_DEFAULT_REGION: ((aws_region))
+          BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: concourse_
 
   - name: clear-bosh-credentials
@@ -1527,6 +1527,6 @@ jobs:
       - task: clear-ssh-keys
         file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
         params:
-          AWS_DEFAULT_REGION: {{aws_region}}
-          BUCKET: {{state_bucket}}
+          AWS_DEFAULT_REGION: ((aws_region))
+          BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: bosh_
