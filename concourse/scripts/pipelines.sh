@@ -37,6 +37,7 @@ datadog_app_key: ${DATADOG_APP_KEY:-}
 enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
+gpg_ids: ${gpg_ids}
 EOF
 }
 
@@ -52,15 +53,10 @@ fi
 
 generate_vars_file > /dev/null # Check for missing vars
 
-generate_manifest_file() {
-  sed -e "s/((gpg_ids))/${gpg_ids}/" \
-      < "${SCRIPT_DIR}/../pipelines/${pipeline_name}.yml"
-}
-
 upload_pipeline() {
   bash "${SCRIPT_DIR}/deploy-pipeline.sh" \
     "${pipeline_name}" \
-    <(generate_manifest_file) \
+    "${SCRIPT_DIR}/../pipelines/${pipeline_name}.yml" \
     <(generate_vars_file)
 }
 
