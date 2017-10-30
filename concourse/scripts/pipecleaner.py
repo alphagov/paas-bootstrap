@@ -12,8 +12,8 @@ It can check for the following issues:
 * Resources that have been `get:`-ted and are not used in the job.
   (Warning)
 * `output:`s that are not used later in the job. (Warning)
-* scriptlets that fail the tests implemented by `shellcheck`
-  http://www.shellcheck.net/ (Warning)
+* Scriptlets that fail the tests implemented by `shellcheck`
+  http://www.shellcheck.net/ (Fatal)
 
 By default it will exit with a nonzero exit code for any Fatal errors,
 and will exit with a nonzero code for Warnings if you pass the
@@ -42,7 +42,11 @@ class Pipecleaner(object):
 
     def load_pipeline(self, filename):
         raw = open(filename).read()
-        raw = re.sub('\(\(.*?\)\)', 'DUMMY', raw)
+        # Regexp taken from https://github.com/cloudfoundry/bosh-cli/blob/21639e8/director/template/template.go#L90
+        # (Fly uses bosh-cli's template package to do the interpolation.
+        #
+        # Include $(date) in the replacement so that shellcheck doesn't assume these substitutions have safe contents
+        raw = re.sub('\(\((!?[-/\.\w\pL]+)\)\)', 'DUMMY-$(date)', raw)
         return yaml.load(raw)
 
     def call_shellcheck(self, shell, args, variables):
@@ -57,7 +61,9 @@ class Pipecleaner(object):
                 script += "set " + switch + "\n"
 
         for name, value in variables.iteritems():
-            script += "export " + name + "='DUMMY'\n"
+            # Include $(date) so that shellcheck doesn't assume these variables have safe contents
+            script += name + "=\"DUMMY-$(date)\"\n"
+            script += "export " + name + "\n"
 
         script += args[-1]
 
@@ -185,7 +191,7 @@ class Pipecleaner(object):
                                     'job': job['name'],
                                     'task': item['task'],
                                     '~': output,
-                                    'fatal': False,
+                                    'fatal': True,
                                 })
 
             overall_used_resources = overall_used_resources.union(used_resources).union(get_resources)
@@ -227,9 +233,9 @@ class Pipecleaner(object):
 if __name__ == '__main__':
     def usage():
         print """
-pipecleaner.py pipeline.yml [pipeline2.yml..]
-                            [--ignore-types=unused_fetch,unused_resource]
-                            [--fatal-warnings]"""
+pipecleaner.py [--ignore-types=unused_fetch,unused_resource]
+               [--fatal-warnings]
+               pipeline1.yml [pipelineN.yml...]"""
         sys.exit(2)
 
     try:
