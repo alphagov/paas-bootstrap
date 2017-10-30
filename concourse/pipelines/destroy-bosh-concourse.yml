@@ -176,10 +176,12 @@ jobs:
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-              terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
-              terraform apply ${terraform_params} -target=aws_security_group.bosh \
+              terraform apply \
+                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -target=aws_security_group.bosh \
                 -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
-                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars paas-bootstrap/terraform/bosh
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
@@ -276,7 +278,7 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
               terraform destroy -force \
-                -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=concourse-tfstate/concourse.tfstate -state-out=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
@@ -450,9 +452,12 @@ jobs:
 
                 touch paas-bootstrap/terraform/bosh/id_rsa.pub paas-bootstrap/terraform/bosh/bosh_id_rsa.pub
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-                terraform_params="-var concourse_egress_cidr=${CONCOURSE_EGRESS_IP}/32"
-                terraform destroy ${terraform_params} -force -var env=((deploy_env)) -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
-                  -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate paas-bootstrap/terraform/bosh
+                terraform destroy -force \
+                  -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                  -var env="((deploy_env))" \
+                  -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                  -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
+                  paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
           params:
@@ -491,7 +496,8 @@ jobs:
             - -e
             - -c
             - |
-              terraform destroy -force -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
+              terraform destroy -force \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=vpc-tfstate/vpc.tfstate -state-out=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
@@ -531,5 +537,7 @@ jobs:
             - -e
             - -c
             - |
-              terraform destroy -force -var-file=paas-bootstrap/terraform/((aws_account)).tfvars \
-                -state=bucket-terraform-state/bucket.tfstate paas-bootstrap/terraform/bucket
+              terraform destroy -force \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -state=bucket-terraform-state/bucket.tfstate \
+                paas-bootstrap/terraform/bucket
