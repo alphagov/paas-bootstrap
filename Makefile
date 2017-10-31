@@ -61,7 +61,7 @@ lint_shellcheck:
 	find . -name '*.sh' -not -path '*/vendor/*' | xargs $(SHELLCHECK)
 
 lint_concourse:
-	cd .. && SHELLCHECK_OPTS="-e SC1091,SC2034,SC2046,SC2086" python paas-bootstrap/concourse/scripts/pipecleaner.py --fatal-warnings paas-bootstrap/concourse/pipelines/*.yml
+	cd .. && SHELLCHECK_OPTS="-e SC1091" python paas-bootstrap/concourse/scripts/pipecleaner.py --fatal-warnings paas-bootstrap/concourse/pipelines/*.yml
 
 lint_ruby:
 	bundle exec govuk-lint-ruby
