@@ -163,6 +163,10 @@ showenv: ## Display environment information
 		--filters 'Name=tag:Name,Values=*concourse' "Name=key-name,Values=${VAGRANT_SSH_KEY_NAME}" \
                 --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
+.PHONY: bosh-cli
+bosh-cli:
+	@./scripts/bosh-cli.sh
+
 .PHONY: ssh_bosh
 ssh_bosh: check-env-vars ## SSH to the bosh server
 	@./scripts/ssh_bosh.sh
