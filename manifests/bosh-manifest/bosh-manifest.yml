@@ -174,5 +174,6 @@ networks:
       subnet: (( grab terraform_outputs.bosh_subnet_id ))
       security_groups:
       - (( grab terraform_outputs.bosh_security_group ))
+      - (( grab terraform_outputs.ssh_security_group ))
 - name: public
   type: vip
