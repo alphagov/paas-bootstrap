@@ -201,13 +201,13 @@ providing them to the interactive configure command.
 
 ## SSH to concourse and tunnel
 
-You can ssh to Concourse using the command: `make <env> ssh_concourse`
+You can ssh to Concourse using the command: `make ssh_concourse`
 This will automatically get the right key and log you in as vcap user.
 
 You can open an SSH tunnel to any TCP socket in the VPC with the command:
-`make <env> tunnel TUNNEL=<local_port>:<remote_host>:<remote_port>`
+`make tunnel TUNNEL=<local_port>:<remote_host>:<remote_port>`
 
-Stop the tunnel with: `make <env> stop-tunnel`
+Stop the tunnel with: `make stop-tunnel`
 
 ## Other useful commands
 

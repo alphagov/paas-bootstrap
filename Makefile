@@ -171,18 +171,18 @@ bosh-cli:
 ssh_bosh: check-env-vars ## SSH to the bosh server
 	@./scripts/ssh_bosh.sh
 
-ssh_concourse: check-env-vars ## SSH to the concourse server
-	@./concourse/scripts/ssh.sh
+ssh_concourse: check-env-vars ## SSH to the concourse server. Set SSH_CMD to pass a command to execute.
+	@./concourse/scripts/ssh.sh ssh ${SSH_CMD}
 
 ssh_bootstrap_concourse: check-env-vars ## SSH to the bootstrap concourse server
 	@cd vagrant ; vagrant ssh -- -i ../${VAGRANT_SSH_KEY_NAME}
 
 tunnel: check-env-vars ## SSH tunnel to internal IPs
 	$(if ${TUNNEL},,$(error Must pass TUNNEL=SRC_PORT:HOST:DST_PORT))
-	@./concourse/scripts/ssh.sh ${TUNNEL}
+	@./concourse/scripts/ssh.sh tunnel ${TUNNEL}
 
 stop-tunnel: check-env-vars ## Stop SSH tunnel
-	@./concourse/scripts/ssh.sh stop
+	@./concourse/scripts/ssh.sh tunnel stop
 
 .PHONY: upload-datadog-secrets
 upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials to S3
