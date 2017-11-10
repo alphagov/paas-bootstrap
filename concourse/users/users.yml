@@ -1,0 +1,14 @@
+---
+prod: |
+      --github-auth-user alext
+      --github-auth-user dcarley
+      --github-auth-user bleach
+      --github-auth-user henrytk
+      --github-auth-user paroxp
+      --github-auth-user LeePorte
+      --github-auth-user samcrang
+ci: |
+      --github-auth-user chrisfarms
+      --github-auth-user 46bit
+      --github-auth-user bandesz
+      --github-auth-user camelpunch

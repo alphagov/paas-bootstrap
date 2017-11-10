@@ -34,6 +34,9 @@ concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
 enable_datadog: ${ENABLE_DATADOG}
 datadog_api_key: ${DATADOG_API_KEY:-}
 datadog_app_key: ${DATADOG_APP_KEY:-}
+enable_github: ${ENABLE_GITHUB}
+github_client_id: ${GITHUB_CLIENT_ID:-}
+github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
@@ -43,6 +46,10 @@ EOF
 
 if [ "${ENABLE_DATADOG}" = "true" ] ; then
   eval "$("${SCRIPT_DIR}"/../../scripts/manage-datadog-secrets.sh retrieve)"
+fi
+
+if [ "${ENABLE_GITHUB}" = "true" ] ; then
+  eval "$("${SCRIPT_DIR}"/../../scripts/manage-github-secrets.sh retrieve)"
 fi
 
 if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
