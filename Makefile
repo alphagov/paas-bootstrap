@@ -82,6 +82,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export ENABLE_DESTROY=true)
 	$(eval export ENABLE_DATADOG ?= false)
+	$(eval export ENABLE_GITHUB ?= false)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 
@@ -90,18 +91,21 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: staging
 staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: prod
 prod: globals check-env-vars ## Set Environment to Production
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
 
 ## Concourse profiles
 
@@ -190,6 +194,13 @@ upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials
 	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-datadog-secrets.sh upload
+
+.PHONY: upload-github-oauth
+upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
+	$(if ${AWS_ACCOUNT},,$(error Must set environment to dev/ci/staging/prod))
+	$(if ${GITHUB_PASSWORD_STORE_DIR},,$(error Must pass GITHUB_PASSWORD_STORE_DIR=<path_to_password_store>))
+	$(if $(wildcard ${GITHUB_PASSWORD_STORE_DIR}),,$(error Password store ${GITHUB_PASSWORD_STORE_DIR} does not exist))
+	@scripts/manage-github-secrets.sh upload
 
 merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
 	$(if ${PR},,$(error Must pass PR=<number>))
