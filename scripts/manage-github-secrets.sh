@@ -67,15 +67,7 @@ retrieve() {
     GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(val_from_yaml github_client_id "${secrets_file}")}"
     GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(val_from_yaml github_client_secret "${secrets_file}")}"
   else
-    echo "Warning: Cannot retrieve github secrets from S3. Retriving from environment or from pass." 1>&2
-    get_creds_from_env_or_pass
-  fi
-
-  if [ -z "${GITHUB_CLIENT_ID}" ] || [ -z "${GITHUB_CLIENT_SECRET}" ] ; then
-    echo "\$GITHUB_CLIENT_ID or \$GITHUB_CLIENT_SECRET not set, failing" 1>&2
-  else
-    echo "export GITHUB_CLIENT_ID=\"${GITHUB_CLIENT_ID}\""
-    echo "export GITHUB_CLIENT_SECRET=\"${GITHUB_CLIENT_SECRET}\""
+    echo "Warning: Cannot retrieve github secrets from S3. Did you upload them?" 
   fi
 }
 

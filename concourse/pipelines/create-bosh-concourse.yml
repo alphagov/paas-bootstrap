@@ -1218,7 +1218,7 @@ jobs:
           params:
             file: updated-concourse-manifest/concourse-manifest.yml
 
-      - task: add-env-specific-team
+      - task: add-github-oauth
         config:
           platform: linux
           image_resource:
@@ -1239,8 +1239,6 @@ jobs:
             FLY_TARGET: ((deploy_env))
             FLY_CMD: ./paas-bootstrap/bin/fly
             ENABLE_GITHUB: ((enable_github))
-            GITHUB_CLIENT_ID: ((github_client_id))
-            GITHUB_CLIENT_SECRET: ((github_client_secret))
           run:
             path: sh
             args:
@@ -1250,8 +1248,6 @@ jobs:
                 export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
                 export CONCOURSE_ATC_PASSWORD
                 CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
-                export GITHUB_CLIENT_ID
-                export GITHUB_CLIENT_SECRET
 
                 if [ "${ENABLE_GITHUB}" = "true" ] ; then
                   GITHUB_CI_USERS=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb ci ./paas-bootstrap/concourse/users/users.yml)
@@ -1267,20 +1263,41 @@ jobs:
 
                   ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                   # shellcheck disable=SC2046,SC2116
-                  ${FLY_CMD} -t "${FLY_TARGET}" set-team -n "${FLY_TEAM}" \
-                    --github-auth-client-id "${GITHUB_CLIENT_ID}" \
-                    --github-auth-client-secret "${GITHUB_CLIENT_SECRET}"  \
-                    $(echo "$GITHUB_USERS") --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
-
-                  ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
-                  # shellcheck disable=SC2046,SC2116
                   ${FLY_CMD} -t "${FLY_TARGET}" set-team -n main \
                     --github-auth-client-id "${GITHUB_CLIENT_ID}" \
                     --github-auth-client-secret "${GITHUB_CLIENT_SECRET}"  \
                     $(echo "$GITHUB_USERS") --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
 
-                  exit 0
                 fi
+
+      - task: add-env-specific-team
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+            - name: concourse-manifest
+            - name: concourse-secrets
+          params:
+            CONCOURSE_HOSTNAME: ((concourse_hostname))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            CONCOURSE_ATC_USER: admin
+            FLY_TEAM: ((aws_account))
+            FLY_TARGET: ((deploy_env))
+            FLY_CMD: ./paas-bootstrap/bin/fly
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
+                export CONCOURSE_ATC_PASSWORD
+                CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
 
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                 ${FLY_CMD} -t "${FLY_TARGET}" set-team -n "${FLY_TEAM}" \
