@@ -49,9 +49,8 @@ upload() {
 
   cat > "${secrets_file}" << EOF
 ---
-secrets:
-  github_client_id: ${GITHUB_CLIENT_ID}
-  github_client_secret: ${GITHUB_CLIENT_SECRET}
+github_client_id: ${GITHUB_CLIENT_ID}
+github_client_secret: ${GITHUB_CLIENT_SECRET}
 EOF
 
   aws s3 cp "${secrets_file}" "${secrets_uri}"

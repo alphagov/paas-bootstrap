@@ -160,13 +160,6 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
-  - name: github-oauth-secrets
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: github-oauth-secrets.yml
-
 jobs:
   - name: init-bucket
     serial: true
@@ -286,7 +279,6 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" github-oauth-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
 
   - name: vpc
     serial: true
@@ -1161,7 +1153,6 @@ jobs:
         - get: concourse-manifest
           passed: ['generate-concourse-config']
         - get: concourse-secrets
-        - get: github-oauth-secrets
 
       - task: get-and-upload-stemcell
         config:
@@ -1218,7 +1209,7 @@ jobs:
           params:
             file: updated-concourse-manifest/concourse-manifest.yml
 
-      - task: add-env-specific-team
+      - task: add-github-oauth
         config:
           platform: linux
           image_resource:
@@ -1230,12 +1221,11 @@ jobs:
             - name: paas-bootstrap
             - name: concourse-manifest
             - name: concourse-secrets
-            - name: github-oauth-secrets
           params:
             CONCOURSE_HOSTNAME: ((concourse_hostname))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
             CONCOURSE_ATC_USER: admin
-            FLY_TEAM: ((aws_account))
+            AWS_ACCOUNT: ((aws_account))
             FLY_TARGET: ((deploy_env))
             FLY_CMD: ./paas-bootstrap/bin/fly
             ENABLE_GITHUB: ((enable_github))
@@ -1250,27 +1240,16 @@ jobs:
                 export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
                 export CONCOURSE_ATC_PASSWORD
                 CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
-                export GITHUB_CLIENT_ID
-                export GITHUB_CLIENT_SECRET
 
                 if [ "${ENABLE_GITHUB}" = "true" ] ; then
                   GITHUB_CI_USERS=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb ci ./paas-bootstrap/concourse/users/users.yml)
                   GITHUB_PROD_USERS=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb prod ./paas-bootstrap/concourse/users/users.yml)
-                  GITHUB_CLIENT_ID=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.github_client_id github-oauth-secrets/github-oauth-secrets.yml)
-                  GITHUB_CLIENT_SECRET=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.github_client_secret github-oauth-secrets/github-oauth-secrets.yml)
 
-                  if [ "${FLY_TEAM}" = "dev" ] || [ "${FLY_TEAM}" = "ci" ]; then
+                  if [ "${AWS_ACCOUNT}" = "dev" ] || [ "${AWS_ACCOUNT}" = "ci" ]; then
                     export GITHUB_USERS="${GITHUB_CI_USERS} ${GITHUB_PROD_USERS}"
                   else
                     export GITHUB_USERS="${GITHUB_PROD_USERS}"
                   fi
-
-                  ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
-                  # shellcheck disable=SC2046,SC2116
-                  ${FLY_CMD} -t "${FLY_TARGET}" set-team -n "${FLY_TEAM}" \
-                    --github-auth-client-id "${GITHUB_CLIENT_ID}" \
-                    --github-auth-client-secret "${GITHUB_CLIENT_SECRET}"  \
-                    $(echo "$GITHUB_USERS") --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
 
                   ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                   # shellcheck disable=SC2046,SC2116
@@ -1279,8 +1258,37 @@ jobs:
                     --github-auth-client-secret "${GITHUB_CLIENT_SECRET}"  \
                     $(echo "$GITHUB_USERS") --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
 
-                  exit 0
                 fi
+
+
+      - task: add-env-specific-team
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/self-update-pipelines
+              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+          inputs:
+            - name: paas-bootstrap
+            - name: concourse-manifest
+            - name: concourse-secrets
+          params:
+            CONCOURSE_HOSTNAME: ((concourse_hostname))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            CONCOURSE_ATC_USER: admin
+            FLY_TEAM: ((aws_account))
+            FLY_TARGET: ((deploy_env))
+            FLY_CMD: ./paas-bootstrap/bin/fly
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
+                export CONCOURSE_ATC_PASSWORD
+                CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
 
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
                 ${FLY_CMD} -t "${FLY_TARGET}" set-team -n "${FLY_TEAM}" \
