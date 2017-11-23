@@ -25,6 +25,7 @@ AWS_ACCOUNT_DATA = {
 }.freeze
 AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT)
 
+# rubocop:disable Metrics/BlockLength
 Vagrant.configure(2) do |config|
   config.vm.box = ENV['VAGRANT_BOX_NAME'] || 'aws_vagrant_box'
 
