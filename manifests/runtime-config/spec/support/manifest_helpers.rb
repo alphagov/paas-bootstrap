@@ -51,7 +51,7 @@ private
 
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
-    deep_freeze(YAML.load(runtime_config))
+    deep_freeze(YAML.safe_load(runtime_config))
   end
 
   def load_terraform_fixture

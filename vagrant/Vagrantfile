@@ -43,7 +43,8 @@ Vagrant.configure(2) do |config|
           SYSTEM_DNS_ZONE_NAME
           BOSH_FQDN
           BOSH_FQDN_EXTERNAL
-          BOSH_LOGIN_HOST).include? key
+          BOSH_LOGIN_HOST
+).include? key
       }
       s.name = post_deploy_file
       s.path = post_deploy_file
