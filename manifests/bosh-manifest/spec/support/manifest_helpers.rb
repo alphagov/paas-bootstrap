@@ -62,7 +62,7 @@ private
 
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
-    deep_freeze(YAML.load(output))
+    deep_freeze(YAML.safe_load(output))
   end
 
   def generate_bosh_secrets
