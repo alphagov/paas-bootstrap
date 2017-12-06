@@ -27,6 +27,8 @@ meta:
 
       LoadPlugin df
       <Plugin df>
+        FSType "tracefs"
+        IgnoreSelected true
         ReportInodes true
         ReportReserved true
       </Plugin>
