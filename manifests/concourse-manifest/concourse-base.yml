@@ -110,6 +110,7 @@ jobs:
             role:
               name: atc
               password: (( grab secrets.concourse_postgres_password ))
+          token_signing_key: (( grab secrets.concourse_token_signing_key ))
 
       - name: groundcrew
         release: concourse
@@ -119,6 +120,8 @@ jobs:
           tsa:
             host: 127.0.0.1
             port: 2222
+            host_public_key: (( grab secrets.concourse_tsa_host_key.public_key ))
+            worker_key: (( grab secrets.concourse_worker_key ))
 
       - name: tsa
         release: concourse
@@ -126,6 +129,9 @@ jobs:
           forward_host: 127.0.0.1
           atc:
             address: 127.0.0.1:8080
+          host_key: (( grab secrets.concourse_tsa_host_key ))
+          token_signing_key: (( grab secrets.concourse_token_signing_key ))
+          authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
 
       - name: baggageclaim
         release: concourse
