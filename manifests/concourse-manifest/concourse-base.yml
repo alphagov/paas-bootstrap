@@ -12,9 +12,9 @@ director_uuid: ~
 
 releases:
   - name: concourse
-    version: 3.5.0
-    url: https://bosh.io/d/github.com/concourse/concourse?v=3.5.0
-    sha1: 65a974b3831bb9908661a5ffffbe456e10185149
+    version: 3.6.0
+    url: https://bosh.io/d/github.com/concourse/concourse?v=3.6.0
+    sha1: 1257bdcd3181ab0a669bc9e34cd87aff584f007b
   - name: garden-runc
     version: 1.6.0
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
