@@ -19,6 +19,10 @@ releases:
     version: 1.6.0
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
     sha1: 58fbc64aff303e6d76899441241dd5dacef50cb7
+  - name: postgres
+    version: 22
+    url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=22
+    sha1: 86a1333122e9cdd051551c83ec26d36f6e325d6c
 
 properties:
   aws:
@@ -83,13 +87,16 @@ jobs:
     persistent_disk_pool: db
 
     templates:
-      - name: postgresql
-        release: concourse
+      - name: postgres
+        release: postgres
         properties:
           databases:
-            - name: atc
-              role: atc
-              password: (( grab secrets.concourse_postgres_password ))
+            port: 5432
+            databases:
+              - name: atc
+            roles:
+              - name: atc
+                password: (( grab secrets.concourse_postgres_password ))
 
       - name: atc
         release: concourse
@@ -98,7 +105,11 @@ jobs:
           basic_auth_username: admin
           basic_auth_password: (( grab secrets.concourse_atc_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
-          postgresql_database: atc
+          postgresql:
+            database: atc
+            role:
+              name: atc
+              password: (( grab secrets.concourse_postgres_password ))
 
       - name: groundcrew
         release: concourse
