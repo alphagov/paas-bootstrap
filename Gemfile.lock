@@ -124,8 +124,9 @@ DEPENDENCIES
   github_merge_sign (= 1.0.0)
   govuk-lint (~> 3.3.0)
   json-minify (~> 0.0.2)
+  net-ssh (>= 2.9.2)
   rspec (~> 3.3)
   webmock (~> 1.24)
 
 BUNDLED WITH
-   1.15.4
+   1.16.0
