@@ -120,4 +120,16 @@ val2: b
 			Expect(session.Err.Contents()).To(BeEmpty())
 		})
 	})
+
+	Context("argument references an array of string values", func() {
+		BeforeEach(func() {
+			cmdArg = "foo.array2"
+		})
+
+		It("joins them into a comma-delimited string", func() {
+			Eventually(session).Should(gexec.Exit(0))
+			Expect(session.Out.Contents()).To(Equal([]byte("array2_value1,array2_value2,array2_value3\n")))
+			Expect(session.Err.Contents()).To(BeEmpty())
+		})
+	})
 })
