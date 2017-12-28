@@ -293,7 +293,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/awscli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: b2495d6ed07f680125d19aa7d1701da7efabb289
           inputs:
             - name: paas-bootstrap
           params:
