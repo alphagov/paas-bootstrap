@@ -421,6 +421,7 @@ jobs:
                 - -e
                 - -c
                 - |
+                  BUNDLE_GEMFILE=paas-bootstrap/Gemfile bundle install --without=default --with=secret_generator
                   ./paas-bootstrap/manifests/bosh-manifest/scripts/generate-bosh-secrets.rb \
                     --existing-secrets existing-bosh-secrets/bosh-secrets.yml \
                     > generated-bosh-secrets/bosh-secrets.yml
@@ -533,6 +534,7 @@ jobs:
             - -e
             - -c
             - |
+              BUNDLE_GEMFILE=paas-bootstrap/Gemfile bundle install --without=default --with=secret_generator
               ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-concourse-secrets.rb \
                 --existing-secrets concourse-secrets/concourse-secrets.yml \
                 > generated-concourse-secrets/concourse-secrets.yml

@@ -1,6 +1,7 @@
 require 'securerandom'
 require 'openssl'
 require 'digest/md5'
+require 'net/ssh'
 
 class SecretGenerator
   PASSWORD_PREFIX = 'p'.freeze
@@ -23,6 +24,25 @@ class SecretGenerator
     {
       "private_key" => key.to_pem,
       "public_fingerprint" => ssh_key_md5_fingerprint(key.public_key),
+    }
+  end
+
+  def self.generate_bosh_ssh_key
+    key = OpenSSL::PKey::RSA.new(2048)
+    type = key.ssh_type
+    data = [key.to_blob].pack('m0')
+    {
+      "private_key" => key.to_pem,
+      "public_key" => "#{type} #{data}",
+      "public_key_fingerprint" => ssh_key_md5_fingerprint(key.public_key),
+    }
+  end
+
+  def self.generate_bosh_rsa_key
+    key = OpenSSL::PKey::RSA.new(2048)
+    {
+      "private_key" => key.to_pem,
+      "public_key" => key.public_key.to_pem
     }
   end
 
@@ -59,6 +79,10 @@ class SecretGenerator
         output[key] = self.class.sha512_crypt(output["#{key}_orig"])
       when :ssh_key
         output[key] = self.class.generate_ssh_key
+      when :bosh_ssh_key
+        output[key] = self.class.generate_bosh_ssh_key
+      when :bosh_rsa_key
+        output[key] = self.class.generate_bosh_rsa_key
       else
         raise ArgumentError, "unrecognized secret type '#{type}'"
       end

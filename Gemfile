@@ -6,3 +6,7 @@ gem 'govuk-lint', "~> 3.3.0"
 gem 'json-minify', '~> 0.0.2'
 gem 'rspec', '~> 3.3'
 gem 'webmock', "~> 1.24"
+
+group :secret_generator do
+  gem 'net-ssh', '>= 2.9.2'
+end

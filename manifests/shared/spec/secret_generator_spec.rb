@@ -68,6 +68,65 @@ RSpec.describe SecretGenerator do
     end
   end
 
+  describe "BOSH SSH key generation" do
+    let(:ssh_key_fixture_public) {
+      fixture_file = File.expand_path("../fixtures/sample_key.pub", __FILE__)
+      File.read(fixture_file)
+    }
+    let(:ssh_key_fixture) {
+      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+      OpenSSL::PKey::RSA.new(File.read(fixture_file))
+    }
+    before(:each) do
+      allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
+    end
+
+    let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
+
+    it "should return the PEM encoded private SSH key" do
+      expect(generated_key).to include(
+        "private_key" => ssh_key_fixture.to_pem,
+      )
+    end
+
+    it "should return the public SSH key" do
+      expect(generated_key).to include(
+        "public_key" => ssh_key_fixture_public.rstrip,
+      )
+    end
+
+    it "should return the fingerprint of the public key" do
+      # expected fingerprint generated with `ssh-keygen -lf fixtures/sample_key.pub`
+      expect(generated_key).to include(
+        "public_key_fingerprint" => "ce:f2:03:7f:22:3e:c5:ec:18:b8:c0:70:b5:42:91:e7",
+      )
+    end
+  end
+
+  describe "BOSH RSA key generation" do
+    let(:rsa_key_fixture) {
+      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+      OpenSSL::PKey::RSA.new(File.read(fixture_file))
+    }
+    before(:each) do
+      allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa_key_fixture)
+    end
+
+    let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
+
+    it "should return a PEM encoded private RSA key" do
+      expect(generated_key).to include(
+        "private_key" => rsa_key_fixture.to_pem,
+      )
+    end
+
+    it "should return a PEM encoded public RSA key" do
+      expect(generated_key).to include(
+        "public_key" => rsa_key_fixture.public_key.to_pem,
+      )
+    end
+  end
+
   describe "generating required passwords" do
     it "generates the requested simple passwords" do
       required_secrets = {

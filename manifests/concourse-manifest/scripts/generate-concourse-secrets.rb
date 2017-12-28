@@ -8,6 +8,9 @@ generator = SecretGenerator.new(
   "concourse_vcap_password" => :sha512_crypted,
   "concourse_atc_password" => :simple,
   "concourse_postgres_password" => :simple,
+  "concourse_token_signing_key" => :bosh_rsa_key,
+  "concourse_tsa_host_key" => :bosh_ssh_key,
+  "concourse_worker_key" => :bosh_ssh_key,
 )
 
 option_parser = OptionParser.new do |opts|

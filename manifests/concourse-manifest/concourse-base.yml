@@ -12,9 +12,9 @@ director_uuid: ~
 
 releases:
   - name: concourse
-    version: 3.6.0
-    url: https://bosh.io/d/github.com/concourse/concourse?v=3.6.0
-    sha1: 1257bdcd3181ab0a669bc9e34cd87aff584f007b
+    version: 3.8.0
+    url: https://bosh.io/d/github.com/concourse/concourse?v=3.8.0
+    sha1: 99e134676df72e18c719ccfbd7977bd9449e6fd4
   - name: garden-runc
     version: 1.6.0
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
@@ -110,6 +110,7 @@ jobs:
             role:
               name: atc
               password: (( grab secrets.concourse_postgres_password ))
+          token_signing_key: (( grab secrets.concourse_token_signing_key ))
 
       - name: groundcrew
         release: concourse
@@ -119,6 +120,8 @@ jobs:
           tsa:
             host: 127.0.0.1
             port: 2222
+            host_public_key: (( grab secrets.concourse_tsa_host_key.public_key ))
+            worker_key: (( grab secrets.concourse_worker_key ))
 
       - name: tsa
         release: concourse
@@ -126,6 +129,9 @@ jobs:
           forward_host: 127.0.0.1
           atc:
             address: 127.0.0.1:8080
+          host_key: (( grab secrets.concourse_tsa_host_key ))
+          token_signing_key: (( grab secrets.concourse_token_signing_key ))
+          authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
 
       - name: baggageclaim
         release: concourse

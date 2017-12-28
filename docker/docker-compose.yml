@@ -8,7 +8,7 @@ concourse-db:
     PGDATA: /database
 
 concourse-web:
-  image: concourse/concourse:3.4.1
+  image: concourse/concourse:3.8.0
   links: [concourse-db]
   command: web
   restart: unless-stopped
@@ -26,7 +26,7 @@ concourse-web:
       postgres://${CONCOURSE_DATABASE_USER}:${CONCOURSE_DATABASE_PASS}@concourse-db:5432/${CONCOURSE_DATABASE_NAME}?sslmode=disable
 
 concourse-worker:
-  image: concourse/concourse:3.4.1
+  image: concourse/concourse:3.8.0
   privileged: true
   links: [concourse-web]
   command: worker
