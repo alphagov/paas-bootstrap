@@ -61,7 +61,7 @@ if [ "null" = "${dns_validation_record}" ] || [ "null" = "${dns_validation_value
   exit 1
 fi
 
-zone_id=$(aws route53 list-hosted-zones-by-name --dns-name dev.cloudpipeline.digital --query 'HostedZones[0].Id' --output text | cut -d '/' -f 3)
+zone_id=$(aws route53 list-hosted-zones-by-name --dns-name "${ROOT_SYSTEM_DNS_ZONE_NAME}" --query 'HostedZones[0].Id' --output text | cut -d '/' -f 3)
 
 echo "Upserting DNS validation record: ${dns_validation_record}"
 

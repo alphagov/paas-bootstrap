@@ -944,6 +944,7 @@ jobs:
             - name: paas-bootstrap
           params:
             CONCOURSE_HOSTNAME: ((concourse_hostname))
+            ROOT_SYSTEM_DNS_ZONE_NAME: ((root_system_dns_zone_name))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
             AWS_DEFAULT_REGION: ((aws_region))
           run:
