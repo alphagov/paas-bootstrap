@@ -61,11 +61,9 @@ if [ "null" = "${dns_validation_record}" ] || [ "null" = "${dns_validation_value
   exit 1
 fi
 
-zone_id=$(aws route53 list-hosted-zones-by-name --dns-name "${ROOT_SYSTEM_DNS_ZONE_NAME}" --query 'HostedZones[0].Id' --output text | cut -d '/' -f 3)
-
 echo "Upserting DNS validation record: ${dns_validation_record}"
 
-aws route53 change-resource-record-sets --hosted-zone-id "${zone_id}" --change-batch "$(get_route53_change_batch UPSERT)" > /dev/null
+aws route53 change-resource-record-sets --hosted-zone-id "${SYSTEM_DNS_ZONE_ID}" --change-batch "$(get_route53_change_batch UPSERT)" > /dev/null
 
 cat <<EOT
 
@@ -86,7 +84,7 @@ for _ in $(seq 40); do
     echo "Cert issued successfully."
 
     echo "Deleting DNS validation record."
-    aws route53 change-resource-record-sets --hosted-zone-id "${zone_id}" --change-batch "$(get_route53_change_batch DELETE)" > /dev/null
+    aws route53 change-resource-record-sets --hosted-zone-id "${SYSTEM_DNS_ZONE_ID}" --change-batch "$(get_route53_change_batch DELETE)" > /dev/null
 
     exit 0
   fi

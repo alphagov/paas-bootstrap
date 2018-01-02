@@ -26,7 +26,6 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["DATADOG_API_KEY"] = "abcd1234"
     ENV["ENABLE_DATADOG"] = "true"
-    ENV["ROOT_SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
     ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
 

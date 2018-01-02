@@ -79,8 +79,8 @@ globals:
 
 .PHONY: dev
 dev: globals check-env-vars ## Set Environment to DEV
-	$(eval export ROOT_SYSTEM_DNS_ZONE_NAME=dev.cloudpipeline.digital)
-	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.${ROOT_SYSTEM_DNS_ZONE_NAME})
+	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_ID=Z1QGLFML8EG6G7)
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export ENABLE_DESTROY=true)
 	$(eval export ENABLE_DATADOG ?= false)
@@ -90,24 +90,24 @@ dev: globals check-env-vars ## Set Environment to DEV
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
-	$(eval export ROOT_SYSTEM_DNS_ZONE_NAME=ci.cloudpipeline.digital)
-	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.${ROOT_SYSTEM_DNS_ZONE_NAME})
+	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_ID=Z2PF4LCV9VR1MV)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: staging
 staging: globals check-env-vars ## Set Environment to Staging
-	$(eval export ROOT_SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
-	$(eval export SYSTEM_DNS_ZONE_NAME=${ROOT_SYSTEM_DNS_ZONE_NAME})
+	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: prod
 prod: globals check-env-vars ## Set Environment to Production
-	$(eval export ROOT_SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
-	$(eval export SYSTEM_DNS_ZONE_NAME=${ROOT_SYSTEM_DNS_ZONE_NAME})
+	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
+	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
