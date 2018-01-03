@@ -51,7 +51,9 @@ if $0 == __FILE__ # Only execute if called directly as command
   val = property_tree[key]
   abort "Unable to find key: #{key}" if val.nil?
 
-  if val.is_a?(Array) || val.is_a?(Hash)
+  if val.is_a?(Array)
+    puts val.join(',')
+  elsif val.is_a?(Hash)
     puts YAML.dump(val)
   else
     puts val
