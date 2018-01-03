@@ -19,6 +19,7 @@ log_level: ${LOG_LEVEL:-}
 concourse_hostname: ${CONCOURSE_HOSTNAME}
 concourse_url: ${CONCOURSE_URL}
 system_dns_zone_name: ${SYSTEM_DNS_ZONE_NAME}
+system_dns_zone_id: ${SYSTEM_DNS_ZONE_ID}
 bosh_az: ${BOSH_AZ:-eu-west-1a}
 bosh_manifest_state: bosh-manifest-state-${BOSH_AZ:-eu-west-1a}.json
 bosh_fqdn: ${BOSH_FQDN}
