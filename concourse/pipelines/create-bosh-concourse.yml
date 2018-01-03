@@ -197,7 +197,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           params:
             TF_VAR_env: ((deploy_env))
             TF_VAR_state_bucket: ((state_bucket))
@@ -211,8 +211,12 @@ jobs:
             path: sh
             args:
             - -c
+            - -x
             - |
-              terraform apply -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+              terraform init paas-bootstrap/terraform/bucket
+              terraform apply \
+                -auto-approve=true \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=bucket-state/bucket.tfstate \
                 -state-out=updated-bucket-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket
@@ -322,7 +326,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -338,7 +342,9 @@ jobs:
             - -c
             - |
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform init paas-bootstrap/terraform/vpc
               terraform apply \
+                -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=vpc-tfstate/vpc.tfstate \
@@ -594,7 +600,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -623,7 +629,9 @@ jobs:
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
                 cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+                terraform init paas-bootstrap/terraform/bosh
                 terraform apply \
+                  -auto-approve=true \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -984,7 +992,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1012,7 +1020,9 @@ jobs:
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              terraform init paas-bootstrap/terraform/concourse
               terraform apply \
+                -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=concourse-tfstate/concourse.tfstate \
@@ -1412,7 +1422,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
@@ -1427,7 +1437,9 @@ jobs:
             - -e
             - -c
             - |
+              terraform init paas-bootstrap/terraform/vpc
               terraform apply \
+                -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -target=aws_subnet.infra \
@@ -1446,7 +1458,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1469,7 +1481,9 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
+              terraform init paas-bootstrap/terraform/bosh
               terraform apply \
+                -auto-approve=true \
                 -target=aws_security_group.bosh \
                 -state=bosh-tfstate/bosh.tfstate \
                 -state-out=updated-bosh-tfstate/bosh.tfstate \
@@ -1487,7 +1501,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
@@ -1511,7 +1525,9 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
 
+              terraform init paas-bootstrap/terraform/concourse
               terraform apply \
+                -auto-approve=true \
                 -target=aws_security_group.concourse \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=concourse-tfstate/concourse.tfstate \
