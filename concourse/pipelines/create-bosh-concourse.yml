@@ -350,6 +350,7 @@ jobs:
             file: updated-vpc-tfstate/vpc.tfstate
 
   - name: generate-secrets
+    serial: true
     plan:
       - aggregate:
         - get: paas-bootstrap
@@ -545,6 +546,7 @@ jobs:
             file: generated-concourse-secrets/concourse-secrets.yml
 
   - name: bosh-terraform
+    serial: true
     plan:
       - aggregate:
         - get: pipeline-trigger
@@ -816,6 +818,7 @@ jobs:
             file: runtime-config/runtime-config.yml
 
   - name: bosh-deploy
+    serial: true
     plan:
       - aggregate:
         - get: pipeline-trigger
@@ -1300,6 +1303,7 @@ jobs:
                   --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
 
   - name: post-deploy
+    serial: true
     plan:
       - aggregate:
         - get: pipeline-trigger
