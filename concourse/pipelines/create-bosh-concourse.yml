@@ -213,12 +213,12 @@ jobs:
             - -c
             - -x
             - |
+              cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
               terraform init paas-bootstrap/terraform/bucket
               terraform apply \
                 -auto-approve=true \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=bucket-state/bucket.tfstate \
-                -state-out=updated-bucket-state/bucket.tfstate \
+                -state=updated-bucket-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket
         on_success:
           put: bucket-terraform-state
@@ -342,13 +342,13 @@ jobs:
             - -c
             - |
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=vpc-tfstate/vpc.tfstate \
-                -state-out=updated-vpc-tfstate/vpc.tfstate \
+                -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
@@ -629,13 +629,15 @@ jobs:
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
                 cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+
+                cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 terraform init paas-bootstrap/terraform/bosh
                 terraform apply \
                   -auto-approve=true \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                  -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
+                  -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -1020,13 +1022,14 @@ jobs:
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+
+              cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=concourse-tfstate/concourse.tfstate \
-                -state-out=updated-concourse-tfstate/concourse.tfstate \
+                -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
@@ -1437,14 +1440,14 @@ jobs:
             - -e
             - -c
             - |
+              cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -target=aws_subnet.infra \
-                -state=vpc-tfstate/vpc.tfstate \
-                -state-out=updated-vpc-tfstate/vpc.tfstate \
+                -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
@@ -1481,12 +1484,13 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
+
+              cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               terraform init paas-bootstrap/terraform/bosh
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.bosh \
-                -state=bosh-tfstate/bosh.tfstate \
-                -state-out=updated-bosh-tfstate/bosh.tfstate \
+                -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
@@ -1525,13 +1529,13 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
 
+              cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=concourse-tfstate/concourse.tfstate \
-                -state-out=updated-concourse-tfstate/concourse.tfstate \
+                -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
