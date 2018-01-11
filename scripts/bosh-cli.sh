@@ -20,4 +20,5 @@ docker run \
     --env "BOSH_ID_RSA" \
     --env "BOSH_IP" \
     --env "BOSH_ADMIN_PASSWORD" \
-    governmentpaas/bosh-shell:f804160a7e6f455ef206b56eab25063908703dd5
+    --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
+    governmentpaas/bosh-shell:2b4604fe69274908af304c15f28ca8dd657b0221
