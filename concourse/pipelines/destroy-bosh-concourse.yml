@@ -153,7 +153,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
             - name: paas-bootstrap
             - name: vpc-terraform-outputs
@@ -177,10 +177,14 @@ jobs:
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+
+              cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
+              terraform init paas-bootstrap/terraform/bosh
               terraform apply \
+                -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -target=aws_security_group.bosh \
-                -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
+                -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
@@ -257,7 +261,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
             - name: paas-bootstrap
             - name: vpc-terraform-outputs
@@ -279,9 +283,12 @@ jobs:
             - |
               . vpc-terraform-outputs/tfvars.sh
               touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
+
+              cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
+              terraform init paas-bootstrap/terraform/concourse
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=concourse-tfstate/concourse.tfstate -state-out=updated-concourse-tfstate/concourse.tfstate \
+                -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
           put: concourse-tfstate
@@ -429,7 +436,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
@@ -455,11 +462,14 @@ jobs:
 
                 touch paas-bootstrap/terraform/bosh/id_rsa.pub paas-bootstrap/terraform/bosh/bosh_id_rsa.pub
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+
+                cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
+                terraform init paas-bootstrap/terraform/bosh
                 terraform destroy -force \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                  -state=bosh-tfstate/bosh.tfstate -state-out=updated-bosh-tfstate/bosh.tfstate \
+                  -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -484,7 +494,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           params:
               TF_VAR_env: ((deploy_env))
               AWS_DEFAULT_REGION: ((aws_region))
@@ -499,9 +509,11 @@ jobs:
             - -e
             - -c
             - |
+              cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
+              terraform init paas-bootstrap/terraform/vpc
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -state=vpc-tfstate/vpc.tfstate -state-out=updated-vpc-tfstate/vpc.tfstate \
+                -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
           put: vpc-tfstate
@@ -526,7 +538,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/terraform
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 9cad30b5d5889a0b72173f39701d1620e24df82c
           params:
               TF_VAR_env: ((deploy_env))
               TF_VAR_state_bucket: ((state_bucket))
@@ -540,6 +552,7 @@ jobs:
             - -e
             - -c
             - |
+              terraform init paas-bootstrap/terraform/bucket
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -state=bucket-terraform-state/bucket.tfstate \
