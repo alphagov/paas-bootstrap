@@ -256,6 +256,7 @@ jobs:
         trigger: true
         passed: ['init-bucket']
       - get: paas-bootstrap
+        passed: ['init-bucket']
       - task: s3init
         config:
           platform: linux
