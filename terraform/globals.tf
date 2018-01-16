@@ -119,7 +119,7 @@ variable "admin_cidrs" {
 /* See https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html */
 variable "default_elb_security_policy" {
   description = "Which Security policy to use for ELBs. This controls things like available SSL protocols/ciphers."
-  default     = "ELBSecurityPolicy-2016-08"
+  default     = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
 
 variable "assets_prefix" {
