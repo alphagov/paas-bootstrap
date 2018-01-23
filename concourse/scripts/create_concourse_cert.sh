@@ -2,32 +2,14 @@
 
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+# shellcheck disable=SC1090
+. "${SCRIPT_DIR}/common_cert_management.sh"
+
 concourse_fqdn="${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
 
-get_route53_change_batch() {
-  action=${1}
-  cat <<EOF
-{
-  "Changes": [
-    {
-      "Action": "${action}",
-      "ResourceRecordSet": {
-        "Name": "${dns_validation_record}",
-        "Type": "CNAME",
-        "TTL": 300,
-        "ResourceRecords": [
-          {
-            "Value": "${dns_validation_value}"
-          }
-        ]
-      }
-    }
-  ]
-}
-EOF
-}
-
-arn=$(aws acm list-certificates --query "CertificateSummaryList[?DomainName==\`${concourse_fqdn}\`].CertificateArn" --output text)
+arn=$(get_certificate_arn "$concourse_fqdn")
 
 if [ -z "${arn}" ] || [ "${arn}" = "None" ]; then
   echo "Requesting certificate for ${concourse_fqdn}"
@@ -45,10 +27,10 @@ echo "Getting DNS validation records"
 for _ in $(seq 20); do
   sleep 3
 
-  cert_info=$(aws acm describe-certificate --certificate-arn "${arn}" --query 'Certificate')
-  dns_validation_record=$(echo "${cert_info}" | jq -r '.DomainValidationOptions[0].ResourceRecord.Name')
-  dns_validation_value=$(echo "${cert_info}" | jq -r '.DomainValidationOptions[0].ResourceRecord.Value')
-
+  dns_validation_record='null'
+  dns_validation_value='null'
+  cert_info=
+  get_dns_validation_record "$arn"
   if [ "null" != "${dns_validation_record}" ] && [ "null" != "${dns_validation_value}" ]; then
     break
   fi
