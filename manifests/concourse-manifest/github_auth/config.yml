@@ -1,0 +1,19 @@
+---
+
+jobs:
+  - name: concourse
+    templates:
+      - name: atc
+        properties:
+          github_auth:
+            client_id: (( grab $GITHUB_CLIENT_ID ))
+            client_secret: (( grab $GITHUB_CLIENT_SECRET ))
+            authorize:
+              - user: alext
+              - user: dcarley
+              - user: bleach
+              - user: henrytk
+              - user: keymon
+              - user: paroxp
+              - user: LeePorte
+              - user: samcrang
