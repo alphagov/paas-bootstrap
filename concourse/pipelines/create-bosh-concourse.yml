@@ -1136,6 +1136,9 @@ jobs:
               terraform-outputs/bosh-terraform-outputs.yml
             CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
             CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
+            ENABLE_GITHUB: ((enable_github))
+            GITHUB_CLIENT_ID: ((github_client_id))
+            GITHUB_CLIENT_SECRET: ((github_client_secret))
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -1152,6 +1155,15 @@ jobs:
                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
                                 ./paas-bootstrap/manifests/concourse-manifest/addons/datadog-concourse-integration.yml"
               fi
+              if [ "${ENABLE_GITHUB}" = "true" ] ; then
+                CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/concourse-manifest/github_auth/config.yml"
+                if [ "${AWS_ACCOUNT}" = "dev" ] || [ "${AWS_ACCOUNT}" = "ci" ]; then
+                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/concourse-manifest/github_auth/dev_ci_additional_users.yml"
+                fi
+              fi
+
               # shellcheck disable=SC2086
               ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
                 > concourse-manifest/concourse-manifest.yml
@@ -1230,58 +1242,6 @@ jobs:
           put: concourse-manifest
           params:
             file: updated-concourse-manifest/concourse-manifest.yml
-
-      - task: add-github-oauth
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/self-update-pipelines
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
-          inputs:
-            - name: paas-bootstrap
-            - name: concourse-manifest
-            - name: concourse-secrets
-          params:
-            CONCOURSE_HOSTNAME: ((concourse_hostname))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            CONCOURSE_ATC_USER: admin
-            AWS_ACCOUNT: ((aws_account))
-            FLY_TARGET: ((deploy_env))
-            FLY_CMD: ./paas-bootstrap/bin/fly
-            ENABLE_GITHUB: ((enable_github))
-            GITHUB_CLIENT_ID: ((github_client_id))
-            GITHUB_CLIENT_SECRET: ((github_client_secret))
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                export CONCOURSE_URL="https://${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
-                export CONCOURSE_ATC_PASSWORD
-                CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
-
-                if [ "${ENABLE_GITHUB}" = "true" ] ; then
-                  GITHUB_CI_USERS=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb ci ./paas-bootstrap/concourse/users/users.yml)
-                  GITHUB_PROD_USERS=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb prod ./paas-bootstrap/concourse/users/users.yml)
-
-                  if [ "${AWS_ACCOUNT}" = "dev" ] || [ "${AWS_ACCOUNT}" = "ci" ]; then
-                    export GITHUB_USERS="${GITHUB_CI_USERS} ${GITHUB_PROD_USERS}"
-                  else
-                    export GITHUB_USERS="${GITHUB_PROD_USERS}"
-                  fi
-
-                  ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
-                  # shellcheck disable=SC2046,SC2116
-                  ${FLY_CMD} -t "${FLY_TARGET}" set-team -n main \
-                    --github-auth-client-id "${GITHUB_CLIENT_ID}" \
-                    --github-auth-client-secret "${GITHUB_CLIENT_SECRET}"  \
-                    $(echo "$GITHUB_USERS") --basic-auth-username admin --basic-auth-password "${CONCOURSE_ATC_PASSWORD}" --non-interactive
-
-                fi
-
 
       - task: add-env-specific-team
         config:
