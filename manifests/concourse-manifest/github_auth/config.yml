@@ -13,6 +13,7 @@ jobs:
               - user: dcarley
               - user: bleach
               - user: henrytk
+              - user: keymon
               - user: paroxp
               - user: LeePorte
               - user: samcrang
