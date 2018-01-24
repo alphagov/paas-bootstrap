@@ -308,6 +308,7 @@ jobs:
           params:
             CONCOURSE_HOSTNAME: ((concourse_hostname))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            SYSTEM_DNS_ZONE_ID: ((system_dns_zone_id))
             AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: ./paas-bootstrap/concourse/scripts/delete_concourse_cert.sh
