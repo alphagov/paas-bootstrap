@@ -7,18 +7,21 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck disable=SC1090
 . "${SCRIPT_DIR}/common_cert_management.sh"
 
-concourse_fqdn="${CONCOURSE_HOSTNAME}.${SYSTEM_DNS_ZONE_NAME}"
-
-arn=$(get_certificate_arn "$concourse_fqdn")
+arn=$(get_certificate_arn "$ACM_DOMAIN_FQDN")
 
 if [ -z "${arn}" ] || [ "${arn}" = "None" ]; then
-  echo "Requesting certificate for ${concourse_fqdn}"
-  arn=$(aws acm request-certificate --domain-name "${concourse_fqdn}" --validation-method "DNS" --output text)
+  echo "Requesting certificate for ${ACM_DOMAIN_FQDN}"
+  if [ "${ACM_DOMAIN_FQDN#*\*\.}" != "${ACM_DOMAIN_FQDN}" ]; then
+    # If it's a wildcard domain we automatically add an alternative name without the wildcard
+    arn=$(aws acm request-certificate --domain-name "${ACM_DOMAIN_FQDN}" --subject-alternative-names "${ACM_DOMAIN_FQDN#*\*\.}" --validation-method "DNS" --output text)
+  else
+    arn=$(aws acm request-certificate --domain-name "${ACM_DOMAIN_FQDN}" --validation-method "DNS" --output text)
+  fi
 fi
 
 cert_status=$(aws acm describe-certificate --certificate-arn "${arn}" --query 'Certificate.Status' --output text)
 if [ "${cert_status}" = "ISSUED" ]; then
-  echo "Certificate already issued for ${concourse_fqdn}. Exiting..."
+  echo "Certificate already issued for ${ACM_DOMAIN_FQDN}. Exiting..."
   exit 0
 fi
 
@@ -45,11 +48,11 @@ fi
 
 echo "Upserting DNS validation record: ${dns_validation_record}"
 
-aws route53 change-resource-record-sets --hosted-zone-id "${SYSTEM_DNS_ZONE_ID}" --change-batch "$(get_route53_change_batch UPSERT)" > /dev/null
+aws route53 change-resource-record-sets --hosted-zone-id "${ACM_DOMAIN_ZONE_ID}" --change-batch "$(get_route53_change_batch UPSERT)" > /dev/null
 
 cat <<EOT
 
-The certificate for ${concourse_fqdn} has been requested. To verify this,
+The certificate for ${ACM_DOMAIN_FQDN} has been requested. To verify this,
 a new DNS record has been created on your domain and Amazon will
 automatically validate this request. Once that is done, the certificate
 can be used.

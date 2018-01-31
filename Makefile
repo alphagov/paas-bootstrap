@@ -74,6 +74,8 @@ globals:
 dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z1QGLFML8EG6G7)
+	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z3R6XFWUT4YZHB)
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export ENABLE_DESTROY=true)
 	$(eval export ENABLE_DATADOG ?= false)
@@ -93,6 +95,8 @@ ci: globals check-env-vars ## Set Environment to CI
 staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
+	$(eval export APPS_DNS_ZONE_NAME=staging.cloudpipelineapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
@@ -101,6 +105,8 @@ staging: globals check-env-vars ## Set Environment to Staging
 prod: globals check-env-vars ## Set Environment to Production
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
+	$(eval export APPS_DNS_ZONE_NAME=cloudapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
@@ -116,6 +122,7 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	$(eval export ENABLE_COLLECTD_ADDON=false)
 	$(eval export ENABLE_SYSLOG_ADDON=false)
+	$(eval export ACM_DOMAINS=${SYSTEM_DNS_ZONE_ID}:*.${SYSTEM_DNS_ZONE_NAME})
 	@true
 
 .PHONY: deployer-concourse
@@ -127,6 +134,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
 	$(eval export ENABLE_COLLECTD_ADDON=true)
 	$(eval export ENABLE_SYSLOG_ADDON=true)
+	$(eval export ACM_DOMAINS=${SYSTEM_DNS_ZONE_ID}:*.${SYSTEM_DNS_ZONE_NAME} ${APPS_DNS_ZONE_ID}:*.${APPS_DNS_ZONE_NAME})
 	@true
 
 ## Actions

@@ -295,7 +295,7 @@ jobs:
           params:
             file: updated-concourse-tfstate/concourse.tfstate
 
-      - task: delete-concourse-cert
+      - task: delete-acm-certs
         config:
           platform: linux
           image_resource:
@@ -306,12 +306,19 @@ jobs:
           inputs:
             - name: paas-bootstrap
           params:
-            CONCOURSE_HOSTNAME: ((concourse_hostname))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            SYSTEM_DNS_ZONE_ID: ((system_dns_zone_id))
+            ACM_DOMAINS: ((acm_domains))
             AWS_DEFAULT_REGION: ((aws_region))
           run:
-            path: ./paas-bootstrap/concourse/scripts/delete_concourse_cert.sh
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              for acm_domain in ${ACM_DOMAINS}; do
+                export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
+                export ACM_DOMAIN_FQDN="${acm_domain##*:}"
+                ./paas-bootstrap/concourse/scripts/delete_acm_cert.sh
+              done
 
   - name: destroy-bosh
     serial: true

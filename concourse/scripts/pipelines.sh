@@ -42,6 +42,7 @@ enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
 gpg_ids: ${gpg_ids}
+acm_domains: ${ACM_DOMAINS:-}
 EOF
 }
 
