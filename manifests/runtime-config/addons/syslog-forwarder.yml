@@ -1,9 +1,9 @@
 ---
 releases:
   - name: syslog
-    version: 0.1.1
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.1.1.tgz
-    sha1: 6f2dae6c44cbd326fde2081983a3bdebac3825b4
+    version: 11.1.0
+    url: https://bosh.io/d/github.com/cloudfoundry/syslog-release?v=11.1.0
+    sha1: 0dc6bdb820584d915be548dc32c99168230b8eb3
 
 addons:
   - name: syslog_forwarder
@@ -15,6 +15,5 @@ addons:
         address: (( concat "logsearch-ingestor." $SYSTEM_DNS_ZONE_NAME ))
         port: 6514
         transport: 'tcp'
-        log_template: 'metron_agent'
         tls_enabled: true
         permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))
