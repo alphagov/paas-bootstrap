@@ -10,7 +10,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 arn=$(get_certificate_arn "$ACM_DOMAIN_FQDN")
 
 if [ -z "${arn}" ] || [ "${arn}" = "None" ]; then
-  echo "Requesting certificate for ${ACM_DOMAIN_FQDN}"
+  echo "Requesting certificate for ${ACM_DOMAIN_FQDN} in ${AWS_DEFAULT_REGION}"
   if [ "${ACM_DOMAIN_FQDN#*\*\.}" != "${ACM_DOMAIN_FQDN}" ]; then
     # If it's a wildcard domain we automatically add an alternative name without the wildcard
     arn=$(aws acm request-certificate --domain-name "${ACM_DOMAIN_FQDN}" --subject-alternative-names "${ACM_DOMAIN_FQDN#*\*\.}" --validation-method "DNS" --output text)
@@ -21,7 +21,7 @@ fi
 
 cert_status=$(aws acm describe-certificate --certificate-arn "${arn}" --query 'Certificate.Status' --output text)
 if [ "${cert_status}" = "ISSUED" ]; then
-  echo "Certificate already issued for ${ACM_DOMAIN_FQDN}. Exiting..."
+  echo "Certificate already issued for ${ACM_DOMAIN_FQDN} in ${AWS_DEFAULT_REGION}. Exiting..."
   exit 0
 fi
 
@@ -46,7 +46,7 @@ if [ "null" = "${dns_validation_record}" ] || [ "null" = "${dns_validation_value
   exit 1
 fi
 
-echo "Upserting DNS validation record: ${dns_validation_record}"
+echo "Upserting DNS validation record: ${dns_validation_record} for ${AWS_DEFAULT_REGION}"
 
 aws route53 change-resource-record-sets --hosted-zone-id "${ACM_DOMAIN_ZONE_ID}" --change-batch "$(get_route53_change_batch UPSERT)" > /dev/null
 
@@ -66,7 +66,7 @@ for _ in $(seq 40); do
   cert_status=$(aws acm describe-certificate --certificate-arn "${arn}" --query 'Certificate.Status' --output text)
   if [ "${cert_status}" = "ISSUED" ]; then
     echo
-    echo "Cert issued successfully."
+    echo "Cert issued successfully in ${AWS_DEFAULT_REGION}."
 
     exit 0
   fi
