@@ -711,7 +711,6 @@ jobs:
               - -e
               - -c
               - |
-                echo "The CA cert already exists, skipping generation..."
                 mkdir out
                 tar -xvzf bosh-CA/bosh-CA.tar.gz -C out
                 ./paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets bosh_ca_cert out/bosh-CA.crt > bosh-CA-yml/bosh-ca-cert.yml
