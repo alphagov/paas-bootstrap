@@ -88,6 +88,9 @@ jobs:
       flush_arp: true
       enable_dedicated_status_worker: true
       workers: 4
+      ssl:
+        cert: (( grab secrets.bosh_director_cert ))
+        key: (( grab secrets.bosh_director_key ))
 
     hm:
       director_account:
