@@ -1,5 +1,5 @@
-data "aws_acm_certificate" "concourse" {
-  domain   = "${var.concourse_hostname}.${var.system_dns_zone_name}"
+data "aws_acm_certificate" "system" {
+  domain   = "*.${var.system_dns_zone_name}"
   statuses = ["ISSUED"]
 }
 
@@ -22,7 +22,7 @@ resource "aws_elb" "concourse" {
     instance_protocol  = "tcp"
     lb_port            = 443
     lb_protocol        = "ssl"
-    ssl_certificate_id = "${data.aws_acm_certificate.concourse.arn}"
+    ssl_certificate_id = "${data.aws_acm_certificate.system.arn}"
   }
 
   tags {

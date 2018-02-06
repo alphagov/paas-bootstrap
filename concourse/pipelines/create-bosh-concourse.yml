@@ -947,7 +947,7 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
-      - task: generate-concourse-cert
+      - task: generate-acm-certs
         config:
           platform: linux
           image_resource:
@@ -958,12 +958,22 @@ jobs:
           inputs:
             - name: paas-bootstrap
           params:
-            CONCOURSE_HOSTNAME: ((concourse_hostname))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            SYSTEM_DNS_ZONE_ID: ((system_dns_zone_id))
-            AWS_DEFAULT_REGION: ((aws_region))
+            ACM_DOMAINS: ((acm_domains))
+            ACM_AWS_REGIONS: "((aws_region)) us-east-1"
           run:
-            path: ./paas-bootstrap/concourse/scripts/create_concourse_cert.sh
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              for region in ${ACM_AWS_REGIONS}; do
+                export AWS_DEFAULT_REGION="${region}"
+                for acm_domain in ${ACM_DOMAINS}; do
+                  export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
+                  export ACM_DOMAIN_FQDN="${acm_domain##*:}"
+                  ./paas-bootstrap/concourse/scripts/create_acm_cert.sh
+                done
+              done
 
       - task: generate-concourse-ssh-key
         config:
@@ -1039,6 +1049,24 @@ jobs:
           put: concourse-tfstate
           params:
             file: updated-concourse-tfstate/concourse.tfstate
+
+      # FIXME: Remove after the all Concourse instances were updated
+      - task: delete-concourse-acm-cert
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/awscli
+              tag: b2495d6ed07f680125d19aa7d1701da7efabb289
+          inputs:
+            - name: paas-bootstrap
+          params:
+            ACM_DOMAIN_ZONE_ID: ((system_dns_zone_id))
+            ACM_DOMAIN_FQDN: ((concourse_hostname)).((system_dns_zone_name))
+            AWS_DEFAULT_REGION: ((aws_region))
+          run:
+            path: ./paas-bootstrap/concourse/scripts/delete_acm_cert.sh
 
       # Temporary task to add the git-${DEPLOY_ENV} user to git group
       - task: add-git-user-to-group
