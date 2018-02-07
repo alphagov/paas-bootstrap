@@ -19,6 +19,8 @@ groups:
     jobs:
       - clear-concourse-credentials
       - clear-bosh-credentials
+      - rotate-bosh-internal-certs
+      - delete-old-bosh-internal-certs
 
 resource_types:
 - name: s3-iam
@@ -1672,3 +1674,86 @@ jobs:
           AWS_DEFAULT_REGION: ((aws_region))
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: bosh_
+
+  - name: rotate-bosh-internal-certs
+    serial: true
+    plan:
+    - aggregate:
+      - get: paas-bootstrap
+      - get: bosh-CA
+      - get: bosh-certs
+    - task: rotate-bosh-internal-certs
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: governmentpaas/certstrap
+            tag: 465642da06051a55630d39c899697b678f66a7f7
+        inputs:
+          - name: bosh-CA
+          - name: paas-bootstrap
+          - name: bosh-certs
+        outputs:
+          - name: generated-bosh-certs
+        params:
+          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+        run:
+          path: sh
+          args:
+            - -e
+            - -c
+            - |
+              mkdir certs
+              echo "Extracting certs"
+              tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
+
+              ./paas-bootstrap/manifests/bosh-manifest/scripts/generate-bosh-certs.sh \
+                certs bosh-CA/bosh-CA.tar.gz rotate
+
+              echo "Creating updated cert tarball"
+              cd certs
+              tar -cvzf ../generated-bosh-certs/bosh-certs.tar.gz .
+      on_success:
+        put: bosh-certs
+        params:
+          file: generated-bosh-certs/bosh-certs.tar.gz
+
+  - name: delete-old-bosh-internal-certs
+    serial: true
+    plan:
+    - aggregate:
+      - get: paas-bootstrap
+      - get: bosh-certs
+    - task: delete-old-bosh-internal-certs
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: governmentpaas/certstrap
+            tag: 465642da06051a55630d39c899697b678f66a7f7
+        inputs:
+          - name: paas-bootstrap
+          - name: bosh-certs
+        outputs:
+          - name: generated-bosh-certs
+        run:
+          path: sh
+          args:
+            - -e
+            - -c
+            - |
+              mkdir certs
+              echo "Extracting certs"
+              tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
+
+              rm -vf certs/*_old.*
+
+              echo "Creating updated cert tarball"
+              cd certs
+              tar -cvzf ../generated-bosh-certs/bosh-certs.tar.gz .
+      on_success:
+        put: bosh-certs
+        params:
+          file: generated-bosh-certs/bosh-certs.tar.gz
