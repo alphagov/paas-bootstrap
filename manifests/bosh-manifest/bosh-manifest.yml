@@ -20,12 +20,12 @@ meta:
 
 releases:
 - name: bosh
-  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=261.4
-  sha1: 4da9cedbcc8fbf11378ef439fb89de08300ad091
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh?v=264.7.0
+  sha1: 11433d7530eea34d9ae2385ce2a7cb13912928bf
 - name: bosh-aws-cpi
-  version: 62
-  url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=62
-  sha1: f36967927ceae09e5663a41fdda199edfe649dc6
+  version: 69
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
+  sha1: 8abe70219244896ea6f7208fc01f2eac56179170
 
 jobs:
 - name: bosh
@@ -55,6 +55,22 @@ jobs:
       address: 127.0.0.1
       user: nats
       password: (( grab secrets.bosh_nats_password ))
+      tls:
+        ca: (( grab secrets.bosh_ca_cert ))
+        client_ca:
+          certificate: (( grab secrets.bosh_ca_cert ))
+          private_key: (( grab secrets.bosh_ca_key ))
+        server:
+          certificate: (( grab secrets.default_nats_bosh_internal_cert ))
+          private_key: (( grab secrets.default_nats_bosh_internal_key ))
+        director:
+          certificate: (( grab secrets.default_director_bosh_internal_cert ))
+          private_key: (( grab secrets.default_director_bosh_internal_key ))
+        health_monitor:
+          certificate: (( grab secrets.default_hm_bosh_internal_cert ))
+          private_key: (( grab secrets.default_hm_bosh_internal_key ))
+      # FIXME: To remove as all agents are redeployed with TLS support
+      allow_legacy_agents: true
 
     director:
       address: 127.0.0.1
@@ -74,6 +90,9 @@ jobs:
       flush_arp: true
       enable_dedicated_status_worker: true
       workers: 4
+      ssl:
+        cert: (( grab secrets.bosh_director_cert ))
+        key: (( grab secrets.bosh_director_key ))
 
     hm:
       director_account:
