@@ -1019,20 +1019,26 @@ jobs:
             - name: paas-bootstrap
           params:
             ACM_DOMAINS: ((acm_domains))
-            ACM_AWS_REGIONS: "((aws_region)) us-east-1"
+            AWS_DEFAULT_REGION: ((aws_region))
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              for region in ${ACM_AWS_REGIONS}; do
-                export AWS_DEFAULT_REGION="${region}"
-                for acm_domain in ${ACM_DOMAINS}; do
-                  export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
-                  export ACM_DOMAIN_FQDN="${acm_domain##*:}"
-                  ./paas-bootstrap/concourse/scripts/create_acm_cert.sh
-                done
+              for acm_domain in ${ACM_DOMAINS}; do
+                export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
+                export ACM_DOMAIN_FQDN="${acm_domain##*:}"
+                ./paas-bootstrap/concourse/scripts/create_acm_cert.sh
+              done
+
+              # FIXME: remove once this has been cleaned up everywhere
+              # Cleanup unneeded certs in us-east-1
+              export AWS_DEFAULT_REGION=us-east-1
+              for acm_domain in ${ACM_DOMAINS}; do
+                export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
+                export ACM_DOMAIN_FQDN="${acm_domain##*:}"
+                ./paas-bootstrap/concourse/scripts/delete_acm_cert.sh
               done
 
       - task: generate-concourse-ssh-key
