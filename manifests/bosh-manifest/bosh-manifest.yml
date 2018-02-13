@@ -69,8 +69,7 @@ jobs:
         health_monitor:
           certificate: (( grab secrets.default_hm_bosh_internal_cert ))
           private_key: (( grab secrets.default_hm_bosh_internal_key ))
-      # FIXME: To remove as all agents are redeployed with TLS support
-      allow_legacy_agents: true
+      allow_legacy_agents: false
 
     director:
       address: 127.0.0.1
@@ -101,7 +100,7 @@ jobs:
       resurrector_enabled: false
 
     agent:
-      mbus: (( concat "nats://nats:" secrets.bosh_nats_password "@" $BOSH_FQDN ":4222" ))
+      mbus: (( concat "nats://" $BOSH_FQDN ":4222" ))
 
     registry:
       db: (( grab meta.rds ))
