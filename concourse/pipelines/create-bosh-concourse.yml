@@ -1339,8 +1339,6 @@ jobs:
           - name: bosh-secrets
           - name: paas-bootstrap
           - name: bosh-CA-crt
-          outputs:
-          - name: updated-concourse-manifest
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1351,13 +1349,9 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
-              bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              bosh -n deploy
-        on_success:
-          put: concourse-manifest
-          params:
-            file: updated-concourse-manifest/concourse-manifest.yml
+              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
+              bosh -d "${DEPLOYMENT_NAME}" deployment
+              bosh -d "${DEPLOYMENT_NAME}" -n deploy concourse-manifest/concourse-manifest.yml
 
       - task: add-env-specific-team
         config:
@@ -1430,10 +1424,8 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              mkdir -p updated-concourse-manifest
-              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
-              bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
+              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
+              bosh -d "${DEPLOYMENT_NAME}" deployment
               bosh -d "${DEPLOYMENT_NAME}" vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 

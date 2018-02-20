@@ -8,8 +8,6 @@ meta:
 
 name: concourse
 
-director_uuid: ~
-
 releases:
   - name: concourse
     version: 3.8.0
