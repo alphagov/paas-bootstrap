@@ -83,12 +83,12 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
-  - name: bosh-CA
+  - name: bosh-CA-crt
     type: s3-iam
     source:
       bucket: ((state_bucket))
       region_name: ((aws_region))
-      versioned_file: bosh-CA.tar.gz
+      versioned_file: bosh-CA.crt
 
 jobs:
   - name: self-update-pipeline
@@ -212,30 +212,7 @@ jobs:
         - get: vpc-tfstate
         - get: concourse-tfstate
         - get: concourse-manifest
-        - get: bosh-CA
-
-      - task: extract-bosh-CA
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/certstrap
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
-          inputs:
-            - name: bosh-CA
-              path: existing-bosh-CA
-          outputs:
-            - name: generated-bosh-CA
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                cp existing-bosh-CA/bosh-CA.tar.gz generated-bosh-CA/bosh-CA.tar.gz
-                mkdir out
-                tar -xvzf generated-bosh-CA/bosh-CA.tar.gz -C out
+        - get: bosh-CA-crt
 
       - task: destroy-concourse
         config:
@@ -249,10 +226,10 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-secrets
           - name: concourse-manifest
-          - name: generated-bosh-CA
+          - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_login_host))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
@@ -366,6 +343,7 @@ jobs:
         - get: bosh-manifest
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: bosh-CA-crt
 
       - task: check-existing-deployments
         config:
@@ -378,10 +356,10 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
-            - name: generated-bosh-CA
+            - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_login_host))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
@@ -402,10 +380,10 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
-            - name: generated-bosh-CA
+            - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_login_host))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:

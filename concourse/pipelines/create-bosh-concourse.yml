@@ -71,6 +71,13 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-CA.tar.gz
 
+  - name: bosh-CA-crt
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-CA.crt
+
   - name: bosh-certs
     type: s3-iam
     source:
@@ -285,6 +292,7 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" "((bosh_manifest_state))" paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" vpc.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.crt paas-bootstrap/concourse/init_files/zero_bytes
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-certs.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
@@ -376,6 +384,7 @@ jobs:
           passed: ['s3init']
           trigger: true
         - get: bosh-CA
+        - get: bosh-CA-crt
         - get: bosh-certs
         - get: bosh-secrets
         - get: bosh-ssh-private-key
@@ -413,11 +422,16 @@ jobs:
                   mkdir out
                   tar -xvzf generated-bosh-CA/bosh-CA.tar.gz -C out
                 fi
-                ./paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets bosh_ca_cert out/bosh-CA.crt > generated-bosh-CA/bosh-ca-cert.yml
+                ./paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets bosh_ca_cert out/bosh-CA.crt > generated-bosh-CA/bosh-CA-crt.yml
+                cp out/bosh-CA.crt generated-bosh-CA/bosh-CA.crt
         on_success:
-          put: bosh-CA
-          params:
-            file: generated-bosh-CA/bosh-CA.tar.gz
+          aggregate:
+            - put: bosh-CA
+              params:
+                file: generated-bosh-CA/bosh-CA.tar.gz
+            - put: bosh-CA-crt
+              params:
+                file: generated-bosh-CA/bosh-CA.crt
 
       - aggregate:
         - task: generate-bosh-certs
@@ -905,6 +919,8 @@ jobs:
           passed: ['generate-bosh-config']
         - get: bosh-init-state
         - get: bosh-ssh-private-key
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
       - task: bosh-create-env
         config:
@@ -952,10 +968,10 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
-            - name: generated-bosh-CA
+            - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1277,6 +1293,8 @@ jobs:
         - get: concourse-manifest
           passed: ['generate-concourse-config']
         - get: concourse-secrets
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
       - task: get-and-upload-stemcell
         config:
@@ -1289,10 +1307,10 @@ jobs:
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
-            - name: generated-bosh-CA
+            - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1320,12 +1338,12 @@ jobs:
           - name: concourse-manifest
           - name: bosh-secrets
           - name: paas-bootstrap
-          - name: generated-bosh-CA
+          - name: bosh-CA-crt
           outputs:
           - name: updated-concourse-manifest
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1386,6 +1404,8 @@ jobs:
         - get: bosh-secrets
         - get: concourse-manifest
           passed: ['concourse-deploy']
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
       - task: test-bosh-vms
         config:
@@ -1399,10 +1419,10 @@ jobs:
           - name: paas-bootstrap
           - name: concourse-manifest
           - name: bosh-secrets
-          - name: generated-bosh-CA
+          - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
-            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
