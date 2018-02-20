@@ -952,8 +952,10 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
+            - name: generated-bosh-CA
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1287,8 +1289,10 @@ jobs:
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
+            - name: generated-bosh-CA
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1316,10 +1320,12 @@ jobs:
           - name: concourse-manifest
           - name: bosh-secrets
           - name: paas-bootstrap
+          - name: generated-bosh-CA
           outputs:
           - name: updated-concourse-manifest
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
           run:
             path: sh
             args:
@@ -1393,8 +1399,10 @@ jobs:
           - name: paas-bootstrap
           - name: concourse-manifest
           - name: bosh-secrets
+          - name: generated-bosh-CA
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: generated-bosh-CA/out/bosh-CA.crt
           run:
             path: sh
             args:
