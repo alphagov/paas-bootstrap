@@ -212,23 +212,23 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
           - name: concourse-manifest
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -n delete deployment --force "$DEPLOYMENT_NAME"
+              bosh -n -d "$DEPLOYMENT_NAME" delete-deployment --force
 
       - task: vpc-terraform-outputs-to-sh
         config:
@@ -340,20 +340,20 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
                 ./paas-bootstrap/concourse/scripts/bosh_pre_destroy.rb
 
       - task: cleanup-orphaned-disks
@@ -362,21 +362,21 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
-                bosh cleanup --all
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n clean-up --all
 
       - task: destroy-bosh-instance
         config:
@@ -384,8 +384,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-init
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: paas-bootstrap
             - name: bosh-manifest
@@ -402,7 +402,8 @@ jobs:
               - |
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
-                bosh-init delete bosh-init-working-dir/bosh-manifest.yml
+                bosh -n delete-env bosh-init-working-dir/bosh-manifest.yml \
+                  --state bosh-init-working-dir/bosh-manifest-state.json
                 # If the delete is successful, the file will be missing
                 if [ ! -f bosh-init-working-dir/bosh-manifest-state.json ]; then
                   cp paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl bosh-init-working-dir/bosh-manifest-state.json

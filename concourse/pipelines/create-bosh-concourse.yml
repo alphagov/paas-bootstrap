@@ -906,14 +906,14 @@ jobs:
         - get: bosh-init-state
         - get: bosh-ssh-private-key
 
-      - task: bosh-init-microbosh
+      - task: bosh-create-env
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-init
-              tag: d085660ff6c5b0dc5049fe4bb023cb3877753460
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: bosh-manifest
             - name: bosh-init-state
@@ -933,7 +933,8 @@ jobs:
                 chmod 400 bosh-init-working-dir/.ssh/bosh_id_rsa
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
-                bosh-init deploy bosh-init-working-dir/bosh-manifest.yml
+                bosh -n create-env bosh-init-working-dir/bosh-manifest.yml \
+                  --state=bosh-init-working-dir/bosh-manifest-state.json
         ensure:
           put: bosh-init-state
           params:
@@ -945,20 +946,22 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-                bosh update runtime-config runtime-config/runtime-config.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n update-runtime-config runtime-config/runtime-config.yml
                 ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
   - name: concourse-terraform
@@ -1279,11 +1282,13 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
           run:
             path: sh
             args:
@@ -1296,8 +1301,8 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget "https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION}" -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-                bosh upload stemcell stemcell.tgz --skip-if-exists
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n upload-stemcell stemcell.tgz
 
       - task: deploy-concourse
         config:
@@ -1305,21 +1310,23 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
           - name: concourse-manifest
           - name: bosh-secrets
           - name: paas-bootstrap
           outputs:
           - name: updated-concourse-manifest
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               bosh -n deploy
@@ -1380,24 +1387,26 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: upgrade_bosh_cli_v2
           inputs:
           - name: paas-bootstrap
           - name: concourse-manifest
           - name: bosh-secrets
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
               mkdir -p updated-concourse-manifest
               sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
               bosh deployment updated-concourse-manifest/concourse-manifest.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
-              bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
+              bosh -d "${DEPLOYMENT_NAME}" vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
       - task: upload-pipeline
