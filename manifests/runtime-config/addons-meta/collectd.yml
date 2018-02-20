@@ -1,9 +1,9 @@
 ---
 releases:
-- name: collectd
-  version: 0.1.1
-  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/collectd-0.1.1.tgz
-  sha1: 04ddbb0a209d0bf30aa17d8bb423fa78dd4d44ee
+  - name: collectd
+    version: 0.1.2
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/collectd-0.1.2.tgz
+    sha1: e269c89a4a65c1464eb9a5a56152a9028acfc1dd
 
 meta:
   collectd:
