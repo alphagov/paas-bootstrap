@@ -373,7 +373,13 @@ jobs:
               - -c
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-                ./paas-bootstrap/concourse/scripts/bosh_pre_destroy.rb
+
+                if ! bosh deployments --tty | grep -q "0 deployments"; then
+                  echo "The following deployments must be deleted before destroying BOSH"
+                  echo
+                  bosh deployments
+                  exit 1
+                fi
 
       - task: cleanup-orphaned-disks
         config:
