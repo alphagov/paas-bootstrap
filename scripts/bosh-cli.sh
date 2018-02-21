@@ -5,6 +5,9 @@ set -eu
 BOSH_ID_RSA="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh_id_rsa" - | base64)"
 export BOSH_ID_RSA
 
+BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
+export BOSH_CA_CERT
+
 BOSH_IP=$(aws ec2 describe-instances \
     --filters "Name=key-name,Values=${DEPLOY_ENV}_bosh_ssh_key_pair" \
     --query 'Reservations[].Instances[].PublicIpAddress' --output text)
@@ -20,5 +23,7 @@ docker run \
     --env "BOSH_ID_RSA" \
     --env "BOSH_IP" \
     --env "BOSH_ADMIN_PASSWORD" \
+    --env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
+    --env "BOSH_CA_CERT" \
     --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
-    governmentpaas/bosh-shell:2f113f2ff3af8c9ccfc733040256caa0826e2245
+    governmentpaas/bosh-shell:upgrade_bosh_cli_v2
