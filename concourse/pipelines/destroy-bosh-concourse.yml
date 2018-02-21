@@ -76,13 +76,6 @@ resources:
       versioned_file: concourse.tfstate
       region_name: ((aws_region))
 
-  - name: concourse-manifest
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: concourse-manifest.yml
-
   - name: bosh-CA-crt
     type: s3-iam
     source:
@@ -218,7 +211,6 @@ jobs:
         - get: bosh-secrets
         - get: vpc-tfstate
         - get: concourse-tfstate
-        - get: concourse-manifest
         - get: bosh-CA-crt
 
       - task: destroy-concourse
@@ -232,11 +224,11 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
-          - name: concourse-manifest
           - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_login_host))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
@@ -244,8 +236,7 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -n -d "$DEPLOYMENT_NAME" delete-deployment --force
+              bosh -n delete-deployment --force
 
       - task: vpc-terraform-outputs-to-sh
         config:

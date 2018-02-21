@@ -1310,6 +1310,7 @@ jobs:
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
@@ -1341,6 +1342,7 @@ jobs:
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
@@ -1348,8 +1350,7 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -d "${DEPLOYMENT_NAME}" -n deploy concourse-manifest/concourse-manifest.yml
+              bosh -n deploy concourse-manifest/concourse-manifest.yml
 
       - task: add-env-specific-team
         config:
@@ -1394,7 +1395,6 @@ jobs:
         - get: paas-bootstrap
           passed: ['concourse-deploy']
         - get: bosh-secrets
-        - get: concourse-manifest
           passed: ['concourse-deploy']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
@@ -1409,12 +1409,12 @@ jobs:
               tag: upgrade_bosh_cli_v2
           inputs:
           - name: paas-bootstrap
-          - name: concourse-manifest
           - name: bosh-secrets
           - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
@@ -1422,9 +1422,8 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -d "${DEPLOYMENT_NAME}" deployment
-              bosh -d "${DEPLOYMENT_NAME}" vms | tee vms.txt
+              bosh deployment
+              bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
       - task: upload-pipeline
