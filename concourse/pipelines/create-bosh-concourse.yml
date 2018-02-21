@@ -422,7 +422,6 @@ jobs:
                   mkdir out
                   tar -xvzf generated-bosh-CA/bosh-CA.tar.gz -C out
                 fi
-                ./paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets bosh_ca_cert out/bosh-CA.crt > generated-bosh-CA/bosh-CA-crt.yml
                 cp out/bosh-CA.crt generated-bosh-CA/bosh-CA.crt
         on_success:
           aggregate:
