@@ -1350,7 +1350,6 @@ jobs:
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
               DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -d "${DEPLOYMENT_NAME}" deployment
               bosh -d "${DEPLOYMENT_NAME}" -n deploy concourse-manifest/concourse-manifest.yml
 
       - task: add-env-specific-team
