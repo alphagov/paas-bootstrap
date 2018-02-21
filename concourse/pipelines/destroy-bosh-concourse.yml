@@ -295,6 +295,12 @@ jobs:
               touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
+
+              if [ -z "$(terraform state list --state updated-concourse-tfstate/concourse.tfstate)" ]; then
+                echo "The Terraform resources were already destroyed, nothing to do"
+                exit 0
+              fi
+
               terraform init paas-bootstrap/terraform/concourse
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
