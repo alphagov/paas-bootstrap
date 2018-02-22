@@ -71,6 +71,13 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-CA.tar.gz
 
+  - name: bosh-CA-crt
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-CA.crt
+
   - name: bosh-certs
     type: s3-iam
     source:
@@ -285,6 +292,7 @@ jobs:
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" "((bosh_manifest_state))" paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" vpc.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
+              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.crt paas-bootstrap/concourse/init_files/zero_bytes
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-certs.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
               paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
@@ -376,6 +384,7 @@ jobs:
           passed: ['s3init']
           trigger: true
         - get: bosh-CA
+        - get: bosh-CA-crt
         - get: bosh-certs
         - get: bosh-secrets
         - get: bosh-ssh-private-key
@@ -413,11 +422,15 @@ jobs:
                   mkdir out
                   tar -xvzf generated-bosh-CA/bosh-CA.tar.gz -C out
                 fi
-                ./paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets bosh_ca_cert out/bosh-CA.crt > generated-bosh-CA/bosh-ca-cert.yml
+                cp out/bosh-CA.crt generated-bosh-CA/bosh-CA.crt
         on_success:
-          put: bosh-CA
-          params:
-            file: generated-bosh-CA/bosh-CA.tar.gz
+          aggregate:
+            - put: bosh-CA
+              params:
+                file: generated-bosh-CA/bosh-CA.tar.gz
+            - put: bosh-CA-crt
+              params:
+                file: generated-bosh-CA/bosh-CA.crt
 
       - aggregate:
         - task: generate-bosh-certs
@@ -905,15 +918,17 @@ jobs:
           passed: ['generate-bosh-config']
         - get: bosh-init-state
         - get: bosh-ssh-private-key
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
-      - task: bosh-init-microbosh
+      - task: bosh-create-env
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-init
-              tag: d085660ff6c5b0dc5049fe4bb023cb3877753460
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: bosh-manifest
             - name: bosh-init-state
@@ -933,7 +948,8 @@ jobs:
                 chmod 400 bosh-init-working-dir/.ssh/bosh_id_rsa
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
-                bosh-init deploy bosh-init-working-dir/bosh-manifest.yml
+                bosh -n create-env bosh-init-working-dir/bosh-manifest.yml \
+                  --state=bosh-init-working-dir/bosh-manifest-state.json
         ensure:
           put: bosh-init-state
           params:
@@ -945,20 +961,24 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: runtime-config
+            - name: bosh-CA-crt
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-                bosh update runtime-config runtime-config/runtime-config.yml
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n update-runtime-config runtime-config/runtime-config.yml
                 ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
 
   - name: concourse-terraform
@@ -1272,6 +1292,8 @@ jobs:
         - get: concourse-manifest
           passed: ['generate-concourse-config']
         - get: concourse-secrets
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
       - task: get-and-upload-stemcell
         config:
@@ -1279,11 +1301,16 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
+            - name: bosh-CA-crt
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
@@ -1296,8 +1323,8 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget "https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION}" -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-                bosh upload stemcell stemcell.tgz --skip-if-exists
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n upload-stemcell stemcell.tgz
 
       - task: deploy-concourse
         config:
@@ -1305,28 +1332,25 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
           - name: concourse-manifest
           - name: bosh-secrets
           - name: paas-bootstrap
-          outputs:
-          - name: updated-concourse-manifest
+          - name: bosh-CA-crt
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
-              bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              bosh -n deploy
-        on_success:
-          put: concourse-manifest
-          params:
-            file: updated-concourse-manifest/concourse-manifest.yml
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              bosh -n deploy concourse-manifest/concourse-manifest.yml
 
       - task: add-env-specific-team
         config:
@@ -1371,8 +1395,9 @@ jobs:
         - get: paas-bootstrap
           passed: ['concourse-deploy']
         - get: bosh-secrets
-        - get: concourse-manifest
           passed: ['concourse-deploy']
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
 
       - task: test-bosh-vms
         config:
@@ -1380,24 +1405,25 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
           - name: paas-bootstrap
-          - name: concourse-manifest
           - name: bosh-secrets
+          - name: bosh-CA-crt
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "((bosh_fqdn_external))" bosh-secrets/bosh-secrets.yml
-              mkdir -p updated-concourse-manifest
-              sed -e "s/^director_uuid:.*/director_uuid: $(bosh status --uuid)/" < concourse-manifest/concourse-manifest.yml > updated-concourse-manifest/concourse-manifest.yml
-              bosh deployment updated-concourse-manifest/concourse-manifest.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name updated-concourse-manifest/concourse-manifest.yml)
-              bosh vms "${DEPLOYMENT_NAME}" | tee vms.txt
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              bosh deployment
+              bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
       - task: upload-pipeline

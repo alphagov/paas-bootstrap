@@ -76,12 +76,19 @@ resources:
       versioned_file: concourse.tfstate
       region_name: ((aws_region))
 
-  - name: concourse-manifest
+  - name: bosh-CA-crt
     type: s3-iam
     source:
       bucket: ((state_bucket))
       region_name: ((aws_region))
-      versioned_file: concourse-manifest.yml
+      versioned_file: bosh-CA.crt
+
+  - name: bosh-ssh-private-key
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      versioned_file: bosh_id_rsa
+      region_name: ((aws_region))
 
 jobs:
   - name: self-update-pipeline
@@ -204,7 +211,7 @@ jobs:
         - get: bosh-secrets
         - get: vpc-tfstate
         - get: concourse-tfstate
-        - get: concourse-manifest
+        - get: bosh-CA-crt
 
       - task: destroy-concourse
         config:
@@ -212,23 +219,24 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
-          - name: concourse-manifest
+          - name: bosh-CA-crt
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
-              DEPLOYMENT_NAME=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb name concourse-manifest/concourse-manifest.yml)
-              bosh -n delete deployment --force "$DEPLOYMENT_NAME"
+              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              bosh -n delete-deployment --force
 
       - task: vpc-terraform-outputs-to-sh
         config:
@@ -285,6 +293,12 @@ jobs:
               touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
+
+              if [ -z "$(terraform state list --state updated-concourse-tfstate/concourse.tfstate)" ]; then
+                echo "The Terraform resources were already destroyed, nothing to do"
+                exit 0
+              fi
+
               terraform init paas-bootstrap/terraform/concourse
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -333,6 +347,8 @@ jobs:
         - get: bosh-manifest
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: bosh-CA-crt
+        - get: bosh-ssh-private-key
 
       - task: check-existing-deployments
         config:
@@ -340,21 +356,29 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
+            - name: bosh-CA-crt
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
-                ./paas-bootstrap/concourse/scripts/bosh_pre_destroy.rb
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+
+                if ! bosh deployments --tty | grep -q "0 deployments"; then
+                  echo "The following deployments must be deleted before destroying BOSH"
+                  echo
+                  bosh deployments
+                  exit 1
+                fi
 
       - task: cleanup-orphaned-disks
         config:
@@ -362,21 +386,23 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
+            - name: bosh-CA-crt
           params:
-            BOSH_LOGIN_HOST: ((bosh_login_host))
+            BOSH_ENVIRONMENT: ((bosh_login_host))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh "${BOSH_LOGIN_HOST}" bosh-secrets/bosh-secrets.yml
-                bosh cleanup --all
+                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                bosh -n clean-up --all
 
       - task: destroy-bosh-instance
         config:
@@ -384,12 +410,13 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-init
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/bosh-cli-v2
+              tag: c735581beb174ecc95ca1a7b57eff444af3bf099
           inputs:
             - name: paas-bootstrap
             - name: bosh-manifest
             - name: bosh-init-state
+            - name: bosh-ssh-private-key
           params:
             BOSH_MANIFEST_STATE: ((bosh_manifest_state))
           outputs:
@@ -402,7 +429,10 @@ jobs:
               - |
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
-                bosh-init delete bosh-init-working-dir/bosh-manifest.yml
+                mkdir bosh-init-working-dir/.ssh
+                cp bosh-ssh-private-key/bosh_id_rsa bosh-init-working-dir/.ssh/bosh_id_rsa
+                bosh -n delete-env bosh-init-working-dir/bosh-manifest.yml \
+                  --state bosh-init-working-dir/bosh-manifest-state.json
                 # If the delete is successful, the file will be missing
                 if [ ! -f bosh-init-working-dir/bosh-manifest-state.json ]; then
                   cp paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl bosh-init-working-dir/bosh-manifest-state.json

@@ -8,7 +8,7 @@ end
 
 def upload_release(details)
   cmd = [
-    "bosh", "upload", "release",
+    "bosh", "-n", "upload-release",
     "--name", details.fetch("name"),
     "--version", details.fetch("version"),
     "--sha1", details.fetch("sha1"),
