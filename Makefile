@@ -115,6 +115,7 @@ prod: globals check-env-vars ## Set Environment to Production
 
 .PHONY: build-concourse
 build-concourse: ## Setup profiles for deploying a build concourse
+	$(if ${SYSTEM_DNS_ZONE_NAME},,$(error Must set SYSTEM_DNS_ZONE_NAME. This can be done with the relevant environment make target.))
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
 	$(eval export CONCOURSE_TYPE=build-concourse)
 	$(eval export CONCOURSE_HOSTNAME=concourse)
@@ -127,6 +128,8 @@ build-concourse: ## Setup profiles for deploying a build concourse
 
 .PHONY: deployer-concourse
 deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
+	$(if ${SYSTEM_DNS_ZONE_NAME},,$(error Must set SYSTEM_DNS_ZONE_NAME. This can be done with the relevant environment make target.))
+	$(if ${APPS_DNS_ZONE_NAME},,$(error Must set APPS_DNS_ZONE_NAME. This can be done with the relevant environment make target.))
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-cf)
 	$(eval export CONCOURSE_TYPE=deployer-concourse)
 	$(eval export CONCOURSE_HOSTNAME=deployer)
