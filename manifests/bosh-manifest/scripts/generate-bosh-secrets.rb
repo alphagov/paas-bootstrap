@@ -6,7 +6,7 @@ require File.expand_path("../../../shared/lib/secret_generator", __FILE__)
 
 generator = SecretGenerator.new(
   "bosh_postgres_password" => :simple,
-  "bosh_nats_password" => :simple,
+  "bosh_mbus_bootstrap_password" => :simple,
   "bosh_registry_password" => :simple,
   "bosh_redis_password" => :simple,
   "bosh_hm_director_password" => :simple,

@@ -143,11 +143,11 @@ cloud_provider:
     user: vcap
     private_key: .ssh/bosh_id_rsa
 
-  mbus: (( concat "https://mbus:" secrets.bosh_nats_password "@" $BOSH_FQDN_EXTERNAL ":6868" ))
+  mbus: (( concat "https://mbus:" secrets.bosh_mbus_bootstrap_password "@" $BOSH_FQDN_EXTERNAL ":6868" ))
 
   properties:
     agent:
-      mbus: (( concat "https://mbus:" secrets.bosh_nats_password "@0.0.0.0:6868" ))
+      mbus: (( concat "https://mbus:" secrets.bosh_mbus_bootstrap_password "@0.0.0.0:6868" ))
     blobstore:
       provider: local
       path: /var/vcap/micro_bosh/data/cache
