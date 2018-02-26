@@ -53,8 +53,6 @@ jobs:
   properties:
     nats:
       address: 127.0.0.1
-      user: nats
-      password: (( grab secrets.bosh_nats_password ))
       tls:
         ca: (( grab secrets.bosh_ca_cert ))
         client_ca:
