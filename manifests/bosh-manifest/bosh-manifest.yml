@@ -53,8 +53,6 @@ jobs:
   properties:
     nats:
       address: 127.0.0.1
-      user: nats
-      password: (( grab secrets.bosh_nats_password ))
       tls:
         ca: (( grab secrets.bosh_ca_cert ))
         client_ca:
@@ -69,8 +67,7 @@ jobs:
         health_monitor:
           certificate: (( grab secrets.default_hm_bosh_internal_cert ))
           private_key: (( grab secrets.default_hm_bosh_internal_key ))
-      # FIXME: To remove as all agents are redeployed with TLS support
-      allow_legacy_agents: true
+      allow_legacy_agents: false
 
     director:
       address: 127.0.0.1
@@ -101,7 +98,7 @@ jobs:
       resurrector_enabled: false
 
     agent:
-      mbus: (( concat "nats://nats:" secrets.bosh_nats_password "@" $BOSH_FQDN ":4222" ))
+      mbus: (( concat "nats://" $BOSH_FQDN ":4222" ))
 
     registry:
       db: (( grab meta.rds ))
@@ -146,11 +143,11 @@ cloud_provider:
     user: vcap
     private_key: .ssh/bosh_id_rsa
 
-  mbus: (( concat "https://mbus:" secrets.bosh_nats_password "@" $BOSH_FQDN_EXTERNAL ":6868" ))
+  mbus: (( concat "https://mbus:" secrets.bosh_mbus_bootstrap_password "@" $BOSH_FQDN_EXTERNAL ":6868" ))
 
   properties:
     agent:
-      mbus: (( concat "https://mbus:" secrets.bosh_nats_password "@0.0.0.0:6868" ))
+      mbus: (( concat "https://mbus:" secrets.bosh_mbus_bootstrap_password "@0.0.0.0:6868" ))
     blobstore:
       provider: local
       path: /var/vcap/micro_bosh/data/cache
