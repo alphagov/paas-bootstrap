@@ -1,6 +1,5 @@
 source "https://rubygems.org"
 
-gem 'bosh_cli'
 gem 'github_merge_sign', '1.0.0'
 gem 'govuk-lint', "~> 3.3.0"
 gem 'json-minify', '~> 0.0.2'
