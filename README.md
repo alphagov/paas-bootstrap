@@ -5,7 +5,7 @@ and [BOSH][] manifests that allow provisioning of a VPC with an instance of
 Bosh and an instance of Concourse. It provides a generic starting point for
 any kind of deployment environment.
 
-[Concourse]: http://concourse.ci/
+[Concourse]: http://concourse-ci.org/
 [Terraform]: https://terraform.io/
 [BOSH]: https://bosh.io/
 
