@@ -9,5 +9,4 @@ jobs:
           github_auth:
             authorize:
               - (( append ))
-              - user: bandesz
               - user: camelpunch
