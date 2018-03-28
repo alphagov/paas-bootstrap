@@ -17,3 +17,5 @@ addons:
         transport: 'tcp'
         tls_enabled: true
         permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))
+        custom_rule: |
+          if ($programname startswith "vcap.") then ~
