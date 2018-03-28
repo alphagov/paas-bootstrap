@@ -19,3 +19,4 @@ addons:
         permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))
         custom_rule: |
           if ($programname startswith "vcap.") then ~
+        use_tcp_for_file_forwarding_local_transport: true
