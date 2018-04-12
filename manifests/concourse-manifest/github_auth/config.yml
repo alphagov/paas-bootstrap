@@ -11,7 +11,6 @@ jobs:
             authorize:
               - user: alext
               - user: dcarley
-              - user: bleach
               - user: henrytk
               - user: keymon
               - user: paroxp
