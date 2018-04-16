@@ -9,3 +9,4 @@ jobs:
           github_auth:
             authorize:
               - (( append ))
+              - venusbb
