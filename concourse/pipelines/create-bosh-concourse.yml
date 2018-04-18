@@ -3,7 +3,6 @@ groups:
   - name: all
     jobs:
       - init-bucket
-      - s3init
       - vpc
       - generate-secrets
       - bosh-terraform
@@ -63,6 +62,21 @@ resources:
       bucket: ((state_bucket))
       versioned_file: vpc.tfstate
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: |
+        {
+            "version": 1,
+            "serial": 0,
+            "modules": [
+                {
+                    "path": [
+                        "root"
+                    ],
+                    "outputs": {},
+                    "resources": {}
+                }
+            ]
+        }
 
   - name: bosh-CA
     type: s3-iam
@@ -70,6 +84,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-CA.tar.gz
+      initial_version: "-"
+      initial_content_binary: "H4sICMtSp1YAA2NvbmNvdXJzZS1jZXJ0cy50YXIA7cEBDQAAAMKg909tDjegAAAAAAAAAAAAgDcDmt4dJwAoAAA="
 
   - name: bosh-CA-crt
     type: s3-iam
@@ -77,6 +93,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-CA.crt
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: bosh-certs
     type: s3-iam
@@ -84,6 +102,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-certs.tar.gz
+      initial_version: "-"
+      initial_content_binary: "H4sICMtSp1YAA2NvbmNvdXJzZS1jZXJ0cy50YXIA7cEBDQAAAMKg909tDjegAAAAAAAAAAAAgDcDmt4dJwAoAAA="
 
   - name: bosh-secrets
     type: s3-iam
@@ -91,6 +111,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-secrets.yml
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: bosh-ssh-private-key
     type: s3-iam
@@ -98,6 +120,8 @@ resources:
       bucket: ((state_bucket))
       versioned_file: bosh_id_rsa
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: bosh-ssh-public-key
     type: s3-iam
@@ -105,6 +129,8 @@ resources:
       bucket: ((state_bucket))
       versioned_file: bosh_id_rsa.pub
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: ssh-private-key
     type: s3-iam
@@ -112,6 +138,8 @@ resources:
       bucket: ((state_bucket))
       versioned_file: id_rsa
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: ssh-public-key
     type: s3-iam
@@ -119,6 +147,8 @@ resources:
       bucket: ((state_bucket))
       versioned_file: id_rsa.pub
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: bosh-tfstate
     type: s3-iam
@@ -126,6 +156,21 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh.tfstate
+      initial_version: "-"
+      initial_content_text: |
+        {
+            "version": 1,
+            "serial": 0,
+            "modules": [
+                {
+                    "path": [
+                        "root"
+                    ],
+                    "outputs": {},
+                    "resources": {}
+                }
+            ]
+        }
 
   - name: bosh-manifest
     type: s3-iam
@@ -147,6 +192,11 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: ((bosh_manifest_state))
+      initial_version: "-"
+      initial_content_text: |
+        {
+          "installation_id": "44f01911-a47a-4a24-6ca3-a3109b33f058"
+        }
 
   - name: concourse-tfstate
     type: s3-iam
@@ -154,6 +204,21 @@ resources:
       bucket: ((state_bucket))
       versioned_file: concourse.tfstate
       region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: |
+        {
+            "version": 1,
+            "serial": 0,
+            "modules": [
+                {
+                    "path": [
+                        "root"
+                    ],
+                    "outputs": {},
+                    "resources": {}
+                }
+            ]
+        }
 
   - name: git-ssh-public-key
     type: s3-iam
@@ -161,6 +226,15 @@ resources:
       bucket: ((state_bucket))
       versioned_file: git_id_rsa.pub
       region_name: ((aws_region))
+      initial_version: "-"
+
+  - name: git-ssh-private-key
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      versioned_file: git_id_rsa
+      region_name: ((aws_region))
+      initial_version: "-"
 
   - name: concourse-secrets
     type: s3-iam
@@ -168,6 +242,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: concourse-secrets.yml
+      initial_version: "-"
+      initial_content_text: ""
 
   - name: concourse-manifest
     type: s3-iam
@@ -175,6 +251,22 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
+
+  - name: concourse-ssh-public-key
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: concourse_id_rsa.pub
+      initial_version: "-"
+
+  - name: concourse-ssh-private-key
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: concourse_id_rsa
+      initial_version: "-"
 
 jobs:
   - name: init-bucket
@@ -265,66 +357,34 @@ jobs:
       - put: pipeline-trigger
         params: {bump: patch}
 
-  - name: s3init
-    serial: true
-    plan:
-      - get: pipeline-trigger
-        trigger: true
-        passed: ['init-bucket']
-      - get: paas-bootstrap
-        passed: ['init-bucket']
-      - task: s3init
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/curl-ssl
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
-          inputs:
-            - name: paas-bootstrap
-          run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" "((bosh_manifest_state))" paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" vpc.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.crt paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-CA.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-certs.tar.gz paas-bootstrap/concourse/init_files/empty.tar.gz
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh_id_rsa paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" bosh_id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" id_rsa paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" id_rsa.pub paas-bootstrap/concourse/init_files/zero_bytes
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse.tfstate paas-bootstrap/concourse/init_files/terraform.tfstate.tpl
-              paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse-secrets.yml paas-bootstrap/concourse/init_files/zero_bytes
-
   - name: vpc
     serial: true
     plan:
       - aggregate:
         - get: paas-bootstrap
           trigger: true
-          passed: ['s3init']
+          passed: ['init-bucket']
         - get: pipeline-trigger
           trigger: true
-          passed: ['s3init']
+          passed: ['init-bucket']
         - get: vpc-tfstate
+        - get: git-ssh-public-key
+        - get: git-ssh-private-key
 
-      - task: generate-git-ssh-key
+      - task: generate-git-ssh-keys
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/curl-ssl
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/awscli
+              tag: b2495d6ed07f680125d19aa7d1701da7efabb289
           inputs:
           - name: paas-bootstrap
+          - name: git-ssh-public-key
+          - name: git-ssh-private-key
+          outputs:
+          - name: generated-git-ssh-keys
           params:
             AWS_DEFAULT_REGION: ((aws_region))
           run:
@@ -333,10 +393,23 @@ jobs:
             - -e
             - -c
             - |
+              if [ -s git-ssh-public-key/git_id_rsa.pub ] && [ -s git-ssh-private-key/git_id_rsa ]; then
+                echo "Git SSH keys already exist, skipping."
+                cp git-ssh-public-key/git_id_rsa.pub generated-git-ssh-keys
+                cp git-ssh-private-key/git_id_rsa generated-git-ssh-keys
+                exit 0
+              fi
               apk add --update openssh
-              ssh-keygen -t rsa -b 4096 -f generated_git_id_rsa -N ''
-              ./paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" git_id_rsa generated_git_id_rsa
-              ./paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" git_id_rsa.pub generated_git_id_rsa.pub
+              cd generated-git-ssh-keys
+              ssh-keygen -t rsa -b 4096 -f git_id_rsa -N ''
+        on_success:
+          aggregate:
+            - put: git-ssh-public-key
+              params:
+                file: generated-git-ssh-keys/git_id_rsa.pub
+            - put: git-ssh-private-key
+              params:
+                file: generated-git-ssh-keys/git_id_rsa
 
       - task: deploy-vpc
         config:
@@ -379,9 +452,9 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
-          passed: ['s3init']
+          passed: ['init-bucket']
         - get: pipeline-trigger
-          passed: ['s3init']
+          passed: ['init-bucket']
           trigger: true
         - get: bosh-CA
         - get: bosh-CA-crt
@@ -996,6 +1069,8 @@ jobs:
           passed: ['bosh-terraform']
         - get: concourse-tfstate
         - get: git-ssh-public-key
+        - get: concourse-ssh-public-key
+        - get: concourse-ssh-private-key
 
       - task: terraform-outputs-to-sh
         config:
@@ -1052,18 +1127,20 @@ jobs:
                 ./paas-bootstrap/concourse/scripts/create_acm_cert.sh
               done
 
-      - task: generate-concourse-ssh-key
+      - task: generate-concourse-ssh-keys
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/curl-ssl
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              repository: governmentpaas/awscli
+              tag: b2495d6ed07f680125d19aa7d1701da7efabb289
           inputs:
           - name: paas-bootstrap
+          - name: concourse-ssh-public-key
+          - name: concourse-ssh-private-key
           outputs:
-          - name: concourse-ssh-key
+          - name: generated-concourse-ssh-keys
           params:
             AWS_DEFAULT_REGION: ((aws_region))
           run:
@@ -1072,11 +1149,24 @@ jobs:
             - -e
             - -c
             - |
+              if [ -s concourse-ssh-public-key/concourse_id_rsa.pub ] && [ -s concourse-ssh-private-key/concourse_id_rsa ]; then
+                echo "Concourse SSH keys already exist, skipping."
+                cp concourse-ssh-public-key/concourse_id_rsa.pub generated-concourse-ssh-keys
+                cp concourse-ssh-private-key/concourse_id_rsa generated-concourse-ssh-keys
+                exit 0
+              fi
+
               apk add --update openssh
-              cd concourse-ssh-key
-              ssh-keygen -t rsa -b 4096 -f generated_concourse_id_rsa -N ''
-              ../paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse_id_rsa generated_concourse_id_rsa
-              ../paas-bootstrap/concourse/scripts/s3init.sh "((state_bucket))" concourse_id_rsa.pub generated_concourse_id_rsa.pub
+              cd generated-concourse-ssh-keys
+              ssh-keygen -t rsa -b 4096 -f concourse_id_rsa -N ''
+        on_success:
+          aggregate:
+            - put: concourse-ssh-public-key
+              params:
+                file: generated-concourse-ssh-keys/concourse_id_rsa.pub
+            - put: concourse-ssh-private-key
+              params:
+                file: generated-concourse-ssh-keys/concourse_id_rsa
 
       - task: terraform-apply
         config:
@@ -1092,7 +1182,7 @@ jobs:
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
           - name: git-ssh-public-key
-          - name: concourse-ssh-key
+          - name: generated-concourse-ssh-keys
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -1107,7 +1197,7 @@ jobs:
             - -e
             - -c
             - |
-              cp concourse-ssh-key/concourse_id_rsa.pub paas-bootstrap/terraform/concourse
+              cp generated-concourse-ssh-keys/concourse_id_rsa.pub paas-bootstrap/terraform/concourse
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
