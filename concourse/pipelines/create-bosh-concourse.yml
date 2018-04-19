@@ -274,6 +274,7 @@ jobs:
     plan:
       - aggregate:
         - get: paas-bootstrap
+
       - task: try-fetch-bucket-state
         config:
           platform: linux
@@ -319,9 +320,9 @@ jobs:
             path: sh
             args:
             - -c
-            - -x
+            - -e
             - |
-              cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
+              [ -f bucket-state/bucket.tfstate ] && cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
               terraform init paas-bootstrap/terraform/bucket
               terraform apply \
                 -auto-approve=true \
