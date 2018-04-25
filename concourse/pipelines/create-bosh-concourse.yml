@@ -193,10 +193,10 @@ resources:
       region_name: ((aws_region))
       versioned_file: ((bosh_manifest_state))
       initial_version: "-"
+      # ID has to match value from the seed in the bosh-cli-v2 container:
+      # https://github.com/alphagov/paas-docker-cloudfoundry-tools/blob/master/bosh-cli-v2/bosh_init_cache/minimal-state.json
       initial_content_text: |
-        {
-          "installation_id": "44f01911-a47a-4a24-6ca3-a3109b33f058"
-        }
+        { "installation_id": "44f01911-a47a-4a24-6ca3-a3109b33f058" }
 
   - name: concourse-tfstate
     type: s3-iam
