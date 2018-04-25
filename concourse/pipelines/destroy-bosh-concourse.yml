@@ -435,7 +435,9 @@ jobs:
                   --state bosh-init-working-dir/bosh-manifest-state.json
                 # If the delete is successful, the file will be missing
                 if [ ! -f bosh-init-working-dir/bosh-manifest-state.json ]; then
-                  cp paas-bootstrap/concourse/init_files/bosh-init-state.json.tpl bosh-init-working-dir/bosh-manifest-state.json
+                  # ID has to match value from the seed in the bosh-cli-v2 container:
+                  # https://github.com/alphagov/paas-docker-cloudfoundry-tools/blob/master/bosh-cli-v2/bosh_init_cache/minimal-state.json
+                  echo '{ "installation_id": "44f01911-a47a-4a24-6ca3-a3109b33f058" }' > bosh-init-working-dir/bosh-manifest-state.json
                 fi
         ensure:
           put: bosh-init-state
