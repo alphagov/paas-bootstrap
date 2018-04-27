@@ -27,4 +27,3 @@ meta:
         instances:
           - name: Canary
             hostname: (( concat "__canary." $SYSTEM_DNS_ZONE_NAME ))
-            record_type: TXT
