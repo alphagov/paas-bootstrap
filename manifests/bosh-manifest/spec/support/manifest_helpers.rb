@@ -4,6 +4,8 @@ require 'yaml'
 require 'tempfile'
 
 module ManifestHelpers
+  SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
@@ -40,6 +42,7 @@ private
     ENV["DATADOG_APP_KEY"] = "abcd4321"
     ENV["ENABLE_DATADOG"] = "true"
     ENV["DEPLOY_ENV"] = ManifestHelpers.deploy_env
+    ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
 
   def load_default_manifest

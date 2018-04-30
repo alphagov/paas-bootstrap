@@ -22,3 +22,8 @@ meta:
         instances:
           - name: btrfs
             search_string: ["btrfs"]
+      dns_check:
+        init_config:
+        instances:
+          - name: Canary
+            hostname: (( concat "__canary." $SYSTEM_DNS_ZONE_NAME ))

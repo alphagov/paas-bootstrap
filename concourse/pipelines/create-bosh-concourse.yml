@@ -881,6 +881,7 @@ jobs:
           params:
             DEPLOY_ENV: ((deploy_env))
             AWS_ACCOUNT: ((aws_account))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
             DATADOG_API_KEY: ((datadog_api_key))
             DATADOG_APP_KEY: ((datadog_app_key))
             ENABLE_DATADOG: ((enable_datadog))
