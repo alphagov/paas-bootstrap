@@ -38,6 +38,11 @@ datadog_app_key: ${DATADOG_APP_KEY:-}
 enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
+logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
+logit_syslog_port: ${LOGIT_SYSLOG_PORT}
+logit_ca_cert: ${LOGIT_CA_CERT}
+logit_client_cert: ${LOGIT_CLIENT_CERT}
+logit_client_key: ${LOGIT_CLIENT_KEY}
 enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
@@ -53,6 +58,8 @@ fi
 if [ "${ENABLE_GITHUB}" = "true" ] ; then
   eval "$("${SCRIPT_DIR}"/../../scripts/manage-github-secrets.sh retrieve)"
 fi
+
+eval "$("${SCRIPT_DIR}"/../../scripts/manage-logit-secrets.sh retrieve)"
 
 if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
   gpg_ids="[]"

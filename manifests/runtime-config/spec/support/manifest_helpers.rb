@@ -26,6 +26,11 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["DATADOG_API_KEY"] = "abcd1234"
     ENV["ENABLE_DATADOG"] = "true"
+    ENV["LOGIT_SYSLOG_ADDRESS"] = "logit-syslog-url.internal"
+    ENV["LOGIT_SYSLOG_PORT"] = "6514"
+    ENV["LOGIT_CA_CERT"] = "-----BEGIN CERTIFICATE-----\n01234\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\n56789\n-----END CERTIFICATE-----"
+    ENV["LOGIT_CLIENT_CERT"] = "-----BEGIN CERTIFICATE-----\nABCDEF\n-----END CERTIFICATE-----"
+    ENV["LOGIT_CLIENT_KEY"] = "-----BEGIN RSA PRIVATE KEY-----\nABCDEF\n-----END RSA PRIVATE KEY-----"
     ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
 

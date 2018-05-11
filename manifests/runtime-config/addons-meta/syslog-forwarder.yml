@@ -1,0 +1,23 @@
+---
+releases:
+  - name: syslog
+    version: 0.0.1525961026
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.0.1525961026.tgz
+    sha1: bef1098c95684aa7cc73c170083ff9b2a98d8d22
+
+meta:
+  syslog_forwarder:
+    address: (( concat $LOGIT_SYSLOG_ADDRESS ))
+    port: (( concat $LOGIT_SYSLOG_PORT ))
+    transport: 'tcp'
+    tls_enabled: true
+    ca_cert: (( grab $LOGIT_CA_CERT ))
+    client_tls:
+      enabled: true
+      cert: (( grab $LOGIT_CLIENT_CERT ))
+      key: (( grab $LOGIT_CLIENT_KEY ))
+    permitted_peer: (( concat "*.logit.io" ))
+    custom_rule: |
+      $MaxMessageSize 64k
+      if ($programname startswith "vcap.") then ~
+    use_tcp_for_file_forwarding_local_transport: true

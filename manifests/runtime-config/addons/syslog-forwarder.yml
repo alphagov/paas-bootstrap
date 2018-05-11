@@ -1,23 +1,8 @@
 ---
-releases:
-  - name: syslog
-    version: 0.0.1525961026
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.0.1525961026.tgz
-    sha1: bef1098c95684aa7cc73c170083ff9b2a98d8d22
-
 addons:
   - name: syslog_forwarder
     jobs:
       - name: syslog_forwarder
         release: syslog
     properties:
-      syslog:
-        address: (( concat "logsearch-ingestor." $SYSTEM_DNS_ZONE_NAME ))
-        port: 6514
-        transport: 'tcp'
-        tls_enabled: true
-        permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))
-        custom_rule: |
-          $MaxMessageSize 64k
-          if ($programname startswith "vcap.") then ~
-        use_tcp_for_file_forwarding_local_transport: true
+      syslog: (( grab meta.syslog_forwarder ))
