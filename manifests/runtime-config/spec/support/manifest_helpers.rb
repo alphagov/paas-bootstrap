@@ -4,12 +4,11 @@ require 'singleton'
 
 module ManifestHelpers
   SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
-  LOGIT_SYSLOG_ADDRESS =
-  LOGIT_SYSLOG_ADDRESS = "logit-syslog-url.internal"
-  LOGIT_SYSLOG_PORT = "6514"
-  LOGIT_CA_CERT = "-----BEGIN CERTIFICATE-----\n01234\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\n56789\n-----END CERTIFICATE-----"
-  LOGIT_CLIENT_CERT = "-----BEGIN CERTIFICATE-----\nABCDEF\n-----END CERTIFICATE-----"
-  LOGIT_CLIENT_KEY = "-----BEGIN RSA PRIVATE KEY-----\nABCDEF\n-----END RSA PRIVATE KEY-----"
+  LOGIT_SYSLOG_ADDRESS = "logit-syslog-url.internal".freeze
+  LOGIT_SYSLOG_PORT    = "6514".freeze
+  LOGIT_CA_CERT        = "-----BEGIN CERTIFICATE-----\n01234\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\n56789\n-----END CERTIFICATE-----".freeze
+  LOGIT_CLIENT_CERT    = "-----BEGIN CERTIFICATE-----\nABCDEF\n-----END CERTIFICATE-----".freeze
+  LOGIT_CLIENT_KEY     = "-----BEGIN RSA PRIVATE KEY-----\nABCDEF\n-----END RSA PRIVATE KEY-----".freeze
 
   class Cache
     include Singleton
