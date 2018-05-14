@@ -41,8 +41,6 @@ github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
 logit_ca_cert: "${LOGIT_CA_CERT}"
-logit_client_cert: "${LOGIT_CLIENT_CERT}"
-logit_client_key: "${LOGIT_CLIENT_KEY}"
 enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
@@ -62,7 +60,7 @@ fi
 eval "$("${SCRIPT_DIR}"/../../scripts/manage-logit-secrets.sh retrieve)"
 
 # shellcheck disable=SC2154
-if [ -z "${LOGIT_SYSLOG_ADDRESS}" ] || [ -z "${LOGIT_SYSLOG_PORT}" ] || [ -z "${LOGIT_CA_CERT}" ] || [ -z "${LOGIT_CLIENT_CERT}" ] || [ -z "${LOGIT_CLIENT_KEY}" ] ; then
+if [ -z "${LOGIT_SYSLOG_ADDRESS}" ] || [ -z "${LOGIT_SYSLOG_PORT}" ] || [ -z "${LOGIT_CA_CERT}" ] ; then
   echo "Could not retrieve some Logit secret(s). Did you run \`make ${AWS_ACCOUNT} ${CONCOURSE_TYPE} upload-logit-secrets\`?"
   exit 1
 fi

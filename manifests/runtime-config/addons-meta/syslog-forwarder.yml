@@ -12,10 +12,6 @@ meta:
     transport: 'tcp'
     tls_enabled: true
     ca_cert: (( grab $LOGIT_CA_CERT ))
-    client_tls:
-      enabled: true
-      cert: (( grab $LOGIT_CLIENT_CERT ))
-      key: (( grab $LOGIT_CLIENT_KEY ))
     permitted_peer: "*.logit.io"
     custom_rule: |
       $MaxMessageSize 64k

@@ -40,8 +40,6 @@ get_creds_from_env_or_pass() {
   LOGIT_SYSLOG_ADDRESS="${LOGIT_SYSLOG_ADDRESS:-$(pass "logit/${AWS_ACCOUNT}/syslog_address")}"
   LOGIT_SYSLOG_PORT="${LOGIT_SYSLOG_PORT:-$(pass "logit/${AWS_ACCOUNT}/syslog_port")}"
   LOGIT_CA_CERT="${LOGIT_CA_CERT:-$(pass "logit/${AWS_ACCOUNT}/ca_cert")}"
-  LOGIT_CLIENT_CERT="${LOGIT_CLIENT_CERT:-$(pass "logit/${AWS_ACCOUNT}/client_cert")}"
-  LOGIT_CLIENT_KEY="${LOGIT_CLIENT_KEY:-$(pass "logit/${AWS_ACCOUNT}/client_key")}"
 }
 
 upload() {
@@ -55,8 +53,6 @@ upload() {
 logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
 logit_ca_cert: ${LOGIT_CA_CERT}
-logit_client_cert: ${LOGIT_CLIENT_CERT}
-logit_client_key: ${LOGIT_CLIENT_KEY}
 EOF
 
   aws s3 cp "${secrets_file}" "${secrets_uri}"
@@ -72,21 +68,17 @@ retrieve() {
     LOGIT_SYSLOG_ADDRESS="${LOGIT_SYSLOG_ADDRESS:-$(val_from_yaml logit_syslog_address "${secrets_file}")}"
     LOGIT_SYSLOG_PORT="${LOGIT_SYSLOG_PORT:-$(val_from_yaml logit_syslog_port "${secrets_file}")}"
     LOGIT_CA_CERT="${LOGIT_CA_CERT:-$(val_from_yaml logit_ca_cert "${secrets_file}")}"
-    LOGIT_CLIENT_CERT="${LOGIT_CLIENT_CERT:-$(val_from_yaml logit_client_cert "${secrets_file}")}"
-    LOGIT_CLIENT_KEY="${LOGIT_CLIENT_KEY:-$(val_from_yaml logit_client_key "${secrets_file}")}"
   else
     echo "Warning: Cannot retrieve logit secrets from S3. Retriving from environment or from pass." 1>&2
     get_creds_from_env_or_pass
   fi
 
-  if [ -z "${LOGIT_SYSLOG_ADDRESS}" ] || [ -z "${LOGIT_SYSLOG_PORT}" ] || [ -z "${LOGIT_CA_CERT}" ] || [ -z "${LOGIT_CLIENT_CERT}" ] || [ -z "${LOGIT_CLIENT_KEY}" ] ; then
-    echo "\$LOGIT_SYSLOG_ADDRESS or \$LOGIT_SYSLOG_PORT or \$LOGIT_CA_CERT or \$LOGIT_CLIENT_CERT or \$LOGIT_CLIENT_KEY not set, failing" 1>&2
+  if [ -z "${LOGIT_SYSLOG_ADDRESS}" ] || [ -z "${LOGIT_SYSLOG_PORT}" ] || [ -z "${LOGIT_CA_CERT}" ] ; then
+    echo "\$LOGIT_SYSLOG_ADDRESS or \$LOGIT_SYSLOG_PORT or \$LOGIT_CA_CERT not set, failing" 1>&2
   else
     echo "export LOGIT_SYSLOG_ADDRESS=\"${LOGIT_SYSLOG_ADDRESS}\""
     echo "export LOGIT_SYSLOG_PORT=\"${LOGIT_SYSLOG_PORT}\""
     echo "export LOGIT_CA_CERT=\"${LOGIT_CA_CERT}\""
-    echo "export LOGIT_CLIENT_CERT=\"${LOGIT_CLIENT_CERT}\""
-    echo "export LOGIT_CLIENT_KEY=\"${LOGIT_CLIENT_KEY}\""
   fi
 }
 
