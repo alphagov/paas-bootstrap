@@ -52,7 +52,7 @@ upload() {
 ---
 logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
-logit_ca_cert: ${LOGIT_CA_CERT}
+logit_ca_cert: "${LOGIT_CA_CERT}"
 EOF
 
   aws s3 cp "${secrets_file}" "${secrets_uri}"
