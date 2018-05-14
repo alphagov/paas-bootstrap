@@ -59,12 +59,6 @@ fi
 
 eval "$("${SCRIPT_DIR}"/../../scripts/manage-logit-secrets.sh retrieve)"
 
-# shellcheck disable=SC2154
-if [ -z "${LOGIT_SYSLOG_ADDRESS}" ] || [ -z "${LOGIT_SYSLOG_PORT}" ] || [ -z "${LOGIT_CA_CERT}" ] ; then
-  echo "Could not retrieve some Logit secret(s). Did you run \`make ${AWS_ACCOUNT} ${CONCOURSE_TYPE} upload-logit-secrets\`?"
-  exit 1
-fi
-
 if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
   gpg_ids="[]"
 else
