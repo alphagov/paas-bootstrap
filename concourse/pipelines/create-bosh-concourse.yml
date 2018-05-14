@@ -967,6 +967,7 @@ jobs:
                 if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
                    MANIFEST_STUBS="${MANIFEST_STUBS}
                                   ./paas-bootstrap/manifests/runtime-config/addons/syslog-forwarder.yml"
+                                  ./paas-bootstrap/manifests/runtime-config/addons-meta/syslog-forwarder.yml"
                 fi
 
                 # shellcheck disable=SC2086
