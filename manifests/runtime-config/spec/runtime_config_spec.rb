@@ -83,5 +83,26 @@ RSpec.describe "Runtime config" do
 
       expect(syslog_forwarder_port).to eq ManifestHelpers::LOGIT_CA_CERT
     end
+
+    it "has syslog_forwarder configured with client tls enabled" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_client_tls_enabled = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("client_tls").fetch("enabled")
+
+      expect(syslog_forwarder_client_tls_enabled).to be true
+    end
+
+    it "has syslog_forwarder configured based on the variable $LOGIT_CLIENT_CERT" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_client_tls_cert = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("client_tls").fetch("cert")
+
+      expect(syslog_forwarder_client_tls_cert).to eq ManifestHelpers::LOGIT_CLIENT_CERT
+    end
+
+    it "has syslog_forwarder configured based on the variable $LOGIT_CLIENT_KEY" do
+      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
+      syslog_forwarder_client_tls_key = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("client_tls").fetch("key")
+
+      expect(syslog_forwarder_client_tls_key).to eq ManifestHelpers::LOGIT_CLIENT_KEY
+    end
   end
 end
