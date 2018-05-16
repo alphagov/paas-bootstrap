@@ -40,7 +40,8 @@ github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
-logit_ca_cert: "${LOGIT_CA_CERT}"
+logit_ca_cert: |
+$(echo "${LOGIT_CA_CERT}" | sed 's/^/  /')
 enable_collectd_addon: ${ENABLE_COLLECTD_ADDON}
 enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
