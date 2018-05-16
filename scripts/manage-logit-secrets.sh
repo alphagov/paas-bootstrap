@@ -56,8 +56,10 @@ logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
 logit_ca_cert: |
 $(echo "${LOGIT_CA_CERT}" | sed 's/^/  /')
-logit_client_cert: ${LOGIT_CLIENT_CERT}
-logit_client_key: ${LOGIT_CLIENT_KEY}
+logit_client_cert: |
+$(echo "${LOGIT_CLIENT_CERT}" | sed 's/^/  /')
+logit_client_key: |
+$(echo "${LOGIT_CLIENT_KEY}" | sed 's/^/  /')
 EOF
 
   aws s3 cp "${secrets_file}" "${secrets_uri}"
