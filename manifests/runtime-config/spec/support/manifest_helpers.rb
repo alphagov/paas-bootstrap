@@ -51,7 +51,6 @@ private
       File.expand_path("../../../addons/collectd.yml", __FILE__),
       File.expand_path("../../../addons-meta/collectd.yml", __FILE__),
       File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
-      File.expand_path("../../../addons-meta/syslog-forwarder.yml", __FILE__),
       File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
       File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
     ])
