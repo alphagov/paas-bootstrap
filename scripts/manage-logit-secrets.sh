@@ -33,7 +33,6 @@ val_from_yaml() {
 setup_env() {
   export PASSWORD_STORE_DIR=${LOGIT_PASSWORD_STORE_DIR}
   secrets_uri="s3://gds-paas-${DEPLOY_ENV}-state/logit-secrets.yml"
-  logit_ca_uri="s3://gds-paas-${DEPLOY_ENV}-state/logit-CA.crt"
 }
 
 get_creds_from_env_or_pass() {
@@ -53,10 +52,11 @@ upload() {
 ---
 logit_syslog_address: ${LOGIT_SYSLOG_ADDRESS}
 logit_syslog_port: ${LOGIT_SYSLOG_PORT}
+logit_ca_cert: |
+$(echo "${LOGIT_CA_CERT}" | sed 's/^/  /')
 EOF
 
   aws s3 cp "${secrets_file}" "${secrets_uri}"
-  echo "${LOGIT_CA_CERT}" | aws s3 cp - "${logit_ca_uri}"
 }
 
 retrieve() {
