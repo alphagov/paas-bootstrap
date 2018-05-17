@@ -4,6 +4,11 @@ require 'singleton'
 
 module ManifestHelpers
   SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+  LOGIT_SYSLOG_ADDRESS = "logit-syslog-url.internal".freeze
+  LOGIT_SYSLOG_PORT    = "6514".freeze
+  LOGIT_CA_CERT        = "-----BEGIN CERTIFICATE-----\n01234\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\n56789\n-----END CERTIFICATE-----".freeze
+  LOGIT_CLIENT_CERT    = "-----BEGIN CERTIFICATE-----\nABCDEF\n-----END CERTIFICATE-----".freeze
+  LOGIT_CLIENT_KEY     = "-----BEGIN RSA PRIVATE KEY-----\nABCDEF\n-----END RSA PRIVATE KEY-----".freeze
 
   class Cache
     include Singleton
@@ -26,6 +31,11 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["DATADOG_API_KEY"] = "abcd1234"
     ENV["ENABLE_DATADOG"] = "true"
+    ENV["LOGIT_SYSLOG_ADDRESS"] = ManifestHelpers::LOGIT_SYSLOG_ADDRESS
+    ENV["LOGIT_SYSLOG_PORT"] = ManifestHelpers::LOGIT_SYSLOG_PORT
+    ENV["LOGIT_CA_CERT"] = ManifestHelpers::LOGIT_CA_CERT
+    ENV["LOGIT_CLIENT_CERT"] = ManifestHelpers::LOGIT_CLIENT_CERT
+    ENV["LOGIT_CLIENT_KEY"] = ManifestHelpers::LOGIT_CLIENT_KEY
     ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
 
