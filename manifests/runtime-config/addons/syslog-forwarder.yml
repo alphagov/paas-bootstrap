@@ -17,6 +17,10 @@ addons:
         transport: 'tcp'
         tls_enabled: true
         ca_cert: (( concat meta.logit.ca_cert meta.aws_acm_ca_cert ))
+        client_tls:
+          enabled: true
+          cert: (( grab meta.logit.client_cert ))
+          key: (( grab meta.logit.client_key ))
         permitted_peer: "*.logit.io"
         custom_rule: |
           $MaxMessageSize 64k

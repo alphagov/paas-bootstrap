@@ -20,6 +20,8 @@ get_creds_from_env_or_pass() {
   LOGIT_SYSLOG_ADDRESS="${LOGIT_SYSLOG_ADDRESS:-$(pass "logit/${AWS_ACCOUNT}/syslog_address")}"
   LOGIT_SYSLOG_PORT="${LOGIT_SYSLOG_PORT:-$(pass "logit/${AWS_ACCOUNT}/syslog_port")}"
   LOGIT_CA_CERT="${LOGIT_CA_CERT:-$(pass "logit/${AWS_ACCOUNT}/ca_cert")}"
+  LOGIT_CLIENT_CERT="${LOGIT_CLIENT_CERT:-$(pass "logit/${AWS_ACCOUNT}/client_cert")}"
+  LOGIT_CLIENT_KEY="${LOGIT_CLIENT_KEY:-$(pass "logit/${AWS_ACCOUNT}/client_key")}"
 }
 
 upload() {
@@ -34,6 +36,10 @@ meta:
     syslog_port: ${LOGIT_SYSLOG_PORT}
     ca_cert: |
 $(echo "${LOGIT_CA_CERT}" | sed 's/^/      /')
+    client_cert: |
+$(echo "${LOGIT_CLIENT_CERT}" | sed 's/^/      /')
+    client_key: |
+$(echo "${LOGIT_CLIENT_KEY}" | sed 's/^/      /')
 EOF
 
 
