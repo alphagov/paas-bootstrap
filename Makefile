@@ -65,6 +65,7 @@ globals:
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export DATADOG_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
+	$(eval export LOGIT_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	@true
 
@@ -203,6 +204,13 @@ upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials
 	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-datadog-secrets.sh upload
+
+.PHONY: upload-logit-secrets
+upload-logit-secrets: check-env-vars ## Decrypt and upload Logit credentials to S3
+	$(if ${AWS_ACCOUNT},,$(error Must set environment to ci/staging/prod))
+	$(if ${LOGIT_PASSWORD_STORE_DIR},,$(error Must pass LOGIT_PASSWORD_STORE_DIR=<path_to_password_store>))
+	$(if $(wildcard ${LOGIT_PASSWORD_STORE_DIR}),,$(error Password store ${LOGIT_PASSWORD_STORE_DIR} does not exist))
+	@scripts/upload-logit-secrets.sh upload
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
