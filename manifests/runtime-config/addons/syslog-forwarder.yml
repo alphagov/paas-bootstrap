@@ -12,11 +12,12 @@ addons:
         release: syslog
     properties:
       syslog:
-        address: (( concat "logsearch-ingestor." $SYSTEM_DNS_ZONE_NAME ))
-        port: 6514
+        address: (( grab meta.logit.syslog_address ))
+        port: (( grab meta.logit.syslog_port ))
         transport: 'tcp'
         tls_enabled: true
-        permitted_peer: (( concat "*." $SYSTEM_DNS_ZONE_NAME ))
+        ca_cert: (( grab meta.logit.ca_cert ))
+        permitted_peer: "*.logit.io"
         custom_rule: |
           $MaxMessageSize 64k
           if ($programname startswith "vcap.") then stop
