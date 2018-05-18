@@ -114,6 +114,15 @@ resources:
       initial_version: "-"
       initial_content_text: ""
 
+  - name: logit-secrets
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: logit-secrets.yml
+      initial_version: "-"
+      initial_content_text: ""
+
   - name: bosh-ssh-private-key
     type: s3-iam
     source:
@@ -1197,6 +1206,7 @@ jobs:
         - get: concourse-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
+        - get: logit-secrets
 
       - task: terraform-outputs-to-yaml
         config:
@@ -1264,6 +1274,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
+          - name: logit-secrets
           - name: terraform-outputs
           outputs:
           - name: concourse-manifest
@@ -1288,7 +1299,8 @@ jobs:
               fi
               if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/concourse-manifest/addons/syslog-forwarder.yml"
+                                ./paas-bootstrap/manifests/concourse-manifest/addons/syslog-forwarder.yml
+                                ./logit-secrets/logit-secrets.yml"
               fi
 
               # shellcheck disable=SC2086
