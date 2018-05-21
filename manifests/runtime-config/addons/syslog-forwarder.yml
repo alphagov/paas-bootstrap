@@ -1,9 +1,9 @@
 ---
 releases:
   - name: syslog
-    version: 0.0.1526649319
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.0.1526649319.tgz
-    sha1: 6305342be4c217f0e006590a3d0a0ba9462138a9
+    version: 0.1.5
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/syslog-0.1.5.tgz
+    sha1: 0c56265475bb2ddf041afddeaf85372ff06879cb
 
 addons:
   - name: syslog_forwarder
