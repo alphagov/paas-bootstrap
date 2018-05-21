@@ -52,14 +52,5 @@ RSpec.describe "Runtime config" do
       expect(syslog_forwarder_config.fetch("ca_cert")).to include("LOGIT_CA_CERT_1")
       expect(syslog_forwarder_config.fetch("ca_cert")).to include("LOGIT_CA_CERT_2")
     end
-
-    it "has syslog_forwarder configured for mutual TLS with logit" do
-      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
-      syslog_forwarder_client_tls_config = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("client_tls")
-
-      expect(syslog_forwarder_client_tls_config.fetch("enabled")).to be true
-      expect(syslog_forwarder_client_tls_config.fetch("cert")).to include("LOGIT_CLIENT_CERT")
-      expect(syslog_forwarder_client_tls_config.fetch("key")).to include("LOGIT_CLIENT_KEY")
-    end
   end
 end
