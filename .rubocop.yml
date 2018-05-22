@@ -2,7 +2,7 @@ AllCops:
   Exclude:
     - 'vendor/**/*'
     - 'scripts/vendor/**/*'
-  TargetRubyVersion: 2.2
+  TargetRubyVersion: 2.5
 Metrics/BlockLength:
   # FIXME: Remove when upstream PR is released:
   # https://github.com/alphagov/govuk-lint/pull/87
