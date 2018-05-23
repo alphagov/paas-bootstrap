@@ -102,7 +102,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/self-update-pipelines
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
           inputs:
             - name: paas-bootstrap
           params:
@@ -224,7 +224,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: 777204b5c870fc7ebf0d2b7aa55fcccddfa29c4b
+              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
@@ -362,7 +362,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: 777204b5c870fc7ebf0d2b7aa55fcccddfa29c4b
+              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -392,7 +392,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: 777204b5c870fc7ebf0d2b7aa55fcccddfa29c4b
+              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -416,7 +416,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: 777204b5c870fc7ebf0d2b7aa55fcccddfa29c4b
+              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
           inputs:
             - name: paas-bootstrap
             - name: bosh-manifest
