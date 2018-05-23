@@ -9,3 +9,9 @@ Metrics/BlockLength:
   Enabled: true
   Exclude:
     - "**/spec/**/*"
+Performance/HashEachMethods:
+  Enabled: false
+Performance/RegexpMatch:
+  Enabled: false
+Style/NumericPredicate:
+  Enabled: false
