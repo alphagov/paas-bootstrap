@@ -327,6 +327,7 @@ jobs:
               terraform apply \
                 -auto-approve=true \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-bucket-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket
         on_success:
@@ -441,6 +442,7 @@ jobs:
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
@@ -775,6 +777,7 @@ jobs:
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                  -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                   -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
@@ -1212,6 +1215,7 @@ jobs:
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
@@ -1614,6 +1618,7 @@ jobs:
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -target=aws_subnet.infra \
                 -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
@@ -1660,6 +1665,7 @@ jobs:
                 -target=aws_security_group.bosh \
                 -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -1703,6 +1709,7 @@ jobs:
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:

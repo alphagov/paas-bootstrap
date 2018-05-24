@@ -51,6 +51,7 @@ private
       [
         File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
         File.expand_path("../../../bosh-manifest.yml", __FILE__),
+        File.expand_path("../../../eu-west-1.yml", __FILE__),
         bosh_secrets_file,
         File.expand_path("../../fixtures/bosh-ssl-certificates.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
