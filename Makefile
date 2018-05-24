@@ -8,6 +8,7 @@ DEPLOY_ENV_VALID_CHARS=$(shell if echo $(DEPLOY_ENV) | grep -q '^[a-zA-Z0-9-]*$$
 YAMLLINT=yamllint
 SHELLCHECK=shellcheck
 VAGRANT_SSH_KEY_NAME=${DEPLOY_ENV}-vagrant-bootstrap-concourse
+AWS_DEFAULT_REGION ?= eu-west-1
 
 check-env-vars:
 	$(if ${DEPLOY_ENV},,$(error Must pass DEPLOY_ENV=<name>))
@@ -62,7 +63,7 @@ lint_ruby:
 .PHONY: globals
 PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
-	$(eval export AWS_DEFAULT_REGION=eu-west-1)
+	$(eval export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION})
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export DATADOG_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
