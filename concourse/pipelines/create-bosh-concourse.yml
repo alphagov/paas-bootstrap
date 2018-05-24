@@ -891,6 +891,7 @@ jobs:
             ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
+              ./paas-bootstrap/manifests/bosh-manifest/((aws_region)).yml
               ./bosh-secrets/bosh-secrets.yml
               ./certs/*.yml
               ./terraform-outputs/bosh.terraform-outputs.yml
