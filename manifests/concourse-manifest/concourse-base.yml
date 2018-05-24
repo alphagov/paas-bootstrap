@@ -159,7 +159,7 @@ compilation:
   network: concourse
   reuse_compilation_vms: true
   cloud_properties:
-    instance_type: c3.large
+    instance_type: c4.large
     availability_zone: (( grab meta.zone ))
     iam_instance_profile: compilation-vm
     auto_assign_public_ip: true
