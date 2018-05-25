@@ -1,15 +1,16 @@
 ---
-addons:
-  - name: datadog-agent
+
+instance_groups:
+  - name: bosh
     jobs:
       - name: datadog-agent
+        release: datadog-agent
         properties:
+          inject: (( inject addons.datadog-agent.jobs.datadog-agent.properties ))
           tags:
             bosh-job: bosh
             bosh-az: (( grab terraform_outputs.bosh_az_label ))
 
-instance_groups:
-  - name: bosh
     properties:
       hm:
         datadog_enabled: (( grab addons.datadog-agent.jobs.datadog-agent.properties.enabled ))
