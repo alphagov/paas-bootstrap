@@ -354,6 +354,8 @@ jobs:
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             TARGET_CONCOURSE: ((target_concourse))
             CONCOURSE_TYPE: ((concourse_type))
+            ENABLE_DATADOG: ((enable_datadog))
+            ENABLE_GITHUB: ((enable_github))
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
 
@@ -1542,6 +1544,8 @@ jobs:
             SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             CONCOURSE_TYPE: ((concourse_type))
+            ENABLE_DATADOG: ((enable_datadog))
+            ENABLE_GITHUB: ((enable_github))
           run:
             path: sh
             args:
