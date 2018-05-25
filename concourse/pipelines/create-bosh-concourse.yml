@@ -910,8 +910,8 @@ jobs:
               - |
                 if [ "${ENABLE_DATADOG}" = "true" ] ; then
                    BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent.yml
-                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/datadog-agent.yml"
+                                        ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
+                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent-bosh-properties.yml"
                 fi
 
                 if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
