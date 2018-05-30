@@ -152,8 +152,6 @@ instance_groups:
         static_ips: (( static_ips(0) ))
         default: [dns, gateway]
 
-    properties: {}
-
 compilation:
   workers: 1
   network: concourse

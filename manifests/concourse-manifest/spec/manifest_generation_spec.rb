@@ -38,11 +38,4 @@ RSpec.describe "manifest generation" do
       atc_job.fetch("properties").fetch("basic_auth_password")
     ).to eq(concourse_secrets_value("concourse_atc_password"))
   end
-
-  it "has a job-level properties block that's a hash" do
-    # Without this, bosh-init errors when compiling templates with:
-    # `merge!': can't convert nil into Hash (TypeError)
-    job_level_properties = concourse_instance_group["properties"]
-    expect(job_level_properties).to be_a(Hash)
-  end
 end
