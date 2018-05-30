@@ -131,8 +131,6 @@ instance_groups:
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
 
-properties: ~
-
 cloud_provider:
   template:
     name: aws_cpi
