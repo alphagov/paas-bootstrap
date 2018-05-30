@@ -1,7 +1,7 @@
 ---
-jobs:
+instance_groups:
 - name: bosh
-  templates:
+  jobs:
   - {name: datadog-agent, release: datadog-agent}
   properties:
     datadog: (( inject meta.datadog ))

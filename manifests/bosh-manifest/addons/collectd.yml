@@ -1,8 +1,8 @@
 ---
 
-jobs:
+instance_groups:
   - name: bosh
-    templates:
+    jobs:
       - name: collectd
         release: collectd
     properties:

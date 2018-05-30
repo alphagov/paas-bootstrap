@@ -1,8 +1,8 @@
 ---
 
-jobs:
+instance_groups:
   - name: concourse
-    templates:
+    jobs:
       - name: atc
         properties:
           github_auth:
