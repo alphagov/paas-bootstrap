@@ -47,6 +47,7 @@ private
       File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
       File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
       File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
+      File.expand_path("../../../../shared/spec/fixtures/logit-secrets.yml", __FILE__),
     ])
 
     # Deep freeze the object so that it's safe to use across multiple examples

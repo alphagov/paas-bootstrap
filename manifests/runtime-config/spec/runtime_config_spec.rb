@@ -35,13 +35,6 @@ RSpec.describe "Runtime config" do
       expect(syslog_forwarder_job).not_to be_nil
     end
 
-    it "has syslog_forwarder configured with a address based on the variable $SYSTEM_DNS_ZONE_NAME" do
-      syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
-      syslog_forwarder_address = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("address")
-
-      expect(syslog_forwarder_address).to eq "logsearch-ingestor.#{ManifestHelpers::SYSTEM_DNS_ZONE_NAME}"
-    end
-
     it "has syslog_forwarder configured with tls enabled" do
       syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
       syslog_forwarder_tls_enabled = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("tls_enabled")
@@ -49,11 +42,15 @@ RSpec.describe "Runtime config" do
       expect(syslog_forwarder_tls_enabled).to be true
     end
 
-    it "has syslog_forwarder configured with a permitted_peer based on the variable $SYSTEM_DNS_ZONE_NAME" do
+    it "has syslog_forwarder configured based on the logit fixtures" do
       syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }
-      syslog_forwarder_permitted_peer = syslog_forwarder_addon.fetch("properties").fetch("syslog").fetch("permitted_peer")
+      syslog_forwarder_config = syslog_forwarder_addon.fetch("properties").fetch("syslog")
 
-      expect(syslog_forwarder_permitted_peer).to eq "*.#{ManifestHelpers::SYSTEM_DNS_ZONE_NAME}"
+      expect(syslog_forwarder_config.fetch("address")).to eq "logit-syslog-url.internal"
+      expect(syslog_forwarder_config.fetch("port")).to eq 6514
+      expect(syslog_forwarder_config.fetch("permitted_peer")).to eq "*.logit.io"
+      expect(syslog_forwarder_config.fetch("ca_cert")).to include("LOGIT_CA_CERT_1")
+      expect(syslog_forwarder_config.fetch("ca_cert")).to include("LOGIT_CA_CERT_2")
     end
   end
 end
