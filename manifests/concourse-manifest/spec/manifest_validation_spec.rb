@@ -32,6 +32,19 @@ RSpec.describe "generic manifest validations" do
     end
   end
 
+  describe "addons cross-references" do
+    specify "all addons reference releases that exist" do
+      release_names = manifest["releases"].map { |r| r["name"] }
+
+      manifest.fetch("addons", []).each do |addon|
+        addon["jobs"].each do |job|
+          expect(release_names).to include(job["release"]),
+            "release #{job['release']} not found for job #{job['name']} in addon #{addon['name']}"
+        end
+      end
+    end
+  end
+
   describe "instance_group cross-references" do
     specify "all instance_groups reference resource_pools that exist" do
       resource_pool_names = manifest["resource_pools"].map { |r| r["name"] }
