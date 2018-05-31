@@ -230,10 +230,3 @@ of the times this will be long enough for concourse to start. But sometimes it
 can happen that this is not long enough. In that case, re-run your makefile
 action again. The scripts will attempt to connect to concourse again and if
 succeeded, will continue with the script and upload the pipelines to concourse.
-
-### Grafana/graphite metrics note
-
-Bosh server metrics are shipped under 'collectd' name instead of 'bosh'.
-This is because we use bosh-init to deploy bosh and it populates spec.name
-differently than BOSH. We accept this as otherwise we'd have to introduce
-a separate collectd config just for bosh or make the config composable.

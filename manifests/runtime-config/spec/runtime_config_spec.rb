@@ -2,11 +2,6 @@
 RSpec.describe "Runtime config" do
   let(:runtime_config) { default_runtime_config }
 
-  it "uses a shared collectd config file" do
-    collectd_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "collectd" }
-    expect(collectd_addon.fetch("properties").fetch("collectd").fetch("interval")).to eq 10
-  end
-
   describe "syslog_forwarder addon" do
     it "has the syslog_forwarder is configured as a addon" do
       syslog_forwarder_addon = runtime_config.fetch("addons").find { |addon| addon["name"] == "syslog_forwarder" }

@@ -891,7 +891,6 @@ jobs:
             DATADOG_API_KEY: ((datadog_api_key))
             DATADOG_APP_KEY: ((datadog_app_key))
             ENABLE_DATADOG: ((enable_datadog))
-            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./paas-bootstrap/manifests/bosh-manifest/((aws_region)).yml
@@ -912,12 +911,6 @@ jobs:
                    BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
                                         ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
                                         ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent-bosh-properties.yml"
-                fi
-
-                if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
-                   BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/bosh-manifest/addons/collectd.yml
-                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/collectd.yml"
                 fi
 
                 # shellcheck disable=SC2086
@@ -946,7 +939,6 @@ jobs:
             MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/runtime-config/runtime-config-base.yml
               ./terraform-outputs/*.yml
-            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
             ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           run:
             path: sh
@@ -956,12 +948,6 @@ jobs:
               - -c
               - |
                 echo "Generating runtime config..."
-
-                if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
-                   MANIFEST_STUBS="${MANIFEST_STUBS}
-                                  ./paas-bootstrap/manifests/runtime-config/addons/collectd.yml
-                                  ./paas-bootstrap/manifests/runtime-config/addons-meta/collectd.yml"
-                fi
 
                 if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
                    MANIFEST_STUBS="${MANIFEST_STUBS}

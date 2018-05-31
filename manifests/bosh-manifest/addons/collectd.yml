@@ -1,9 +1,0 @@
----
-
-instance_groups:
-  - name: bosh
-    jobs:
-      - name: collectd
-        release: collectd
-    properties:
-      collectd: (( grab meta.collectd ))
