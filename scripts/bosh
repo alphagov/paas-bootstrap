@@ -54,5 +54,4 @@ docker run  \
 	--env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
 	--env "BOSH_CA_CERT" \
 	--env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
-	governmentpaas/bosh:81417f366669e87c59e683f4ac93e0deda0625ba "$@"
-
+	governmentpaas/bosh:0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2 "$@"
