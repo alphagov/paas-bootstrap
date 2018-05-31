@@ -109,10 +109,13 @@ jobs:
             DEPLOY_ENV: ((deploy_env))
             BRANCH: ((branch_name))
             AWS_ACCOUNT: ((aws_account))
+            AWS_DEFAULT_REGION: ((aws_region))
             SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             TARGET_CONCOURSE: ((target_concourse))
             CONCOURSE_TYPE: ((concourse_type))
+            ENABLE_DATADOG: ((enable_datadog))
+            ENABLE_GITHUB: ((enable_github))
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
       - put: pipeline-trigger
@@ -193,6 +196,7 @@ jobs:
                 -target=aws_security_group.bosh \
                 -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -302,6 +306,7 @@ jobs:
               terraform init paas-bootstrap/terraform/concourse
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-concourse-tfstate/concourse.tfstate \
                 paas-bootstrap/terraform/concourse
         ensure:
@@ -509,6 +514,7 @@ jobs:
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                  -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                   -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
@@ -553,6 +559,7 @@ jobs:
               terraform init paas-bootstrap/terraform/vpc
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=updated-vpc-tfstate/vpc.tfstate \
                 paas-bootstrap/terraform/vpc
         ensure:
@@ -595,5 +602,6 @@ jobs:
               terraform init paas-bootstrap/terraform/bucket
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=bucket-terraform-state/bucket.tfstate \
                 paas-bootstrap/terraform/bucket

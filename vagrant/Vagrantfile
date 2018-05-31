@@ -5,25 +5,44 @@ Vagrant.require_version ">= 1.8.0"
 
 # We use bootstrap concourse SG and a subnet in default VPC in each region
 AWS_ACCOUNT = ENV.fetch("AWS_ACCOUNT", "dev")
+AWS_REGION = ENV.fetch("AWS_DEFAULT_REGION", "eu-west-1")
 AWS_ACCOUNT_DATA = {
   "dev" => {
-    subnet_id: "subnet-56a69a33",
-    security_group: "sg-63323c05",
+    "eu-west-1" => {
+      subnet_id: "subnet-56a69a33",
+      security_group: "sg-63323c05",
+    },
+    "eu-west-2" => {
+      subnet_id: "subnet-d7949daf",
+      security_group: "sg-d743f8bc",
+    },
   },
   "ci" => {
-    subnet_id: "subnet-0ebfab6b",
-    security_group: "sg-0bcac46d",
+    "eu-west-1" => {
+      subnet_id: "subnet-0ebfab6b",
+      security_group: "sg-0bcac46d",
+    },
   },
   "staging" => {
-    subnet_id: "subnet-dd7776b8",
-    security_group: "sg-a9cac4cf",
+    "eu-west-1" => {
+      subnet_id: "subnet-dd7776b8",
+      security_group: "sg-a9cac4cf",
+    },
   },
   "prod" => {
-    subnet_id: "subnet-a56297c1",
-    security_group: "sg-10cbc576",
+    "eu-west-1" => {
+      subnet_id: "subnet-a56297c1",
+      security_group: "sg-10cbc576",
+    },
   },
 }.freeze
-AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT)
+AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT).fetch(AWS_REGION)
+
+# ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170202
+AWS_AMI = {
+  "eu-west-1" => "ami-98ecb7fe",
+  "eu-west-2" => "ami-c5d0c5a1",
+}.freeze
 
 # rubocop:disable Metrics/BlockLength
 Vagrant.configure(2) do |config|
@@ -63,9 +82,8 @@ Vagrant.configure(2) do |config|
 
     aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 50 }]
 
-    # Ubuntu 16.04
-    aws.ami = 'ami-98ecb7fe'
-    aws.region = 'eu-west-1'
+    aws.ami = AWS_AMI.fetch(AWS_REGION)
+    aws.region = AWS_REGION
 
     # Only HVM instances with ephemeral disks can be used
     aws.instance_type = 'm4.large'
