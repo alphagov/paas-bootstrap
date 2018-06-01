@@ -179,13 +179,6 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-manifest.yml
 
-  - name: runtime-config
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: runtime-config.yml
-
   - name: bosh-init-state
     type: s3-iam
     source:
@@ -920,41 +913,6 @@ jobs:
           params:
             file: bosh-manifest/bosh-manifest.yml
 
-      - task: render-runtime-config
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/spruce
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
-          inputs:
-            - name: paas-bootstrap
-            - name: terraform-outputs
-          outputs:
-            - name: runtime-config
-          params:
-            AWS_ACCOUNT: ((aws_account))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            MANIFEST_STUBS: |
-              ./paas-bootstrap/manifests/runtime-config/runtime-config-base.yml
-              ./terraform-outputs/*.yml
-          run:
-            path: sh
-            args:
-              - -e
-              - -u
-              - -c
-              - |
-                echo "Generating runtime config..."
-
-                # shellcheck disable=SC2086
-                ./paas-bootstrap/manifests/shared/build_manifest.sh $MANIFEST_STUBS > runtime-config/runtime-config.yml
-        on_success:
-          put: runtime-config
-          params:
-            file: runtime-config/runtime-config.yml
-
   - name: bosh-deploy
     serial: true
     plan:
@@ -967,8 +925,6 @@ jobs:
         - get: bosh-secrets
           passed: ['generate-bosh-config']
         - get: bosh-manifest
-          passed: ['generate-bosh-config']
-        - get: runtime-config
           passed: ['generate-bosh-config']
         - get: bosh-init-state
         - get: bosh-ssh-private-key
@@ -1009,7 +965,8 @@ jobs:
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
 
-      - task: update-runtime-config
+      # FIXME: remove this task once the runtime config has been cleared everywhere.
+      - task: clear-runtime-config
         config:
           platform: linux
           image_resource:
@@ -1020,7 +977,6 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
-            - name: runtime-config
             - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
@@ -1032,8 +988,13 @@ jobs:
               - -c
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-                bosh -n update-runtime-config runtime-config/runtime-config.yml
-                ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
+
+                cat <<EOT > blank-runtime-config.yml
+                ---
+                releases: []
+                addons: []
+                EOT
+                bosh -n update-runtime-config ./blank-runtime-config.yml
 
   - name: concourse-terraform
     serial: true
