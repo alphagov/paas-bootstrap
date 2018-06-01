@@ -52,6 +52,7 @@ private
         File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/addons/datadog-agent.yml", __FILE__),
         File.expand_path("../../../addons/datadog-concourse-integration.yml", __FILE__),
+        File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"

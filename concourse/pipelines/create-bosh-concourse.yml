@@ -939,7 +939,6 @@ jobs:
             MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/runtime-config/runtime-config-base.yml
               ./terraform-outputs/*.yml
-            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           run:
             path: sh
             args:
@@ -948,11 +947,6 @@ jobs:
               - -c
               - |
                 echo "Generating runtime config..."
-
-                if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
-                   MANIFEST_STUBS="${MANIFEST_STUBS}
-                                  ./paas-bootstrap/manifests/runtime-config/addons/syslog-forwarder.yml"
-                fi
 
                 # shellcheck disable=SC2086
                 ./paas-bootstrap/manifests/shared/build_manifest.sh $MANIFEST_STUBS > runtime-config/runtime-config.yml
@@ -1323,6 +1317,7 @@ jobs:
             GITHUB_CLIENT_ID: ((github_client_id))
             GITHUB_CLIENT_SECRET: ((github_client_secret))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -1347,6 +1342,10 @@ jobs:
                   CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
                                 ./paas-bootstrap/manifests/concourse-manifest/github_auth/dev_ci_additional_users.yml"
                 fi
+              fi
+              if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
+                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/concourse-manifest/addons/syslog-forwarder.yml"
               fi
 
               # shellcheck disable=SC2086
