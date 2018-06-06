@@ -179,13 +179,6 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-manifest.yml
 
-  - name: runtime-config
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: runtime-config.yml
-
   - name: bosh-init-state
     type: s3-iam
     source:
@@ -891,7 +884,6 @@ jobs:
             DATADOG_API_KEY: ((datadog_api_key))
             DATADOG_APP_KEY: ((datadog_app_key))
             ENABLE_DATADOG: ((enable_datadog))
-            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./paas-bootstrap/manifests/bosh-manifest/((aws_region)).yml
@@ -910,14 +902,8 @@ jobs:
               - |
                 if [ "${ENABLE_DATADOG}" = "true" ] ; then
                    BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent.yml
-                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/datadog-agent.yml"
-                fi
-
-                if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
-                   BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/bosh-manifest/addons/collectd.yml
-                                        ./paas-bootstrap/manifests/runtime-config/addons-meta/collectd.yml"
+                                        ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
+                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent-bosh-properties.yml"
                 fi
 
                 # shellcheck disable=SC2086
@@ -926,62 +912,6 @@ jobs:
           put: bosh-manifest
           params:
             file: bosh-manifest/bosh-manifest.yml
-
-      - task: render-runtime-config
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/spruce
-              tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
-          inputs:
-            - name: paas-bootstrap
-            - name: terraform-outputs
-          outputs:
-            - name: runtime-config
-          params:
-            AWS_ACCOUNT: ((aws_account))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            MANIFEST_STUBS: |
-              ./paas-bootstrap/manifests/runtime-config/runtime-config-base.yml
-              ./terraform-outputs/*.yml
-            ENABLE_DATADOG: ((enable_datadog))
-            DATADOG_API_KEY: ((datadog_api_key))
-            ENABLE_COLLECTD_ADDON: ((enable_collectd_addon))
-            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
-          run:
-            path: sh
-            args:
-              - -e
-              - -u
-              - -c
-              - |
-                echo "Generating runtime config..."
-
-                if [ "${ENABLE_DATADOG}" = "true" ] ; then
-                   MANIFEST_STUBS="${MANIFEST_STUBS}
-                                  ./paas-bootstrap/manifests/runtime-config/addons/datadog-agent.yml
-                                  ./paas-bootstrap/manifests/runtime-config/addons-meta/datadog-agent.yml"
-                fi
-
-                if [ "${ENABLE_COLLECTD_ADDON}" = "true" ]; then
-                   MANIFEST_STUBS="${MANIFEST_STUBS}
-                                  ./paas-bootstrap/manifests/runtime-config/addons/collectd.yml
-                                  ./paas-bootstrap/manifests/runtime-config/addons-meta/collectd.yml"
-                fi
-
-                if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
-                   MANIFEST_STUBS="${MANIFEST_STUBS}
-                                  ./paas-bootstrap/manifests/runtime-config/addons/syslog-forwarder.yml"
-                fi
-
-                # shellcheck disable=SC2086
-                ./paas-bootstrap/manifests/shared/build_manifest.sh $MANIFEST_STUBS > runtime-config/runtime-config.yml
-        on_success:
-          put: runtime-config
-          params:
-            file: runtime-config/runtime-config.yml
 
   - name: bosh-deploy
     serial: true
@@ -995,8 +925,6 @@ jobs:
         - get: bosh-secrets
           passed: ['generate-bosh-config']
         - get: bosh-manifest
-          passed: ['generate-bosh-config']
-        - get: runtime-config
           passed: ['generate-bosh-config']
         - get: bosh-init-state
         - get: bosh-ssh-private-key
@@ -1037,7 +965,8 @@ jobs:
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
 
-      - task: update-runtime-config
+      # FIXME: remove this task once the runtime config has been cleared everywhere.
+      - task: clear-runtime-config
         config:
           platform: linux
           image_resource:
@@ -1048,7 +977,6 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
-            - name: runtime-config
             - name: bosh-CA-crt
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
@@ -1060,8 +988,13 @@ jobs:
               - -c
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-                bosh -n update-runtime-config runtime-config/runtime-config.yml
-                ./paas-bootstrap/concourse/scripts/bosh_upload_releases_from_manifest.rb runtime-config/runtime-config.yml
+
+                cat <<EOT > blank-runtime-config.yml
+                ---
+                releases: []
+                addons: []
+                EOT
+                bosh -n update-runtime-config ./blank-runtime-config.yml
 
   - name: concourse-terraform
     serial: true
@@ -1344,6 +1277,8 @@ jobs:
             ENABLE_GITHUB: ((enable_github))
             GITHUB_CLIENT_ID: ((github_client_id))
             GITHUB_CLIENT_SECRET: ((github_client_secret))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
@@ -1358,6 +1293,7 @@ jobs:
             - |
               if [ "${ENABLE_DATADOG}" = "true" ] ; then
                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
                                 ./paas-bootstrap/manifests/concourse-manifest/addons/datadog-concourse-integration.yml"
               fi
               if [ "${ENABLE_GITHUB}" = "true" ] ; then
@@ -1367,6 +1303,10 @@ jobs:
                   CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
                                 ./paas-bootstrap/manifests/concourse-manifest/github_auth/dev_ci_additional_users.yml"
                 fi
+              fi
+              if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
+                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
+                                ./paas-bootstrap/manifests/concourse-manifest/addons/syslog-forwarder.yml"
               fi
 
               # shellcheck disable=SC2086

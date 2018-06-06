@@ -4,9 +4,9 @@ releases:
     sha1: 76bbc59dfb46052353226839c67ad1f011ed2225
     version: gds-4
 
-jobs:
+instance_groups:
   - name: concourse
-    templates:
+    jobs:
       - name: riemann
         release: riemann
         properties:

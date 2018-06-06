@@ -4,6 +4,8 @@ require 'yaml'
 require 'tempfile'
 
 module ManifestHelpers
+  SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
@@ -35,6 +37,7 @@ private
     ENV["DATADOG_APP_KEY"] = "abcd4321"
     ENV["ENABLE_DATADOG"] = "true"
     ENV["CONCOURSE_AUTH_DURATION"] = "5m"
+    ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
 
   def load_default_manifest
@@ -47,7 +50,9 @@ private
         File.expand_path("../../../../shared/spec/fixtures/concourse-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
+        File.expand_path("../../../../shared/addons/datadog-agent.yml", __FILE__),
         File.expand_path("../../../addons/datadog-concourse-integration.yml", __FILE__),
+        File.expand_path("../../../addons/syslog-forwarder.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"

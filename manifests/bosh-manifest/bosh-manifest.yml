@@ -28,11 +28,11 @@ releases:
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
   sha1: 8abe70219244896ea6f7208fc01f2eac56179170
 
-jobs:
+instance_groups:
 - name: bosh
   instances: 1
 
-  templates:
+  jobs:
   - {name: nats, release: bosh}
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
@@ -130,8 +130,6 @@ jobs:
       default_iam_instance_profile: bosh-managed
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
-
-properties: ~
 
 cloud_provider:
   template:

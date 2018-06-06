@@ -1,9 +1,0 @@
----
-
-jobs:
-  - name: bosh
-    templates:
-      - name: collectd
-        release: collectd
-    properties:
-      collectd: (( grab meta.collectd ))

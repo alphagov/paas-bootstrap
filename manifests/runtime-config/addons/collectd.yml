@@ -1,9 +1,0 @@
----
-
-addons:
-  - name: collectd
-    jobs:
-      - name: collectd
-        release: collectd
-    properties:
-      collectd: (( grab meta.collectd ))
