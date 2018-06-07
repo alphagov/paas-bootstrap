@@ -10,7 +10,6 @@ instance_groups:
             client_secret: (( grab $GITHUB_CLIENT_SECRET ))
             authorize:
               - user: alext
-              - user: dcarley
               - user: henrytk
               - user: keymon
               - user: paroxp
