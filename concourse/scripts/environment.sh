@@ -15,8 +15,6 @@ if [ -z "${DEPLOY_ENV}" ]; then
   exit 1
 fi
 
-AWS_ACCOUNT=${AWS_ACCOUNT:-dev}
-
 BOSH_FQDN="bosh.${SYSTEM_DNS_ZONE_NAME}"
 BOSH_FQDN_EXTERNAL="bosh-external.${SYSTEM_DNS_ZONE_NAME}"
 CONCOURSE_ATC_USER=${CONCOURSE_ATC_USER:-admin}
