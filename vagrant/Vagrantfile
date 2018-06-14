@@ -22,17 +22,29 @@ AWS_ACCOUNT_DATA = {
       subnet_id: "subnet-0ebfab6b",
       security_group: "sg-0bcac46d",
     },
+    "eu-west-2" => {
+      subnet_id: "subnet-86def6cc",
+      security_group: "sg-38de5753",
+    },
   },
   "staging" => {
     "eu-west-1" => {
       subnet_id: "subnet-dd7776b8",
       security_group: "sg-a9cac4cf",
     },
+    "eu-west-2" => {
+      subnet_id: "subnet-a1d62bc8",
+      security_group: "sg-57d25b3c",
+    },
   },
   "prod" => {
     "eu-west-1" => {
       subnet_id: "subnet-a56297c1",
       security_group: "sg-10cbc576",
+    },
+    "eu-west-2" => {
+      subnet_id: "subnet-fc44b995",
+      security_group: "sg-2fd25b44",
     },
   },
 }.freeze
