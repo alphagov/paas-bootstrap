@@ -92,6 +92,7 @@ ci: globals check-env-vars ## Set Environment to CI
 
 .PHONY: staging
 staging: globals check-env-vars ## Set Environment to Staging
+	$(eval export DEPLOY_ENV=staging)
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
 	$(eval export APPS_DNS_ZONE_NAME=staging.cloudpipelineapps.digital)
@@ -100,11 +101,34 @@ staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 
+.PHONY: stg-lon
+stg-lon: globals check-env-vars ## Set Environment to stg-lon
+	$(eval export DEPLOY_ENV=stg-lon)
+	$(eval export SYSTEM_DNS_ZONE_NAME=london.staging.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
+	$(eval export APPS_DNS_ZONE_NAME=london.staging.cloudpipelineapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
+	$(eval export AWS_ACCOUNT=staging)
+	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
+
 .PHONY: prod
 prod: globals check-env-vars ## Set Environment to Prod
+	$(eval export DEPLOY_ENV=prod)
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
 	$(eval export APPS_DNS_ZONE_NAME=cloudapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
+	$(eval export AWS_ACCOUNT=prod)
+	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
+
+.PHONY: prod-lon
+prod-lon: globals check-env-vars ## Set Environment to prod-lon
+	$(eval export DEPLOY_ENV=prod-lon)
+	$(eval export SYSTEM_DNS_ZONE_NAME=london.cloud.service.gov.uk)
+	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
+	$(eval export APPS_DNS_ZONE_NAME=london.cloudapps.digital)
 	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
