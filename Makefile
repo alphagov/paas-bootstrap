@@ -8,7 +8,6 @@ DEPLOY_ENV_VALID_CHARS=$(shell if echo $(DEPLOY_ENV) | grep -q '^[a-zA-Z0-9-]*$$
 YAMLLINT=yamllint
 SHELLCHECK=shellcheck
 VAGRANT_SSH_KEY_NAME=${DEPLOY_ENV}-vagrant-bootstrap-concourse
-AWS_DEFAULT_REGION ?= eu-west-1
 
 .PHONY: check-env-vars
 check-env-vars:
@@ -62,7 +61,6 @@ lint_ruby:
 .PHONY: globals
 PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
-	$(eval export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION})
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export DATADOG_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
@@ -82,6 +80,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export ENABLE_GITHUB ?= false)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
+	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
@@ -90,6 +89,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
 .PHONY: staging
 staging: globals ## Set Environment to Staging
@@ -101,6 +101,7 @@ staging: globals ## Set Environment to Staging
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 
 .PHONY: stg-lon
 stg-lon: globals ## Set Environment to stg-lon
@@ -112,6 +113,7 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 .PHONY: prod
 prod: globals ## Set Environment to Prod
@@ -123,6 +125,7 @@ prod: globals ## Set Environment to Prod
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 
 .PHONY: prod-lon
 prod-lon: globals ## Set Environment to prod-lon
@@ -134,6 +137,7 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 ## Concourse profiles
 
