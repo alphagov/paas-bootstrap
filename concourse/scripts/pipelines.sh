@@ -10,6 +10,7 @@ state_bucket=gds-paas-${DEPLOY_ENV}-state
 generate_vars_file() {
    cat <<EOF
 ---
+makefile_env_target: ${MAKEFILE_ENV_TARGET}
 aws_account: ${AWS_ACCOUNT}
 deploy_env: ${DEPLOY_ENV}
 state_bucket: ${state_bucket}
