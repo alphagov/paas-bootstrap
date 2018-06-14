@@ -101,7 +101,7 @@ staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: prod
-prod: globals check-env-vars ## Set Environment to Production
+prod: globals check-env-vars ## Set Environment to Prod
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
 	$(eval export APPS_DNS_ZONE_NAME=cloudapps.digital)
