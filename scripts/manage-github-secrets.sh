@@ -13,13 +13,14 @@ to be evaluated.
 It can also upload the S3 object with the credentials from the environment
 or paas-pass.
 
-Usage:
+You should run it via the Makefile target to set up the necessary environment.
+However, if you want to run it directly:
 
-  AWS_ACCOUNT=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
+  MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
     ./scripts/manage-github-secrets.sh upload
 
   eval \$(
-    AWS_ACCOUNT=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
+    MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
     ./scripts/manage-github-secrets.sh retrieve
   )
 
@@ -37,8 +38,8 @@ setup_env() {
 
 get_creds_from_env_or_pass() {
   setup_env
-  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${AWS_ACCOUNT}/client_id")}"
-  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${AWS_ACCOUNT}/client_secret")}"
+  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_id")}"
+  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_secret")}"
 }
 
 upload() {

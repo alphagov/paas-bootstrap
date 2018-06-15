@@ -231,14 +231,14 @@ stop-tunnel: check-env-vars ## Stop SSH tunnel
 
 .PHONY: upload-datadog-secrets
 upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials to S3
-	$(if ${AWS_ACCOUNT},,$(error Must set environment to ci/staging/prod))
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-datadog-secrets.sh upload
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
-	$(if ${AWS_ACCOUNT},,$(error Must set environment to dev/ci/staging/prod))
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${GITHUB_PASSWORD_STORE_DIR},,$(error Must pass GITHUB_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GITHUB_PASSWORD_STORE_DIR}),,$(error Password store ${GITHUB_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-github-secrets.sh upload
