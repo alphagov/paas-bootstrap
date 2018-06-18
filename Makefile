@@ -10,6 +10,7 @@ SHELLCHECK=shellcheck
 VAGRANT_SSH_KEY_NAME=${DEPLOY_ENV}-vagrant-bootstrap-concourse
 AWS_DEFAULT_REGION ?= eu-west-1
 
+.PHONY: check-env-vars
 check-env-vars:
 	$(if ${DEPLOY_ENV},,$(error Must pass DEPLOY_ENV=<name>))
 	$(if ${DEPLOY_ENV_VALID_LENGTH},,$(error Sorry, DEPLOY_ENV ($(DEPLOY_ENV)) has a max length of $(DEPLOY_ENV_MAX_LENGTH), otherwise derived names will be too long))
@@ -91,7 +92,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: staging
-staging: globals check-env-vars ## Set Environment to Staging
+staging: globals ## Set Environment to Staging
 	$(eval export DEPLOY_ENV=staging)
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
@@ -102,7 +103,7 @@ staging: globals check-env-vars ## Set Environment to Staging
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: stg-lon
-stg-lon: globals check-env-vars ## Set Environment to stg-lon
+stg-lon: globals ## Set Environment to stg-lon
 	$(eval export DEPLOY_ENV=stg-lon)
 	$(eval export SYSTEM_DNS_ZONE_NAME=london.staging.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
@@ -113,7 +114,7 @@ stg-lon: globals check-env-vars ## Set Environment to stg-lon
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: prod
-prod: globals check-env-vars ## Set Environment to Prod
+prod: globals ## Set Environment to Prod
 	$(eval export DEPLOY_ENV=prod)
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
@@ -124,7 +125,7 @@ prod: globals check-env-vars ## Set Environment to Prod
 	$(eval export ENABLE_GITHUB=true)
 
 .PHONY: prod-lon
-prod-lon: globals check-env-vars ## Set Environment to prod-lon
+prod-lon: globals ## Set Environment to prod-lon
 	$(eval export DEPLOY_ENV=prod-lon)
 	$(eval export SYSTEM_DNS_ZONE_NAME=london.cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
@@ -164,14 +165,14 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 ## Actions
 
 .PHONY: pipelines
-pipelines:
+pipelines: check-env-vars
 	$(eval export TARGET_CONCOURSE=${CONCOURSE_TYPE})
 	$(if ${TARGET_CONCOURSE},,$(error Must set CONCOURSE_TYPE=deployer-concourse|build-concourse. This can be done with the relevant make target.))
 	$$("./concourse/scripts/environment.sh") && \
                 ./concourse/scripts/pipelines.sh
 
 .PHONY: bootstrap
-bootstrap: ## Start bootstrap
+bootstrap: check-env-vars ## Start bootstrap
 	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
 	$(if ${CONCOURSE_HOSTNAME},,$(error Must pass CONCOURSE_HOSTNAME=<name>))
 	$(if ${CONCOURSE_INSTANCE_TYPE},,$(error Must pass CONCOURSE_INSTANCE_TYPE=<name>))
@@ -181,13 +182,13 @@ bootstrap: ## Start bootstrap
 	vagrant/deploy.sh
 
 .PHONY: bootstrap-destroy
-bootstrap-destroy: ## Destroy bootstrap
+bootstrap-destroy: check-env-vars ## Destroy bootstrap
 	$(eval export VAGRANT_SSH_KEY_NAME=$(VAGRANT_SSH_KEY_NAME))
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	./vagrant/destroy.sh
 
 .PHONY: showenv
-showenv: ## Display environment information
+showenv: check-env-vars ## Display environment information
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	@concourse/scripts/environment.sh
 	@echo export CONCOURSE_IP=$$(aws ec2 describe-instances \
@@ -198,7 +199,7 @@ showenv: ## Display environment information
                 --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
 .PHONY: bosh-cli
-bosh-cli:
+bosh-cli: check-env-vars
 	@./scripts/bosh-cli.sh
 
 .PHONY: ssh_bosh
