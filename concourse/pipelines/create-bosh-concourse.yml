@@ -341,7 +341,7 @@ jobs:
           params:
             DEPLOY_ENV: ((deploy_env))
             BRANCH: ((branch_name))
-            AWS_ACCOUNT: ((aws_account))
+            MAKEFILE_ENV_TARGET: ((makefile_env_target))
             AWS_DEFAULT_REGION: ((aws_region))
             SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
@@ -1479,7 +1479,7 @@ jobs:
           params:
             DEPLOY_ENV: ((deploy_env))
             BRANCH: ((branch_name))
-            AWS_ACCOUNT: ((aws_account))
+            MAKEFILE_ENV_TARGET: ((makefile_env_target))
             AWS_DEFAULT_REGION: ((aws_region))
             SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
@@ -1492,7 +1492,7 @@ jobs:
             - -e
             - -c
             - |
-              make -C ./paas-bootstrap "${AWS_ACCOUNT}" "${CONCOURSE_TYPE}" pipelines
+              make -C ./paas-bootstrap "${MAKEFILE_ENV_TARGET}" "${CONCOURSE_TYPE}" pipelines
 
   - name: expunge-concourse
     serial: true

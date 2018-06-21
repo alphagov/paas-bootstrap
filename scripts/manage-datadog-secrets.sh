@@ -13,13 +13,14 @@ to be evaluated.
 It can also upload the S3 object with the credentials from the environment
 or paas-pass.
 
-Usage:
+You should run it via the Makefile target to set up the necessary environment.
+However, if you want to run it directly:
 
-  AWS_ACCOUNT=dev DATADOG_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=hector
+  MAKEFILE_ENV_TARGET=dev DATADOG_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=hector
     ./scripts/manage-datadog-secrets.sh upload
 
   eval \$(
-    AWS_ACCOUNT=dev DATADOG_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=hector
+    MAKEFILE_ENV_TARGET=dev DATADOG_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=hector
     ./scripts/manage-datadog-secrets.sh retrieve
   )
 
@@ -37,8 +38,8 @@ setup_env() {
 
 get_creds_from_env_or_pass() {
   setup_env
-  DATADOG_API_KEY="${DATADOG_API_KEY:-$(pass "datadog/${AWS_ACCOUNT}/datadog_api_key")}"
-  DATADOG_APP_KEY="${DATADOG_APP_KEY:-$(pass "datadog/${AWS_ACCOUNT}/datadog_app_key")}"
+  DATADOG_API_KEY="${DATADOG_API_KEY:-$(pass "datadog/${MAKEFILE_ENV_TARGET}/datadog_api_key")}"
+  DATADOG_APP_KEY="${DATADOG_APP_KEY:-$(pass "datadog/${MAKEFILE_ENV_TARGET}/datadog_app_key")}"
 }
 
 upload() {

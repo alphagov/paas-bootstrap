@@ -8,8 +8,8 @@ DEPLOY_ENV_VALID_CHARS=$(shell if echo $(DEPLOY_ENV) | grep -q '^[a-zA-Z0-9-]*$$
 YAMLLINT=yamllint
 SHELLCHECK=shellcheck
 VAGRANT_SSH_KEY_NAME=${DEPLOY_ENV}-vagrant-bootstrap-concourse
-AWS_DEFAULT_REGION ?= eu-west-1
 
+.PHONY: check-env-vars
 check-env-vars:
 	$(if ${DEPLOY_ENV},,$(error Must pass DEPLOY_ENV=<name>))
 	$(if ${DEPLOY_ENV_VALID_LENGTH},,$(error Sorry, DEPLOY_ENV ($(DEPLOY_ENV)) has a max length of $(DEPLOY_ENV_MAX_LENGTH), otherwise derived names will be too long))
@@ -61,7 +61,6 @@ lint_ruby:
 .PHONY: globals
 PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
-	$(eval export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION})
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export DATADOG_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
@@ -76,39 +75,75 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
 	$(eval export APPS_DNS_ZONE_ID=Z3R6XFWUT4YZHB)
 	$(eval export AWS_ACCOUNT=dev)
+	$(eval export MAKEFILE_ENV_TARGET=dev)
 	$(eval export ENABLE_DESTROY=true)
 	$(eval export ENABLE_DATADOG ?= false)
 	$(eval export ENABLE_GITHUB ?= false)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
+	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z2PF4LCV9VR1MV)
 	$(eval export AWS_ACCOUNT=ci)
+	$(eval export MAKEFILE_ENV_TARGET=ci)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
 .PHONY: staging
-staging: globals check-env-vars ## Set Environment to Staging
+staging: globals ## Set Environment to Staging
+	$(eval export DEPLOY_ENV=staging)
 	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
 	$(eval export APPS_DNS_ZONE_NAME=staging.cloudpipelineapps.digital)
 	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
 	$(eval export AWS_ACCOUNT=staging)
+	$(eval export MAKEFILE_ENV_TARGET=staging)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-1)
+
+.PHONY: stg-lon
+stg-lon: globals ## Set Environment to stg-lon
+	$(eval export DEPLOY_ENV=stg-lon)
+	$(eval export SYSTEM_DNS_ZONE_NAME=london.staging.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
+	$(eval export APPS_DNS_ZONE_NAME=london.staging.cloudpipelineapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
+	$(eval export AWS_ACCOUNT=staging)
+	$(eval export MAKEFILE_ENV_TARGET=stg-lon)
+	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 .PHONY: prod
-prod: globals check-env-vars ## Set Environment to Production
+prod: globals ## Set Environment to Prod
+	$(eval export DEPLOY_ENV=prod)
 	$(eval export SYSTEM_DNS_ZONE_NAME=cloud.service.gov.uk)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
 	$(eval export APPS_DNS_ZONE_NAME=cloudapps.digital)
 	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
 	$(eval export AWS_ACCOUNT=prod)
+	$(eval export MAKEFILE_ENV_TARGET=prod)
 	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-1)
+
+.PHONY: prod-lon
+prod-lon: globals ## Set Environment to prod-lon
+	$(eval export DEPLOY_ENV=prod-lon)
+	$(eval export SYSTEM_DNS_ZONE_NAME=london.cloud.service.gov.uk)
+	$(eval export SYSTEM_DNS_ZONE_ID=Z39UURGVWSYTHL)
+	$(eval export APPS_DNS_ZONE_NAME=london.cloudapps.digital)
+	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
+	$(eval export AWS_ACCOUNT=prod)
+	$(eval export MAKEFILE_ENV_TARGET=prod-lon)
+	$(eval export ENABLE_DATADOG=true)
+	$(eval export ENABLE_GITHUB=true)
+	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 ## Concourse profiles
 
@@ -140,14 +175,14 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 ## Actions
 
 .PHONY: pipelines
-pipelines:
+pipelines: check-env-vars
 	$(eval export TARGET_CONCOURSE=${CONCOURSE_TYPE})
 	$(if ${TARGET_CONCOURSE},,$(error Must set CONCOURSE_TYPE=deployer-concourse|build-concourse. This can be done with the relevant make target.))
 	$$("./concourse/scripts/environment.sh") && \
                 ./concourse/scripts/pipelines.sh
 
 .PHONY: bootstrap
-bootstrap: ## Start bootstrap
+bootstrap: check-env-vars ## Start bootstrap
 	$(if ${BOSH_INSTANCE_PROFILE},,$(error Must pass BOSH_INSTANCE_PROFILE=<name>))
 	$(if ${CONCOURSE_HOSTNAME},,$(error Must pass CONCOURSE_HOSTNAME=<name>))
 	$(if ${CONCOURSE_INSTANCE_TYPE},,$(error Must pass CONCOURSE_INSTANCE_TYPE=<name>))
@@ -157,13 +192,13 @@ bootstrap: ## Start bootstrap
 	vagrant/deploy.sh
 
 .PHONY: bootstrap-destroy
-bootstrap-destroy: ## Destroy bootstrap
+bootstrap-destroy: check-env-vars ## Destroy bootstrap
 	$(eval export VAGRANT_SSH_KEY_NAME=$(VAGRANT_SSH_KEY_NAME))
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	./vagrant/destroy.sh
 
 .PHONY: showenv
-showenv: ## Display environment information
+showenv: check-env-vars ## Display environment information
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	@concourse/scripts/environment.sh
 	@echo export CONCOURSE_IP=$$(aws ec2 describe-instances \
@@ -174,7 +209,7 @@ showenv: ## Display environment information
                 --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
 .PHONY: bosh-cli
-bosh-cli:
+bosh-cli: check-env-vars
 	@./scripts/bosh-cli.sh
 
 .PHONY: ssh_bosh
@@ -196,14 +231,14 @@ stop-tunnel: check-env-vars ## Stop SSH tunnel
 
 .PHONY: upload-datadog-secrets
 upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials to S3
-	$(if ${AWS_ACCOUNT},,$(error Must set environment to ci/staging/prod))
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-datadog-secrets.sh upload
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
-	$(if ${AWS_ACCOUNT},,$(error Must set environment to dev/ci/staging/prod))
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${GITHUB_PASSWORD_STORE_DIR},,$(error Must pass GITHUB_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GITHUB_PASSWORD_STORE_DIR}),,$(error Password store ${GITHUB_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-github-secrets.sh upload
