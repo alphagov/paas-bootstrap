@@ -131,6 +131,9 @@ instance_groups:
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
 
+    ntp:
+    - 169.254.169.123
+
 cloud_provider:
   template:
     name: aws_cpi
@@ -156,6 +159,8 @@ cloud_provider:
       default_security_groups: (( grab meta.aws.default_security_groups ))
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
+    ntp:
+    - 169.254.169.123
 
 disk_pools:
 - name: disks
