@@ -9,4 +9,8 @@ instance_groups:
           github_auth:
             authorize:
               - (( append ))
+              - user: blairboy362
+              - user: jpluscplusm
+              - user: richardTowers
+              - user: tlwr
               - user: venusbb
