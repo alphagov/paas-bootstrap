@@ -17,4 +17,3 @@ instance_groups:
               - user: samcrang
               - user: chrisfarms
               - user: 46bit
-              - user: bandesz
