@@ -1160,24 +1160,6 @@ jobs:
           params:
             file: updated-concourse-tfstate/concourse.tfstate
 
-      # FIXME: Remove after the all Concourse instances were updated
-      - task: delete-concourse-acm-cert
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/awscli
-              tag: b2495d6ed07f680125d19aa7d1701da7efabb289
-          inputs:
-            - name: paas-bootstrap
-          params:
-            ACM_DOMAIN_ZONE_ID: ((system_dns_zone_id))
-            ACM_DOMAIN_FQDN: ((concourse_hostname)).((system_dns_zone_name))
-            AWS_DEFAULT_REGION: ((aws_region))
-          run:
-            path: ./paas-bootstrap/concourse/scripts/delete_acm_cert.sh
-
       # Temporary task to add the git-${DEPLOY_ENV} user to git group
       - task: add-git-user-to-group
         config:
