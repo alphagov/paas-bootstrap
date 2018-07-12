@@ -27,12 +27,17 @@ releases:
   version: 69
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
   sha1: 8abe70219244896ea6f7208fc01f2eac56179170
+- name: bpm
+  version: "0.6.0"
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bpm-0.6.0-ubuntu-trusty-3586.24-20180618-221823-499813904-20180618221841.tgz?versionId=4XxS3rY2PTiCJK2xTUTjLyS5Puk4ZKbX
+  sha1: 60bc10eb7f78b10e54c08913ca1820014562f51c
 
 instance_groups:
 - name: bosh
   instances: 1
 
   jobs:
+  - {name: bpm, release: bpm}
   - {name: nats, release: bosh}
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
