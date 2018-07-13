@@ -20,19 +20,24 @@ meta:
 
 releases:
 - name: bosh
-  version: "265.2.0"
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-265.2.0-ubuntu-trusty-3541.25-20180510-015838-907353893-20180510015842.tgz?versionId=6Ym0RSiSuRalyo5kFG40Zt.dnwcR28G3
-  sha1: e40aebe0018a69964f2e9a3b93e6a6e79705c581
+  version: "266.6.0"
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-266.6.0-ubuntu-trusty-3586.25-20180711-225914-381581243-20180711225918.tgz?emRXaylcdKCTFkQaKz2Qh1oysC9x9JDc
+  sha1: "3dbe714e94a518413c20c33967d70b1c9609f268"
 - name: bosh-aws-cpi
   version: 69
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
   sha1: 8abe70219244896ea6f7208fc01f2eac56179170
+- name: bpm
+  version: "0.6.0"
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bpm-0.6.0-ubuntu-trusty-3586.24-20180618-221823-499813904-20180618221841.tgz?versionId=4XxS3rY2PTiCJK2xTUTjLyS5Puk4ZKbX
+  sha1: 60bc10eb7f78b10e54c08913ca1820014562f51c
 
 instance_groups:
 - name: bosh
   instances: 1
 
   jobs:
+  - {name: bpm, release: bpm}
   - {name: nats, release: bosh}
   - {name: director, release: bosh}
   - {name: health_monitor, release: bosh}
@@ -172,8 +177,8 @@ resource_pools:
 - name: bosh
   network: private
   stemcell:
-    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3541.25
-    sha1: 8607e8ccd8a66dc0248535f1d66d5b45d7a4db1d
+    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3586.25
+    sha1: 0aed1716f45e4451be8fc9143757a8a8c1513e50
   cloud_properties:
     instance_type: t2.medium
     ephemeral_disk: {size: 40000, type: gp2}
