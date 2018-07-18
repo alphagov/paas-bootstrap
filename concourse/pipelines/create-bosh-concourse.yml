@@ -114,15 +114,6 @@ resources:
       initial_version: "-"
       initial_content_text: ""
 
-  - name: logit-secrets
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: logit-secrets.yml
-      initial_version: "-"
-      initial_content_text: ""
-
   - name: bosh-ssh-private-key
     type: s3-iam
     source:
@@ -1206,8 +1197,6 @@ jobs:
         - get: concourse-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
-        - get: logit-secrets
-
       - task: terraform-outputs-to-yaml
         config:
           platform: linux
@@ -1270,11 +1259,9 @@ jobs:
             GITHUB_CLIENT_ID: ((github_client_id))
             GITHUB_CLIENT_SECRET: ((github_client_secret))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            ENABLE_SYSLOG_ADDON: ((enable_syslog_addon))
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
-          - name: logit-secrets
           - name: terraform-outputs
           outputs:
           - name: concourse-manifest
@@ -1297,12 +1284,6 @@ jobs:
                                 ./paas-bootstrap/manifests/concourse-manifest/github_auth/dev_ci_additional_users.yml"
                 fi
               fi
-              if [ "${ENABLE_SYSLOG_ADDON}" = "true" ]; then
-                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/concourse-manifest/addons/syslog-forwarder.yml
-                                ./logit-secrets/logit-secrets.yml"
-              fi
-
               # shellcheck disable=SC2086
               ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
                 > concourse-manifest/concourse-manifest.yml
