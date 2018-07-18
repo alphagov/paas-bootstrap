@@ -156,7 +156,6 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export CONCOURSE_HOSTNAME=concourse)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m4.large)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
-	$(eval export ENABLE_SYSLOG_ADDON=false)
 	$(eval export ACM_DOMAINS=${SYSTEM_DNS_ZONE_ID}:*.${SYSTEM_DNS_ZONE_NAME})
 	@true
 
@@ -169,7 +168,6 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export CONCOURSE_HOSTNAME=deployer)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m4.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
-	$(eval export ENABLE_SYSLOG_ADDON=true)
 	$(eval export ACM_DOMAINS=${SYSTEM_DNS_ZONE_ID}:*.${SYSTEM_DNS_ZONE_NAME} ${APPS_DNS_ZONE_ID}:*.${APPS_DNS_ZONE_NAME})
 	@true
 

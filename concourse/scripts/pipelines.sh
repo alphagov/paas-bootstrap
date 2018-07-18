@@ -39,7 +39,6 @@ datadog_app_key: ${DATADOG_APP_KEY:-}
 enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
-enable_syslog_addon: ${ENABLE_SYSLOG_ADDON}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
 gpg_ids: ${gpg_ids}
 acm_domains: ${ACM_DOMAINS:-}
