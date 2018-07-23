@@ -208,7 +208,7 @@ showenv: check-env-vars ## Display environment information
                 --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
 .PHONY: bosh-cli
-bosh-cli: check-env-vars
+bosh-cli: check-env-vars ## Run a local container with bosh targetted at the DEPLOY_ENV's director
 	@./scripts/bosh-cli.sh
 
 .PHONY: ssh_bosh
