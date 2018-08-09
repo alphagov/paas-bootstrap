@@ -96,6 +96,9 @@ instance_groups:
       ssl:
         cert: (( grab secrets.bosh_director_cert ))
         key: (( grab secrets.bosh_director_key ))
+      local_dns:
+        enabled: true
+        use_dns_addresses: true
 
     hm:
       director_account:
