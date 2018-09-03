@@ -261,6 +261,21 @@ resources:
       versioned_file: concourse_id_rsa
       initial_version: "-"
 
+  - name: cf-vars-store
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: cf-vars-store.yml
+
+  - name: bosh-runtime-config-vars
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-runtime-config-vars.yml
+      initial_version: "-"
+
 jobs:
   - name: init-bucket
     serial: true
@@ -930,11 +945,12 @@ jobs:
         - get: bosh-ssh-private-key
         - get: bosh-CA-crt
           passed: ['generate-secrets']
+        - get: cf-vars-store
 
       - task: bosh-create-env
         config:
           platform: linux
-          image_resource:
+          image_resource: &gov-paas-bosh-cli-v2-image-resource
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
@@ -965,22 +981,49 @@ jobs:
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
 
-      # FIXME: remove this task once the runtime config has been cleared everywhere.
-      - task: clear-runtime-config
+      # FIXME: this needs to be replaced with a steady state certificate
+      # persistence which does not reference cf-vars-store before this story is
+      # able to be considered as complete
+      - task: steal-cf-vars
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: cf-vars-store
+            - name: paas-bootstrap
+          outputs:
+            - name: new-bosh-runtime-config-vars
+          params:
+            BOSH_NON_INTERACTIVE: true
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                bosh interpolate \
+                  --var-errs \
+                  --vars-file cf-vars-store/cf-vars-store.yml \
+                  --vars-store /dev/null \
+                  paas-bootstrap/manifests/runtime-config/variables-template.yml \
+                | grep -v '^variables:' \
+                >new-bosh-runtime-config-vars/bosh-runtime-config-vars.yml
+
+      - put: bosh-runtime-config-vars
+        params: { file: new-bosh-runtime-config-vars/bosh-runtime-config-vars.yml }
+
+      - task: set-runtime-configs
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: bosh-CA-crt
+            - name: bosh-runtime-config-vars
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_NON_INTERACTIVE: true
           run:
             path: sh
             args:
@@ -989,12 +1032,20 @@ jobs:
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
 
-                cat <<EOT > blank-runtime-config.yml
+                cat <<EOT >blank-runtime-config.yml
                 ---
                 releases: []
                 addons: []
                 EOT
-                bosh -n update-runtime-config ./blank-runtime-config.yml
+
+                bosh update-runtime-config \
+                  --name '' \
+                  blank-runtime-config.yml
+
+                bosh update-runtime-config \
+                  --name bosh-dns \
+                  --vars-file=bosh-runtime-config-vars/bosh-runtime-config-vars.yml \
+                  paas-bootstrap/manifests/runtime-config/bosh-dns.yml
 
   - name: concourse-terraform
     serial: true
@@ -1313,11 +1364,7 @@ jobs:
       - task: get-and-upload-stemcell
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: bosh-secrets
             - name: paas-bootstrap
@@ -1344,11 +1391,7 @@ jobs:
       - task: deploy-concourse
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
           - name: concourse-manifest
           - name: bosh-secrets
@@ -1417,11 +1460,7 @@ jobs:
       - task: test-bosh-vms
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
