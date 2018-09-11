@@ -268,12 +268,12 @@ resources:
       region_name: ((aws_region))
       versioned_file: cf-vars-store.yml
 
-  - name: bosh-runtime-config-vars
+  - name: bosh-runtime-config-vars-store
     type: s3-iam
     source:
       bucket: ((state_bucket))
       region_name: ((aws_region))
-      versioned_file: bosh-runtime-config-vars.yml
+      versioned_file: bosh-runtime-config-vars-store.yml
       initial_version: "-"
 
 jobs:
@@ -992,7 +992,7 @@ jobs:
             - name: cf-vars-store
             - name: paas-bootstrap
           outputs:
-            - name: new-bosh-runtime-config-vars
+            - name: new-bosh-runtime-config-vars-store
           params:
             BOSH_NON_INTERACTIVE: true
           run:
@@ -1006,10 +1006,10 @@ jobs:
                   --vars-store /dev/null \
                   paas-bootstrap/manifests/runtime-config/variables-template.yml \
                 | grep -v '^variables:' \
-                >new-bosh-runtime-config-vars/bosh-runtime-config-vars.yml
+                >new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
 
-      - put: bosh-runtime-config-vars
-        params: { file: new-bosh-runtime-config-vars/bosh-runtime-config-vars.yml }
+      - put: bosh-runtime-config-vars-store
+        params: { file: new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml }
 
       - task: set-runtime-configs
         config:
@@ -1019,7 +1019,7 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: bosh-CA-crt
-            - name: bosh-runtime-config-vars
+            - name: bosh-runtime-config-vars-store
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1044,7 +1044,7 @@ jobs:
 
                 bosh update-runtime-config \
                   --name bosh-dns \
-                  --vars-file=bosh-runtime-config-vars/bosh-runtime-config-vars.yml \
+                  --vars-file=bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
                   paas-bootstrap/manifests/runtime-config/bosh-dns.yml
 
   - name: concourse-terraform
