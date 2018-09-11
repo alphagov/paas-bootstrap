@@ -144,6 +144,11 @@ instance_groups:
             max_containers: 1024
             network_pool: "10.254.0.0/20"
 
+            # Override concourse containers to use VPC DNS instead of bosh-dns
+            # See https://github.com/concourse/concourse/issues/2482 for details
+            dns_servers:
+              - 10.0.0.2
+
     networks:
       - name: public
         static_ips:

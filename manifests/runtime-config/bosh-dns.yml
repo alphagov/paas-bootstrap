@@ -1,0 +1,37 @@
+releases:
+- name: bosh-dns
+  sha1: 3b77329a772483d6c949f1a47ba9734976bc2b31
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh-dns-release?v=1.8.0
+  version: 1.8.0
+
+addons:
+- name: bosh-dns
+  jobs:
+  - name: bosh-dns
+    release: bosh-dns
+    properties:
+      api:
+        client:
+          tls:
+            ca: ((dns_api_tls_ca.certificate))((dns_api_tls_ca_old.certificate))
+            certificate: ((dns_api_client_tls.certificate))
+            private_key: ((dns_api_client_tls.private_key))
+        server:
+          tls:
+            ca: ((dns_api_tls_ca.certificate))((dns_api_tls_ca_old.certificate))
+            certificate: ((dns_api_server_tls.certificate))
+            private_key: ((dns_api_server_tls.private_key))
+      cache:
+        enabled: true
+      health:
+        client:
+          tls:
+            ca: ((dns_healthcheck_tls_ca.certificate))((dns_healthcheck_tls_ca_old.certificate))
+            certificate: ((dns_healthcheck_client_tls.certificate))
+            private_key: ((dns_healthcheck_client_tls.private_key))
+        enabled: true
+        server:
+          tls:
+            ca: ((dns_healthcheck_tls_ca.certificate))((dns_healthcheck_tls_ca_old.certificate))
+            certificate: ((dns_healthcheck_server_tls.certificate))
+            private_key: ((dns_healthcheck_server_tls.private_key))
