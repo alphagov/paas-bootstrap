@@ -93,19 +93,6 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
-.PHONY: staging
-staging: globals ## Set Environment to Staging
-	$(eval export DEPLOY_ENV=staging)
-	$(eval export SYSTEM_DNS_ZONE_NAME=staging.cloudpipeline.digital)
-	$(eval export SYSTEM_DNS_ZONE_ID=ZPFAUK62IO6DS)
-	$(eval export APPS_DNS_ZONE_NAME=staging.cloudpipelineapps.digital)
-	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
-	$(eval export AWS_ACCOUNT=staging)
-	$(eval export MAKEFILE_ENV_TARGET=staging)
-	$(eval export ENABLE_DATADOG=true)
-	$(eval export ENABLE_GITHUB=true)
-	$(eval export AWS_DEFAULT_REGION=eu-west-1)
-
 .PHONY: stg-lon
 stg-lon: globals ## Set Environment to stg-lon
 	$(eval export DEPLOY_ENV=stg-lon)
