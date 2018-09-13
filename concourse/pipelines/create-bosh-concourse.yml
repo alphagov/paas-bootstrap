@@ -261,13 +261,6 @@ resources:
       versioned_file: concourse_id_rsa
       initial_version: "-"
 
-  - name: cf-vars-store
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: cf-vars-store.yml
-
   - name: bosh-runtime-config-vars-store
     type: s3-iam
     source:
@@ -945,7 +938,7 @@ jobs:
         - get: bosh-ssh-private-key
         - get: bosh-CA-crt
           passed: ['generate-secrets']
-        - get: cf-vars-store
+        - get: bosh-runtime-config-vars-store
 
       - task: bosh-create-env
         config:
@@ -981,36 +974,6 @@ jobs:
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
 
-      # FIXME: this needs to be replaced with a steady state certificate
-      # persistence which does not reference cf-vars-store before this story is
-      # able to be considered as complete
-      - task: steal-cf-vars
-        config:
-          platform: linux
-          image_resource: *gov-paas-bosh-cli-v2-image-resource
-          inputs:
-            - name: cf-vars-store
-            - name: paas-bootstrap
-          outputs:
-            - name: new-bosh-runtime-config-vars-store
-          params:
-            BOSH_NON_INTERACTIVE: true
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                bosh interpolate \
-                  --var-errs \
-                  --vars-file cf-vars-store/cf-vars-store.yml \
-                  --vars-store /dev/null \
-                  paas-bootstrap/manifests/runtime-config/variables-template.yml \
-                | grep -v '^variables:' \
-                >new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
-
-      - put: bosh-runtime-config-vars-store
-        params: { file: new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml }
-
       - task: set-runtime-configs
         config:
           platform: linux
@@ -1020,6 +983,8 @@ jobs:
             - name: bosh-secrets
             - name: bosh-CA-crt
             - name: bosh-runtime-config-vars-store
+          outputs:
+            - name: new-bosh-runtime-config-vars-store
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1042,10 +1007,23 @@ jobs:
                   --name '' \
                   blank-runtime-config.yml
 
+                cp bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
+                   new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
+
+                bosh interpolate \
+                  --var-errs \
+                  --vars-store=new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
+                  paas-bootstrap/manifests/runtime-config/bosh-dns.yml \
+                > bosh-dns-no-vars.yml
+
                 bosh update-runtime-config \
                   --name bosh-dns \
-                  --vars-file=bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
-                  paas-bootstrap/manifests/runtime-config/bosh-dns.yml
+                  bosh-dns-no-vars.yml
+
+        on_success:
+          put: bosh-runtime-config-vars-store
+          params:
+            file: new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
 
   - name: concourse-terraform
     serial: true
