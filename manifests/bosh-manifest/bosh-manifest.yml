@@ -180,8 +180,8 @@ resource_pools:
 - name: bosh
   network: private
   stemcell:
-    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3586.36
-    sha1: df1d84d1d844bef3a6ce6e8f837f9ef1eeaed36c
+    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-trusty-go_agent?v=3586.42
+    sha1: 5523cb507c6b02e997726b686dc18b0c285611cc
   cloud_properties:
     instance_type: t2.medium
     ephemeral_disk: {size: 40000, type: gp2}
