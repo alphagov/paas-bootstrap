@@ -1418,7 +1418,7 @@ jobs:
                 CONCOURSE_ATC_PASSWORD=$(./paas-bootstrap/concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password concourse-secrets/concourse-secrets.yml)
 
                 ./paas-bootstrap/concourse/scripts/fly_sync_and_login.sh
-                ${FLY_CMD} -t "${FLY_TARGET}" destroy-team -n "${FLY_TEAM}" --non-interactive
+                ${FLY_CMD} -t "${FLY_TARGET}" destroy-team -n "${FLY_TEAM}" --non-interactive || true
 
   - name: post-deploy
     serial: true
