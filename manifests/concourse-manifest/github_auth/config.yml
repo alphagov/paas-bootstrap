@@ -8,13 +8,16 @@ instance_groups:
           github_auth:
             client_id: (( grab $GITHUB_CLIENT_ID ))
             client_secret: (( grab $GITHUB_CLIENT_SECRET ))
-            authorize:
-              - user: 46bit
-              - user: alext
-              - user: chrisfarms
-              - user: henrytk
-              - user: keymon
-              - user: LeePorte
-              - user: paroxp
-              - user: richardTowers
-              - user: samcrang
+          main_team:
+            auth:
+              github:
+                users:
+                - 46bit
+                - alext
+                - chrisfarms
+                - henrytk
+                - keymon
+                - LeePorte
+                - paroxp
+                - richardTowers
+                - samcrang

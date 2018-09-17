@@ -100,9 +100,14 @@ instance_groups:
         release: concourse
         properties:
           external_url: (( concat "https://" terraform_outputs.concourse_dns_name ))
-          basic_auth_username: admin
-          basic_auth_password: (( grab secrets.concourse_atc_password ))
+          add_local_users:
+            - (( concat "admin:" secrets.concourse_atc_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
+          main_team:
+            auth:
+              local:
+                users:
+                - admin
           postgresql:
             database: atc
             role:

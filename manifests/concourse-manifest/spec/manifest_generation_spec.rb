@@ -35,7 +35,7 @@ RSpec.describe "manifest generation" do
 
   it "gets values from secrets" do
     expect(
-      atc_job.fetch("properties").fetch("basic_auth_password")
+      atc_job.fetch("properties").fetch("add_local_users")[0].split(':', 2)[1]
     ).to eq(concourse_secrets_value("concourse_atc_password"))
   end
 end
