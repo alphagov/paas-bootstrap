@@ -269,6 +269,12 @@ resources:
       versioned_file: bosh-runtime-config-vars-store.yml
       initial_version: "-"
 
+  - name: concourse-bosh-deployment
+    type: git
+    source:
+      uri: https://github.com/concourse/concourse-bosh-deployment
+      tag_filter: "v3.9.2"
+
 jobs:
   - name: init-bucket
     serial: true
@@ -1338,6 +1344,7 @@ jobs:
         - get: concourse-secrets
         - get: bosh-CA-crt
           passed: ['generate-secrets']
+        - get: concourse-bosh-deployment
 
       - task: get-and-upload-stemcell
         config:
@@ -1375,10 +1382,12 @@ jobs:
           - name: bosh-secrets
           - name: paas-bootstrap
           - name: bosh-CA-crt
+          - name: concourse-bosh-deployment
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
           run:
             path: sh
             args:
@@ -1386,7 +1395,9 @@ jobs:
             - -c
             - |
               ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-              bosh -n deploy concourse-manifest/concourse-manifest.yml
+              bosh deploy \
+                --vars-file concourse-bosh-deployment/versions.yml \
+                concourse-manifest/concourse-manifest.yml
 
       - task: delete-env-specific-team
         config:
