@@ -110,7 +110,7 @@ instance_groups:
               password: (( grab secrets.concourse_postgres_password ))
           token_signing_key: (( grab secrets.concourse_token_signing_key ))
 
-      - name: groundcrew
+      - name: worker
         release: concourse
         properties:
           baggageclaim:
