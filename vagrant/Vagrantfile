@@ -50,10 +50,10 @@ AWS_ACCOUNT_DATA = {
 }.freeze
 AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT).fetch(AWS_REGION)
 
-# ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20170202
+# ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20180912
 AWS_AMI = {
-  "eu-west-1" => "ami-98ecb7fe",
-  "eu-west-2" => "ami-c5d0c5a1",
+  "eu-west-1" => "ami-00035f41c82244dab",
+  "eu-west-2" => "ami-0b0a60c0a2bd40612",
 }.freeze
 
 # rubocop:disable Metrics/BlockLength
