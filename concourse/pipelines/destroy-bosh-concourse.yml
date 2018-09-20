@@ -220,11 +220,11 @@ jobs:
       - task: destroy-concourse
         config:
           platform: linux
-          image_resource:
+          image_resource: &gov-paas-bosh-cli-v2-image-resource
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+              tag: 4012d25ceb903b46908a830b8e05773ced1c8f86
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
@@ -358,11 +358,7 @@ jobs:
       - task: check-existing-deployments
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -388,11 +384,7 @@ jobs:
       - task: cleanup-orphaned-disks
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: paas-bootstrap
             - name: bosh-secrets
@@ -412,11 +404,7 @@ jobs:
       - task: destroy-bosh-instance
         config:
           platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: paas-bootstrap
             - name: bosh-manifest
