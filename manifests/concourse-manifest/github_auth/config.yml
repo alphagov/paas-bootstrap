@@ -9,11 +9,11 @@ instance_groups:
             client_id: (( grab $GITHUB_CLIENT_ID ))
             client_secret: (( grab $GITHUB_CLIENT_SECRET ))
             authorize:
+              - user: 46bit
               - user: alext
+              - user: chrisfarms
               - user: henrytk
               - user: keymon
-              - user: paroxp
               - user: LeePorte
+              - user: paroxp
               - user: samcrang
-              - user: chrisfarms
-              - user: 46bit
