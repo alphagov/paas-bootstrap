@@ -11,6 +11,5 @@ instance_groups:
               - (( append ))
               - user: blairboy362
               - user: jpluscplusm
-              - user: richardTowers
               - user: tlwr
               - user: venusbb
