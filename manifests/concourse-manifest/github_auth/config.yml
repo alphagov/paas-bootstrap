@@ -16,4 +16,5 @@ instance_groups:
               - user: keymon
               - user: LeePorte
               - user: paroxp
+              - user: richardTowers
               - user: samcrang
