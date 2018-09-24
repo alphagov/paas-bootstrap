@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-    version: "3468.69"
+    version: "3586.36"
 
   zone: (( grab terraform_outputs.zone0 ))
 
@@ -10,17 +10,17 @@ name: concourse
 
 releases:
   - name: concourse
-    version: 3.8.0
-    url: https://bosh.io/d/github.com/concourse/concourse?v=3.8.0
-    sha1: 99e134676df72e18c719ccfbd7977bd9449e6fd4
+    version: ((!concourse_version))
+    url: https://bosh.io/d/github.com/concourse/concourse?v=((!concourse_version))
+    sha1: ((!concourse_sha1))
   - name: garden-runc
-    version: 1.6.0
-    url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
-    sha1: 58fbc64aff303e6d76899441241dd5dacef50cb7
+    version: ((!garden_runc_version))
+    url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=((!garden_runc_version))
+    sha1: ((!garden_runc_sha1))
   - name: postgres
-    version: 22
-    url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=22
-    sha1: 86a1333122e9cdd051551c83ec26d36f6e325d6c
+    version: ((!postgres_version))
+    url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=((!postgres_version))
+    sha1: ((!postgres_sha1))
 
 properties:
   aws:
@@ -100,9 +100,14 @@ instance_groups:
         release: concourse
         properties:
           external_url: (( concat "https://" terraform_outputs.concourse_dns_name ))
-          basic_auth_username: admin
-          basic_auth_password: (( grab secrets.concourse_atc_password ))
+          add_local_users:
+            - (( concat "admin:" secrets.concourse_atc_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
+          main_team:
+            auth:
+              local:
+                users:
+                - admin
           postgresql:
             database: atc
             role:
@@ -110,7 +115,7 @@ instance_groups:
               password: (( grab secrets.concourse_postgres_password ))
           token_signing_key: (( grab secrets.concourse_token_signing_key ))
 
-      - name: groundcrew
+      - name: worker
         release: concourse
         properties:
           baggageclaim:

@@ -6,10 +6,12 @@ instance_groups:
     jobs:
       - name: atc
         properties:
-          github_auth:
-            authorize:
-              - (( append ))
-              - user: blairboy362
-              - user: jpluscplusm
-              - user: tlwr
-              - user: venusbb
+          main_team:
+            auth:
+              github:
+                users:
+                  - (( append ))
+                  - blairboy362
+                  - jpluscplusm
+                  - tlwr
+                  - venusbb

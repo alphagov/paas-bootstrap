@@ -2,20 +2,25 @@
 
 set -eu
 
+echo "Waiting for cloud-init to update /etc/apt/sources.list .." >&2
+until grep -q ec2.archive.ubuntu.com /etc/apt/sources.list; do
+  sleep 2
+  echo ".. still waiting .." >&2
+done
+echo ".. update complete." >&2
+
 sudo apt-get update && sudo apt-get install docker-compose -y
 
 cd /vagrant
 
-# Generate keys for concourse
-mkdir -p keys/web keys/worker
-ssh-keygen -t rsa -f ./keys/web/tsa_host_key -N ''
-ssh-keygen -t rsa -f ./keys/web/session_signing_key -N ''
-ssh-keygen -t rsa -f ./keys/worker/worker_key -N ''
-
-cp ./keys/worker/worker_key.pub ./keys/web/authorized_worker_keys
-cp ./keys/web/tsa_host_key.pub ./keys/worker
-
 # shellcheck disable=SC2091
-$("./environment.sh")
+$(./environment.sh)
+
+# Expose settings as the envvars which the upstream docker-compose file expects
+export CONCOURSE_POSTGRES_DATABASE="$CONCOURSE_DATABASE_NAME"
+export CONCOURSE_POSTGRES_USER="$CONCOURSE_DATABASE_USER"
+export CONCOURSE_POSTGRES_PASSWORD="$CONCOURSE_DATABASE_PASS"
+export CONCOURSE_ADD_LOCAL_USER="${CONCOURSE_ATC_USER}:${CONCOURSE_ATC_PASSWORD}"
+export CONCOURSE_EXTERNAL_URL="$CONCOURSE_URL"
 
 sudo -E docker-compose up -d
