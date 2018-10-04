@@ -20,9 +20,9 @@ meta:
 
 releases:
 - name: bosh
-  version: "266.6.0"
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-266.6.0-ubuntu-trusty-3586.25-20180711-225914-381581243-20180711225918.tgz?emRXaylcdKCTFkQaKz2Qh1oysC9x9JDc
-  sha1: "3dbe714e94a518413c20c33967d70b1c9609f268"
+  version: "266.8.0"
+  url: "https://bosh.io/d/github.com/cloudfoundry/bosh?v=266.8.0"
+  sha1: "30f47551cfd2abeb35e68b5b0a1424b40a8b5650"
 - name: bosh-aws-cpi
   version: 69
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
