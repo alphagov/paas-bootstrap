@@ -40,7 +40,6 @@ enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
-gpg_ids: ${gpg_ids}
 acm_domains: ${ACM_DOMAINS:-}
 EOF
 }
@@ -51,12 +50,6 @@ fi
 
 if [ "${ENABLE_GITHUB}" = "true" ] ; then
   eval "$("${SCRIPT_DIR}"/../../scripts/manage-github-secrets.sh retrieve)"
-fi
-
-if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
-  gpg_ids="[]"
-else
-  gpg_ids="[$(xargs < "${SCRIPT_DIR}/../../.gpg-id" | tr ' ' ',')]"
 fi
 
 generate_vars_file > /dev/null # Check for missing vars
