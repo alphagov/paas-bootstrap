@@ -21,8 +21,7 @@ fi
 
 cert_status=$(aws acm describe-certificate --certificate-arn "${arn}" --query 'Certificate.Status' --output text)
 if [ "${cert_status}" = "ISSUED" ]; then
-  echo "Certificate already issued for ${ACM_DOMAIN_FQDN} in ${AWS_DEFAULT_REGION}. Exiting..."
-  exit 0
+  echo "Certificate already issued for ${ACM_DOMAIN_FQDN} in ${AWS_DEFAULT_REGION}. No change required..."
 fi
 
 # The validation records are not returned for a couple of seconds from the API after creation
@@ -44,6 +43,16 @@ if [ "null" = "${dns_validation_record}" ] || [ "null" = "${dns_validation_value
   echo
   echo "Please run the script again"
   exit 1
+fi
+
+current_dns_validation_value="$(
+  get_route53_resource_record_value \
+    "${ACM_DOMAIN_ZONE_ID}" "${dns_validation_record}"
+)"
+
+if [ "${current_dns_validation_value}" = "${dns_validation_value}" ]; then
+  echo "DNS validation record is valid, exitting..."
+  exit 0
 fi
 
 echo "Upserting DNS validation record: ${dns_validation_record} for ${AWS_DEFAULT_REGION}"
