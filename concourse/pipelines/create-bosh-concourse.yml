@@ -275,6 +275,14 @@ resources:
       uri: https://github.com/concourse/concourse-bosh-deployment
       tag_filter: "v4.2.1"
 
+  - name: cf-vars-store
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: cf-vars-store.yml
+      initial_version: "-"
+
 jobs:
   - name: init-bucket
     serial: true
@@ -945,6 +953,7 @@ jobs:
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: bosh-runtime-config-vars-store
+        - get: cf-vars-store
 
       - task: bosh-create-env
         config:
@@ -980,7 +989,36 @@ jobs:
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
 
-      - task: set-runtime-configs
+      # FIXME: remove this task once the vars store has been migrated everywhere
+      - task: migrate-vars-store
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: cf-vars-store
+            - name: bosh-runtime-config-vars-store
+          outputs:
+            - name: updated-cf-vars-store
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                bosh interpolate ./cf-vars-store/cf-vars-store.yml \
+                  --var-errs \
+                  --vars-file ./bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
+                  --ops-file ./paas-bootstrap/manifests/bosh-manifest/migrate-vars-store.yml \
+                > updated-cf-vars-store/updated-cf-vars-store.yml
+
+        on_success:
+          put: cf-vars-store
+          params:
+            file: updated-cf-vars-store/updated-cf-vars-store.yml
+
+      # FIXME: remove this task once the runtime config has been cleared everywhere.
+      - task: clear-runtime-config
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
@@ -988,13 +1026,9 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-secrets
             - name: bosh-CA-crt
-            - name: bosh-runtime-config-vars-store
-          outputs:
-            - name: new-bosh-runtime-config-vars-store
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn_external))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
-            BOSH_NON_INTERACTIVE: true
           run:
             path: sh
             args:
@@ -1002,34 +1036,7 @@ jobs:
               - -c
               - |
                 ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
-
-                cat <<EOT >blank-runtime-config.yml
-                ---
-                releases: []
-                addons: []
-                EOT
-
-                bosh update-runtime-config \
-                  --name '' \
-                  blank-runtime-config.yml
-
-                cp bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
-                   new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
-
-                bosh interpolate \
-                  --var-errs \
-                  --vars-store=new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml \
-                  paas-bootstrap/manifests/runtime-config/bosh-dns.yml \
-                > bosh-dns-no-vars.yml
-
-                bosh update-runtime-config \
-                  --name bosh-dns \
-                  bosh-dns-no-vars.yml
-
-        on_success:
-          put: bosh-runtime-config-vars-store
-          params:
-            file: new-bosh-runtime-config-vars-store/bosh-runtime-config-vars-store.yml
+                bosh delete-config -n --type runtime --name bosh-dns
 
   - name: concourse-terraform
     serial: true

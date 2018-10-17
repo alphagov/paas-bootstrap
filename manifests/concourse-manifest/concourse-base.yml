@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-    version: "3586.46"
+    version: "3586.48"
 
   zone: (( grab terraform_outputs.zone0 ))
 
@@ -148,11 +148,6 @@ instance_groups:
             graph_cleanup_threshold_in_mb: 3072
             max_containers: 1024
             network_pool: "10.254.0.0/20"
-
-            # Override concourse containers to use VPC DNS instead of bosh-dns
-            # See https://github.com/concourse/concourse/issues/2482 for details
-            dns_servers:
-              - 10.0.0.2
 
     networks:
       - name: public
