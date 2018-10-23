@@ -11,6 +11,7 @@ generator = SecretGenerator.new(
   "bosh_redis_password" => :simple,
   "bosh_hm_director_password" => :simple,
   "bosh_admin_password" => :simple,
+  "bosh_prometheus_password" => :simple,
   "bosh_vcap_password" => :sha512_crypted,
 )
 
