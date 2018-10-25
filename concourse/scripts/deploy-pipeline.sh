@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT=$0
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 usage() {
    cat <<EOF
@@ -32,9 +33,9 @@ echo "Pipeline ${pipeline}"
 echo "Config file ${config}"
 
 if [ "${SKIP_COMMIT_VERIFICATION:-}" = "true" ] ; then
-  gpg_option="--load-vars-from=./concourse/vars-files/gpg-keys-empty.yml"
+  gpg_option="--load-vars-from=${SCRIPT_DIR}/../vars-files/gpg-keys-empty.yml"
 else
-  gpg_option="--load-vars-from=./concourse/vars-files/gpg-keys.yml"
+  gpg_option="--load-vars-from=${SCRIPT_DIR}/../vars-files/gpg-keys.yml"
 fi
 
 $FLY_CMD -t "${FLY_TARGET}" \
