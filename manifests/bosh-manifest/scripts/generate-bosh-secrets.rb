@@ -13,6 +13,9 @@ generator = SecretGenerator.new(
   "bosh_admin_password" => :simple,
   "bosh_vcap_password" => :sha512_crypted,
   "bosh_uaa_postgres_password" => :simple,
+  "bosh_uaa_login_client_password" => :simple,
+  "bosh_uaa_uaa_encryption_key_1" => :simple,
+  "bosh_uaa_jwt_signing_key" => :bosh_rsa_key,
 )
 
 option_parser = OptionParser.new do |opts|
