@@ -1303,7 +1303,12 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget "https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION}" -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
                 bosh -n upload-stemcell stemcell.tgz
 
       - task: deploy-concourse
@@ -1325,9 +1330,15 @@ jobs:
             path: sh
             args:
             - -e
+            - -u
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              BOSH_CLIENT=admin
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              export BOSH_CLIENT
+              export BOSH_CLIENT_SECRET
+
               bosh deploy \
                 --vars-file concourse-bosh-deployment/versions.yml \
                 concourse-manifest/concourse-manifest.yml
@@ -1364,7 +1375,12 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              BOSH_CLIENT=admin
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              export BOSH_CLIENT
+              export BOSH_CLIENT_SECRET
+
               bosh deployment
               bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]

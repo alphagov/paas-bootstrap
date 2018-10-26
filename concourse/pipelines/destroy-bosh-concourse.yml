@@ -239,7 +239,12 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              BOSH_CLIENT=admin
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              export BOSH_CLIENT
+              export BOSH_CLIENT_SECRET
+
               bosh -n delete-deployment --force
 
       - task: vpc-terraform-outputs-to-sh
@@ -372,7 +377,11 @@ jobs:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
 
                 if ! bosh deployments --tty | grep -q "0 deployments"; then
                   echo "The following deployments must be deleted before destroying BOSH"
@@ -398,7 +407,12 @@ jobs:
               - -e
               - -c
               - |
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
                 bosh -n clean-up --all
 
       - task: destroy-bosh-instance
