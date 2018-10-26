@@ -13,17 +13,18 @@ BOSH_IP=$(aws ec2 describe-instances \
     --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 export BOSH_IP
 
-BOSH_ADMIN_PASSWORD=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
+BOSH_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
     ruby -ryaml -e 'print YAML.load(STDIN)["secrets"]["bosh_admin_password"]')
-export BOSH_ADMIN_PASSWORD
+export BOSH_CLIENT_SECRET
 
 docker run \
     -it \
     --rm \
     --env "BOSH_ID_RSA" \
     --env "BOSH_IP" \
-    --env "BOSH_ADMIN_PASSWORD" \
+    --env "BOSH_CLIENT=admin" \
+    --env "BOSH_CLIENT_SECRET" \
     --env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
     --env "BOSH_CA_CERT" \
     --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
-    governmentpaas/bosh-shell:71282be5cd658a67f944e2fd2d7b89e495fe6e53
+    governmentpaas/bosh-shell:54f216386ad6de88da6365ebb2a587504b6a3837
