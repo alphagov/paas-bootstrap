@@ -31,6 +31,14 @@ releases:
   version: "0.6.0"
   url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bpm-0.6.0-ubuntu-trusty-3586.24-20180618-221823-499813904-20180618221841.tgz?versionId=4XxS3rY2PTiCJK2xTUTjLyS5Puk4ZKbX
   sha1: 60bc10eb7f78b10e54c08913ca1820014562f51c
+- name: db-admin
+  version: 0.1.2
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/db-admin-0.1.2.tgz
+  sha1: 50b04aaefabbb8a2c371b086f570b37e25607052
+- name: uaa
+  version: "60.2"
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/uaa-60.2-ubuntu-xenial-97.12-20180815-231707-188963409-20180815231720.tgz?versionId=AJarW.I0RXfMpEAgq.d.qCuG_oAht_80
+  sha1: 97fcf9ce8b8bc9866771ce4c1ba59c9b19aa6f25
 
 instance_groups:
 - name: bosh
@@ -43,6 +51,8 @@ instance_groups:
   - {name: health_monitor, release: bosh}
   - {name: registry, release: bosh}
   - {name: aws_cpi, release: bosh-aws-cpi}
+  - {name: init-db, release: db-admin}
+  - {name: uaa, release: uaa}
 
   resource_pool: bosh
   persistent_disk_pool: disks
@@ -57,6 +67,79 @@ instance_groups:
     - (( grab meta.bosh_public_ip ))
 
   properties:
+    encryption:
+      encryption_keys:
+      - label: uaa-encryption-key-1
+        passphrase: (( grab secrets.bosh_uaa_uaa_encryption_key_1 ))
+      active_key_label: uaa-encryption-key-1
+    uaa:
+      url: (( concat "https://" $BOSH_FQDN ":8443" ))
+      port: -1
+      sslPrivateKey: (( grab secrets.bosh_uaa_cert ))
+      sslCertificate: (( grab secrets.bosh_uaa_key ))
+      jwt:
+        policy:
+          active_key_id: uaa-jwt-key-1
+          keys:
+            uaa-jwt-key-1:
+              signingKey: (( grab secrets.bosh_uaa_jwt_signing_key.private_key ))
+      scim:
+        groups:
+          bosh.admin: 'User has admin access on any Director'
+          bosh.read: 'User has read access on any Director'
+          bosh.stemcells.upload: 'User can upload new stemcells'
+          bosh.releases.upload: 'User can upload new releases'
+
+      clients:
+        admin:
+          override: true
+          authorized-grant-types: client_credentials
+          scope: ""
+          authorities: bosh.admin
+          secret: (( grab secrets.bosh_admin_password ))
+        hm:
+          override: true
+          authorized-grant-types: client_credentials
+          scope: ""
+          authorities: bosh.admin
+          secret: (( grab secrets.bosh_hm_director_password )) ]
+      login:
+        client_secret: (( grab secrets.bosh_uaa_login_client_password ))
+      zones: {internal: {hostnames: []}}
+
+    login:
+      saml:
+        activeKeyId: uaa-saml-key-1
+        keys:
+          uaa-saml-key-1:
+            key: (( grab secrets.bosh_uaa_service_provider_ssl_key))
+            certificate: (( grab secrets.bosh_uaa_service_provider_ssl_cert))
+            passphrase: ""
+
+    uaadb:
+      address: (( grab terraform_outputs.bosh_db_address ))
+      port: (( grab terraform_outputs.bosh_db_port ))
+      db_scheme: postgresql
+      databases:
+      - tag: uaa
+        name: uaa
+      roles:
+      - tag: admin
+        name: uaa
+        password: (( grab secrets.bosh_uaa_postgres_password ))
+
+    init-db:
+      connection_string: (( concat "postgres://" terraform_outputs.bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs.bosh_db_address ":" terraform_outputs.bosh_db_port "/postgres" ))
+      databases:
+      - name: uaa
+        owner: uaa
+        extensions:
+        - citext
+        - pgcrypto
+      roles:
+      - name: uaa
+        password: (( grab secrets.bosh_uaa_postgres_password ))
+        parent_role: (( grab terraform_outputs.bosh_db_username ))
     nats:
       address: 127.0.0.1
       tls:
@@ -83,10 +166,10 @@ instance_groups:
         max_orphaned_age_in_days: 0
       cpi_job: (( grab cloud_provider.template.name ))
       user_management:
-        local:
-          users:
-            - { name: admin, password: (( grab secrets.bosh_admin_password )) }
-            - { name: hm, password: (( grab secrets.bosh_hm_director_password )) }
+        provider: uaa
+        uaa:
+          url: (( concat "https://" $BOSH_FQDN ":8443" ))
+          public_key: (( grab secrets.bosh_uaa_jwt_signing_key.public_key ))
       trusted_certs: (( grab secrets.bosh_ca_cert ))
       events:
         record_events: true
@@ -102,8 +185,8 @@ instance_groups:
 
     hm:
       director_account:
-        user: hm
-        password: (( grab secrets.bosh_hm_director_password ))
+        client_id: hm
+        client_secret: (( grab secrets.bosh_hm_director_password ))
       resurrector_enabled: false
 
     agent:

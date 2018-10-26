@@ -45,10 +45,13 @@ resource "aws_security_group" "bosh" {
   }
 
   ingress {
-    from_port   = 25555
-    to_port     = 25555
-    protocol    = "tcp"
-    cidr_blocks = ["${compact(list(var.concourse_egress_cidr))}"]
+    from_port = 8443
+    to_port   = 8443
+    protocol  = "tcp"
+
+    security_groups = [
+      "${aws_security_group.bosh_api_client.id}",
+    ]
   }
 
   ingress {

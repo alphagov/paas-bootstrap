@@ -1278,6 +1278,7 @@ jobs:
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: concourse-bosh-deployment
+        - get: bosh-ssh-private-key
 
       - task: get-and-upload-stemcell
         config:
@@ -1287,10 +1288,16 @@ jobs:
             - name: bosh-secrets
             - name: paas-bootstrap
             - name: bosh-CA-crt
+            - name: bosh-ssh-private-key
           params:
-            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
           run:
             path: sh
             args:
@@ -1303,7 +1310,14 @@ jobs:
                 STEMCELL_NAME=$($VAL_FROM_YAML meta.stemcell.name paas-bootstrap/manifests/concourse-manifest/concourse-base.yml)
 
                 wget "https://bosh.io/d/stemcells/${STEMCELL_NAME}?v=${STEMCELL_VERSION}" -O stemcell.tgz
-                ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
                 bosh -n upload-stemcell stemcell.tgz
 
       - task: deploy-concourse
@@ -1316,18 +1330,31 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-CA-crt
           - name: concourse-bosh-deployment
+          - name: bosh-ssh-private-key
           params:
-            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
             BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
           run:
             path: sh
             args:
             - -e
+            - -u
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              BOSH_CLIENT=admin
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              export BOSH_CLIENT
+              export BOSH_CLIENT_SECRET
+
               bosh deploy \
                 --vars-file concourse-bosh-deployment/versions.yml \
                 concourse-manifest/concourse-manifest.yml
@@ -1345,6 +1372,7 @@ jobs:
           passed: ['concourse-deploy']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
+        - get: bosh-ssh-private-key
 
       - task: test-bosh-vms
         config:
@@ -1354,17 +1382,30 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-secrets
           - name: bosh-CA-crt
+          - name: bosh-ssh-private-key
           params:
-            BOSH_ENVIRONMENT: ((bosh_fqdn_external))
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
           run:
             path: sh
             args:
             - -e
             - -c
             - |
-              ./paas-bootstrap/concourse/scripts/bosh_login.sh bosh-secrets/bosh-secrets.yml
+              . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              BOSH_CLIENT=admin
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              export BOSH_CLIENT
+              export BOSH_CLIENT_SECRET
+
               bosh deployment
               bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
