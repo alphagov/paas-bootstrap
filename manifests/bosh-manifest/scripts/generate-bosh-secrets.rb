@@ -12,6 +12,7 @@ generator = SecretGenerator.new(
   "bosh_hm_director_password" => :simple,
   "bosh_admin_password" => :simple,
   "bosh_vcap_password" => :sha512_crypted,
+  "bosh_uaa_postgres_password" => :simple,
 )
 
 option_parser = OptionParser.new do |opts|

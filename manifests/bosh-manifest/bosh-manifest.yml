@@ -31,6 +31,10 @@ releases:
   version: "0.6.0"
   url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bpm-0.6.0-ubuntu-trusty-3586.24-20180618-221823-499813904-20180618221841.tgz?versionId=4XxS3rY2PTiCJK2xTUTjLyS5Puk4ZKbX
   sha1: 60bc10eb7f78b10e54c08913ca1820014562f51c
+- name: db-admin
+  version: 0.1.2
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/db-admin-0.1.2.tgz
+  sha1: 50b04aaefabbb8a2c371b086f570b37e25607052
 
 instance_groups:
 - name: bosh
@@ -43,6 +47,7 @@ instance_groups:
   - {name: health_monitor, release: bosh}
   - {name: registry, release: bosh}
   - {name: aws_cpi, release: bosh-aws-cpi}
+  - {name: init-db, release: db-admin}
 
   resource_pool: bosh
   persistent_disk_pool: disks
@@ -57,6 +62,18 @@ instance_groups:
     - (( grab meta.bosh_public_ip ))
 
   properties:
+    init-db:
+      connection_string: (( concat "postgres://" terraform_outputs.bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs.bosh_db_address ":" terraform_outputs.bosh_db_port "/postgres" ))
+      databases:
+      - name: uaa
+        owner: uaa
+        extensions:
+        - citext
+        - pgcrypto
+      roles:
+      - name: uaa
+        password: (( grab secrets.bosh_uaa_postgres_password ))
+        parent_role: (( grab terraform_outputs.bosh_db_username ))
     nats:
       address: 127.0.0.1
       tls:
