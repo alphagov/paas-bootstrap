@@ -103,6 +103,12 @@ instance_groups:
           scope: ""
           authorities: bosh.admin
           secret: (( grab secrets.bosh_hm_director_password )) ]
+        bosh_exporter:
+          override: true
+          authorized-grant-types: client_credentials
+          scope: ""
+          authorities: bosh.read
+          secret: (( grab secrets.bosh_bosh_exporter_password ))
       login:
         client_secret: (( grab secrets.bosh_uaa_login_client_password ))
       zones: {internal: {hostnames: []}}
