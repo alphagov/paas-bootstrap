@@ -102,7 +102,7 @@ instance_groups:
           authorized-grant-types: client_credentials
           scope: ""
           authorities: bosh.admin
-          secret: (( grab secrets.bosh_hm_director_password )) ]
+          secret: (( grab secrets.bosh_hm_director_password ))
         bosh_exporter:
           override: true
           authorized-grant-types: client_credentials
@@ -193,6 +193,7 @@ instance_groups:
       director_account:
         client_id: hm
         client_secret: (( grab secrets.bosh_hm_director_password ))
+        ca_cert: (( grab secrets.bosh_ca_cert ))
       resurrector_enabled: false
 
     agent:
