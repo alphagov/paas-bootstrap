@@ -25,7 +25,7 @@ case "${TARGET_CONCOURSE}" in
     FLY_CMD="${PROJECT_DIR}/bin/fly-bootstrap"
 
     if [ -z "${CONCOURSE_ATC_PASSWORD:-}" ]; then
-        user_id=$(aws sts get-caller-identity | awk '$1 ~ /UserId/ {print $2}')
+        user_id=$(aws sts get-caller-identity | awk '$1 ~ /UserId/ {sub(/:.*$/, "", $2); print $2}')
         CONCOURSE_ATC_PASSWORD=$(hashed_password "${user_id}")
     fi
     BOSH_LOGIN_HOST=${BOSH_FQDN_EXTERNAL}
