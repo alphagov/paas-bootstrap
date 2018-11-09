@@ -99,6 +99,9 @@ instance_groups:
       - name: atc
         release: concourse
         properties:
+          prometheus:
+            bind_ip: 0.0.0.0
+            bind_port: 9391
           external_url: (( concat "https://" terraform_outputs.concourse_dns_name ))
           add_local_users:
             - (( concat "admin:" secrets.concourse_atc_password ))
