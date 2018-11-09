@@ -19,26 +19,26 @@ meta:
   bosh_public_ip: (( grab terraform_outputs.microbosh_static_public_ip ))
 
 releases:
-- name: bosh
-  version: "266.8.0"
-  url: "https://bosh.io/d/github.com/cloudfoundry/bosh?v=266.8.0"
-  sha1: "30f47551cfd2abeb35e68b5b0a1424b40a8b5650"
-- name: bosh-aws-cpi
-  version: 69
-  url: https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=69
-  sha1: 8abe70219244896ea6f7208fc01f2eac56179170
-- name: bpm
-  version: "0.6.0"
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bpm-0.6.0-ubuntu-trusty-3586.24-20180618-221823-499813904-20180618221841.tgz?versionId=4XxS3rY2PTiCJK2xTUTjLyS5Puk4ZKbX
-  sha1: 60bc10eb7f78b10e54c08913ca1820014562f51c
+- name: "bosh"
+  version: "268.2.0"
+  url: "https://bosh.io/d/github.com/cloudfoundry/bosh?v=268.2.0"
+  sha1: "5b18a671401f5bc001b216b74e7d03307cfbbe7a"
+- name: "bosh-aws-cpi"
+  version: "73"
+  url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=73"
+  sha1: "9d02123488919a325f1ed4f349090c4de6142373"
+- name: "bpm"
+  version: "0.13.0"
+  url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=0.13.0"
+  sha1: "4b6ebfdaa467c04855528172b099e565d679e0f5"
 - name: db-admin
   version: 0.1.2
   url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/db-admin-0.1.2.tgz
   sha1: 50b04aaefabbb8a2c371b086f570b37e25607052
-- name: uaa
-  version: "60.2"
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/uaa-60.2-ubuntu-trusty-3586.25-20180719-211521-859356054-20180719211535.tgz?versionId=xPYgwJsDhNEtSKGpTBe5ts8kaHCINK0y
-  sha1: ab2f9afc80e7655ab51514e15a7b3ead79d66d54
+- name: "uaa"
+  version: "66.0"
+  url: "https://bosh.io/d/github.com/cloudfoundry/uaa-release?v=66.0"
+  sha1: "2848d9fb65d2d556a918e8045359cf469c241123"
 
 instance_groups:
 - name: bosh
