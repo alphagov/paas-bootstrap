@@ -37,7 +37,7 @@ download_key() {
   key=/tmp/concourse_id_rsa.$RANDOM
   trap 'rm -f $key' EXIT
 
-  eval "$(make "${AWS_ACCOUNT}" showenv | grep CONCOURSE_IP=)"
+  eval "$(make "${MAKEFILE_ENV_TARGET}" showenv | grep CONCOURSE_IP=)"
   aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/concourse_id_rsa" $key && chmod 400 $key
 }
 
