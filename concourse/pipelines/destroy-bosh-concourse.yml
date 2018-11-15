@@ -225,7 +225,7 @@ jobs:
             type: docker-image
             source:
               repository: governmentpaas/bosh-cli-v2
-              tag: a4abdc079caf1eccb11a6bd2c486469cd9d0362a
+              tag: 93e168b4244873902cd552ae08fc4a67a7b2e6f5
           inputs:
           - name: paas-bootstrap
           - name: bosh-secrets
