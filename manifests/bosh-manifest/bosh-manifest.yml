@@ -20,9 +20,10 @@ meta:
 
 releases:
 - name: "bosh"
-  version: "268.2.0"
-  url: "https://bosh.io/d/github.com/cloudfoundry/bosh?v=268.2.0"
-  sha1: "5b18a671401f5bc001b216b74e7d03307cfbbe7a"
+  # 268.2.0 + https://github.com/cloudfoundry/bosh/commit/bc4bc20
+  version: 0.1.1
+  url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/bosh-0.1.1.tgz
+  sha1: b69a2e11996f7daa9658dbacfe3c13137b667811
 - name: "bosh-aws-cpi"
   version: "72"
   url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=72"
