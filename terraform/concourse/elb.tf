@@ -1,8 +1,3 @@
-data "aws_acm_certificate" "system" {
-  domain   = "*.${var.system_dns_zone_name}"
-  statuses = ["ISSUED"]
-}
-
 resource "aws_elb" "concourse" {
   name            = "${var.env}-concourse"
   subnets         = ["${split(",", var.infra_subnet_ids)}"]
@@ -22,7 +17,7 @@ resource "aws_elb" "concourse" {
     instance_protocol  = "tcp"
     lb_port            = 443
     lb_protocol        = "ssl"
-    ssl_certificate_id = "${data.aws_acm_certificate.system.arn}"
+    ssl_certificate_id = "${aws_acm_certificate_validation.system.certificate_arn}"
   }
 
   tags {
