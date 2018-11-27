@@ -1088,23 +1088,6 @@ jobs:
           params:
             file: updated-concourse-tfstate/concourse.tfstate
 
-      # Temporary task to add the git-${DEPLOY_ENV} user to git group
-      - task: add-git-user-to-group
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          inputs:
-          - name: paas-bootstrap
-          params:
-            DEPLOY_ENV: ((deploy_env))
-          run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              aws iam add-user-to-group --user-name "git-${DEPLOY_ENV}" --group-name concourse-pool-git-rw
-
   - name: generate-concourse-config
     serial: true
     plan:
