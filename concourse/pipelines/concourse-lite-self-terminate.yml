@@ -1,3 +1,11 @@
+meta:
+  containers:
+    awscli: &awscli-image-resource
+      type: docker-image
+      source:
+        repository: governmentpaas/awscli
+        tag: b2495d6ed07f680125d19aa7d1701da7efabb289
+
 resources:
   - name: delete-timer
     type: time
@@ -15,13 +23,9 @@ jobs:
     - task: delete-deployment
       config:
         platform: linux
+        image_resource: *awscli-image-resource
         inputs:
-        - name: delete-timer
-        image_resource:
-          type: docker-image
-          source:
-            repository: governmentpaas/awscli
-            tag: b2495d6ed07f680125d19aa7d1701da7efabb289
+          - name: delete-timer
         params:
           VAGRANT_SSH_KEY_NAME: ((vagrant_ssh_key_name))
         run:
