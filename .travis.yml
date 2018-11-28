@@ -36,7 +36,7 @@ before_install:
     mv spruce-linux-amd64 ~/bin/spruce && chmod +x ~/bin/spruce
   - pip install --user yamllint
 
-  - eval "$(gimme 1.6)"
+  - eval "$(gimme 1.11)"
   - export GOPATH=$HOME/gopath
   - export PATH=$HOME/gopath/bin:$PATH
   - go get github.com/onsi/ginkgo/ginkgo
