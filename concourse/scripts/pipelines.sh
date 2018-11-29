@@ -40,7 +40,6 @@ enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
-acm_domains: ${ACM_DOMAINS:-}
 EOF
 }
 

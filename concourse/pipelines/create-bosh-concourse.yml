@@ -984,27 +984,6 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
-      - task: generate-acm-certs
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          inputs:
-            - name: paas-bootstrap
-          params:
-            ACM_DOMAINS: ((acm_domains))
-            AWS_DEFAULT_REGION: ((aws_region))
-          run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              for acm_domain in ${ACM_DOMAINS}; do
-                export ACM_DOMAIN_ZONE_ID="${acm_domain%%:*}"
-                export ACM_DOMAIN_FQDN="${acm_domain##*:}"
-                ./paas-bootstrap/concourse/scripts/create_acm_cert.sh
-              done
-
       - task: generate-concourse-ssh-keys
         config:
           platform: linux
@@ -1042,6 +1021,39 @@ jobs:
               params:
                 file: generated-concourse-ssh-keys/concourse_id_rsa
 
+      # FIXME: remove this when it's run everywhere.
+      - task: extract-acm-cert-arn
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+          inputs:
+            - name: concourse-tfstate
+          outputs:
+            - name: system-cert
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              tf_cert_details=$(jq -r '.modules[].resources."aws_acm_certificate.system"' concourse-tfstate/concourse.tfstate)
+              if [ "${tf_cert_details}" = "null" ]; then
+                echo "Finding cert to import"
+                cert_arn=$(aws acm list-certificates \
+                  --query "CertificateSummaryList[?DomainName==\`*.((system_dns_zone_name))\`].CertificateArn" \
+                  --output text)
+                if [ -n "${cert_arn}" ]; then
+                  echo "${cert_arn}" > system-cert/import_arn.txt
+                  echo "Found cert to import: $(cat system-cert/import_arn.txt)"
+                else
+                  echo "No existing cert found. Skipping import..."
+                fi
+              else
+                echo "TF state already includes a non-data cert resource. Skipping import..."
+              fi
+
       - task: terraform-apply
         config:
           platform: linux
@@ -1053,6 +1065,7 @@ jobs:
           - name: concourse-tfstate
           - name: git-ssh-public-key
           - name: generated-concourse-ssh-keys
+          - name: system-cert
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -1076,6 +1089,24 @@ jobs:
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
+
+              # FIXME: remove this when it's run everywhere.
+              if [ -f system-cert/import_arn.txt ]; then
+                existing_cert_arn=$(cat system-cert/import_arn.txt)
+                echo "Importing existing cert with arn ${existing_cert_arn}"
+                echo "Removing existing data resource"
+                terraform state rm \
+                  -state=updated-concourse-tfstate/concourse.tfstate \
+                  aws_acm_certificate.system
+
+                echo "Importing new resource"
+                terraform import \
+                  -state=updated-concourse-tfstate/concourse.tfstate \
+                  -config=paas-bootstrap/terraform/concourse \
+                  aws_acm_certificate.system \
+                  "${existing_cert_arn}"
+              fi
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
