@@ -13,3 +13,4 @@ instance_groups:
                   - (( append ))
                   - jpluscplusm
                   - venusbb
+                  - tnwhitwell
