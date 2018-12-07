@@ -296,3 +296,6 @@ networks:
       - (( grab terraform_outputs.ssh_security_group ))
 - name: public
   type: vip
+
+tags:
+  deploy_env: (( grab terraform_outputs.environment ))
