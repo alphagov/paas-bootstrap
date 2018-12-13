@@ -9,10 +9,12 @@ meta:
 name: concourse
 
 releases:
+  # TODO: Use the upstream build again after the following PR was released:
+  # https://github.com/concourse/concourse/pull/2785
   - name: concourse
-    version: ((!concourse_version))
-    url: https://bosh.io/d/github.com/concourse/concourse?v=((!concourse_version))
-    sha1: ((!concourse_sha1))
+    version: 0.1.2
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/concourse-0.1.2.tgz
+    sha1: 235619dee581f10c2eecd2e1f52bbaf64b53edfe
   - name: garden-runc
     version: ((!garden_runc_version))
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=((!garden_runc_version))
@@ -114,6 +116,9 @@ instance_groups:
               name: atc
               password: (( grab secrets.concourse_postgres_password ))
           token_signing_key: (( grab secrets.concourse_token_signing_key ))
+          prometheus:
+            bind_ip: 0.0.0.0
+            bind_port: 9391
 
       - name: worker
         release: concourse

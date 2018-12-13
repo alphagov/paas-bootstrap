@@ -1151,8 +1151,7 @@ jobs:
             - |
               if [ "${ENABLE_DATADOG}" = "true" ] ; then
                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
-                                ./paas-bootstrap/manifests/concourse-manifest/addons/datadog-concourse-integration.yml"
+                                ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml"
               fi
               if [ "${ENABLE_GITHUB}" = "true" ] ; then
                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
