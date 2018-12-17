@@ -19,7 +19,6 @@ RSpec.describe "manifest generation" do
 
   let(:concourse_instance_group) { manifest_with_defaults.fetch("instance_groups").find { |ig| ig["name"] == "concourse" } }
   let(:atc_job) { concourse_instance_group.fetch("jobs").find { |j| j["name"] == "atc" } }
-  let(:datadog_job) { concourse_instance_group.fetch("jobs").find { |j| j["name"] == "datadog-agent" } }
 
   it "gets values from vpc terraform outputs" do
     expect(
