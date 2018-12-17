@@ -66,7 +66,6 @@ lint_ruby:
 PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
-	$(eval export DATADOG_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	@true
 
@@ -81,7 +80,6 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export MAKEFILE_ENV_TARGET=dev)
 	$(eval export ENABLE_DESTROY=true)
-	$(eval export ENABLE_DATADOG ?= false)
 	$(eval export ENABLE_GITHUB ?= false)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
@@ -93,7 +91,6 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_ID=Z2PF4LCV9VR1MV)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export MAKEFILE_ENV_TARGET=ci)
-	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
@@ -106,7 +103,6 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export APPS_DNS_ZONE_ID=Z32JRRSU1CAFE8)
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export MAKEFILE_ENV_TARGET=stg-lon)
-	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
@@ -119,7 +115,6 @@ prod: globals ## Set Environment to Prod
 	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export MAKEFILE_ENV_TARGET=prod)
-	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 
@@ -132,7 +127,6 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export APPS_DNS_ZONE_ID=Z29K8LQNCFDZ1T)
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export MAKEFILE_ENV_TARGET=prod-lon)
-	$(eval export ENABLE_DATADOG=true)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
@@ -217,14 +211,7 @@ stop-tunnel: check-env-vars ## Stop SSH tunnel
 	@./concourse/scripts/ssh.sh tunnel stop
 
 .PHONY: upload-all-secrets
-upload-all-secrets: upload-datadog-secrets upload-github-oauth
-
-.PHONY: upload-datadog-secrets
-upload-datadog-secrets: check-env-vars ## Decrypt and upload Datadog credentials to S3
-	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
-	$(if ${DATADOG_PASSWORD_STORE_DIR},,$(error Must pass DATADOG_PASSWORD_STORE_DIR=<path_to_password_store>))
-	$(if $(wildcard ${DATADOG_PASSWORD_STORE_DIR}),,$(error Password store ${DATADOG_PASSWORD_STORE_DIR} does not exist))
-	@scripts/manage-datadog-secrets.sh upload
+upload-all-secrets: upload-github-oauth
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3

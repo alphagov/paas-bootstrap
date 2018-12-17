@@ -384,7 +384,6 @@ jobs:
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             TARGET_CONCOURSE: ((target_concourse))
             CONCOURSE_TYPE: ((concourse_type))
-            ENABLE_DATADOG: ((enable_datadog))
             ENABLE_GITHUB: ((enable_github))
           run:
             path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
@@ -866,9 +865,6 @@ jobs:
             DEPLOY_ENV: ((deploy_env))
             AWS_ACCOUNT: ((aws_account))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            DATADOG_API_KEY: ((datadog_api_key))
-            DATADOG_APP_KEY: ((datadog_app_key))
-            ENABLE_DATADOG: ((enable_datadog))
             BOSH_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
               ./paas-bootstrap/manifests/bosh-manifest/((aws_region)).yml
@@ -885,12 +881,6 @@ jobs:
               - -e
               - -c
               - |
-                if [ "${ENABLE_DATADOG}" = "true" ] ; then
-                   BOSH_MANIFEST_STUBS="${BOSH_MANIFEST_STUBS}
-                                        ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml
-                                        ./paas-bootstrap/manifests/bosh-manifest/addons/datadog-agent-bosh-properties.yml"
-                fi
-
                 # shellcheck disable=SC2086
                 ./paas-bootstrap/manifests/shared/build_manifest.sh $BOSH_MANIFEST_STUBS > bosh-manifest/bosh-manifest.yml
         on_success:
@@ -1121,9 +1111,6 @@ jobs:
           image_resource: *spruce-image-resource
           params:
             AWS_ACCOUNT: ((aws_account))
-            DATADOG_API_KEY: ((datadog_api_key))
-            DATADOG_APP_KEY: ((datadog_app_key))
-            ENABLE_DATADOG: ((enable_datadog))
             CONCOURSE_AUTH_DURATION: ((concourse_auth_duration))
             CONCOURSE_MANIFEST_STUBS: |
               ./paas-bootstrap/manifests/concourse-manifest/concourse-base.yml
@@ -1149,10 +1136,6 @@ jobs:
             - -e
             - -c
             - |
-              if [ "${ENABLE_DATADOG}" = "true" ] ; then
-                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/shared/addons/datadog-agent.yml"
-              fi
               if [ "${ENABLE_GITHUB}" = "true" ] ; then
                 CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
                                 ./paas-bootstrap/manifests/concourse-manifest/github_auth/config.yml"
@@ -1332,7 +1315,6 @@ jobs:
             SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
             SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             CONCOURSE_TYPE: ((concourse_type))
-            ENABLE_DATADOG: ((enable_datadog))
             ENABLE_GITHUB: ((enable_github))
           run:
             path: sh
