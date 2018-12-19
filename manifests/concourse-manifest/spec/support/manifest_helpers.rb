@@ -33,9 +33,6 @@ private
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["CONCOURSE_INSTANCE_TYPE"] = "t2.small"
     ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
-    ENV["DATADOG_API_KEY"] = "abcd1234"
-    ENV["DATADOG_APP_KEY"] = "abcd4321"
-    ENV["ENABLE_DATADOG"] = "true"
     ENV["CONCOURSE_AUTH_DURATION"] = "5m"
     ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
@@ -50,7 +47,6 @@ private
         File.expand_path("../../../../shared/spec/fixtures/concourse-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../../../shared/addons/datadog-agent.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"

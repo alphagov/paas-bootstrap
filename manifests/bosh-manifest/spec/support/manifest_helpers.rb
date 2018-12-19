@@ -38,9 +38,6 @@ private
     ENV["BOSH_FQDN"] = "bosh.domain"
     ENV["AWS_ACCOUNT"] = "dev"
     ENV["BOSH_INSTANCE_PROFILE"] = "bosh-director-build"
-    ENV["DATADOG_API_KEY"] = "abcd1234"
-    ENV["DATADOG_APP_KEY"] = "abcd4321"
-    ENV["ENABLE_DATADOG"] = "true"
     ENV["DEPLOY_ENV"] = ManifestHelpers.deploy_env
     ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
   end
@@ -56,8 +53,6 @@ private
         File.expand_path("../../fixtures/bosh-ssl-certificates.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
         File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../../../shared/addons/datadog-agent.yml", __FILE__),
-        File.expand_path("../../../addons/datadog-agent-bosh-properties.yml", __FILE__),
       ].join(' ')
     )
     expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"
