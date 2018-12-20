@@ -1,0 +1,3 @@
+[submodule "manifests/bosh-manifest/upstream"]
+	path = manifests/bosh-manifest/upstream
+	url = https://github.com/cloudfoundry/bosh-deployment
