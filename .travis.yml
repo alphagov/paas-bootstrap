@@ -6,6 +6,8 @@ env:
   global:
     - TF_VERSION="0.11.1"
     - SPRUCE_VERSION="1.8.9"
+    - BOSH_CLI_VERSION="2.0.48"
+    - CERTSTRAP_VERSION="1.1.1"
 
 addons:
   apt:
@@ -34,6 +36,16 @@ before_install:
     set -e
     wget https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64
     mv spruce-linux-amd64 ~/bin/spruce && chmod +x ~/bin/spruce
+  - |
+    echo "Fetching certstrap"
+    set -e
+    wget https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-v${CERTSTRAP_VERSION}-linux-amd64
+    mv certstrap-v${CERTSTRAP_VERSION}-linux-amd64 ~/bin/certstrap && chmod +x ~/bin/certstrap
+  - |
+    echo "Fetching bosh cli v2"
+    set -e
+    wget https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64
+    mv bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 ~/bin/bosh && chmod +x ~/bin/bosh
   - pip install --user yamllint
 
   - eval "$(gimme 1.11)"
