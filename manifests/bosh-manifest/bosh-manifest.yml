@@ -9,6 +9,7 @@ meta:
     user: (( grab terraform_outputs.bosh_db_username ))
     password: (( grab secrets.bosh_postgres_password ))
     database: (( grab terraform_outputs.bosh_db_dbname ))
+    adapter: postgres
   aws:
     default_security_groups:
     - (( grab terraform_outputs.bosh_managed_security_group ))
@@ -55,11 +56,11 @@ instance_groups:
   - {name: init-db, release: db-admin}
   - {name: uaa, release: uaa}
 
-  resource_pool: bosh
+  resource_pool: vms
   persistent_disk_pool: disks
 
   networks:
-  - name: private
+  - name: default
     static_ips:
     - (( grab meta.bosh_private_ip ))
     default: [dns, gateway]
@@ -148,7 +149,7 @@ instance_groups:
         password: (( grab secrets.bosh_uaa_postgres_password ))
         parent_role: (( grab terraform_outputs.bosh_db_username ))
     nats:
-      address: 127.0.0.1
+      address: (( grab meta.bosh_private_ip ))
       tls:
         ca: (( grab secrets.bosh_ca_cert ))
         client_ca:
@@ -204,11 +205,14 @@ instance_groups:
       db: (( grab meta.rds ))
       http:
         # Properties used by director and registry jobs
-        user: admin
+        user: registry
         password: (( grab secrets.bosh_registry_password ))
+        port: 25777
       # Properties used by AWS CPI
-      host: (( grab $BOSH_FQDN ))
-      username: admin
+      host: (( grab meta.bosh_private_ip ))
+      address: (( grab meta.bosh_private_ip ))
+      port: 25777
+      username: registry
       password: (( grab secrets.bosh_registry_password ))
 
     compiled_package_cache:
@@ -263,19 +267,19 @@ cloud_provider:
 
 disk_pools:
 - name: disks
-  disk_size: 32768
+  disk_size: 65536
   cloud_properties:
     type: gp2
 
 resource_pools:
-- name: bosh
-  network: private
+- name: vms
+  network: default
   stemcell:
     url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-xenial-go_agent?v=170.15
     sha1: c12530cd9305e8fae2a3d0381481d05b7bd98693
   cloud_properties:
     instance_type: t2.medium
-    ephemeral_disk: {size: 40000, type: gp2}
+    ephemeral_disk: {size: 25000, type: gp2}
     availability_zone: (( grab terraform_outputs.bosh_az ))
     iam_instance_profile: (( grab $BOSH_INSTANCE_PROFILE ))
   env:
@@ -283,7 +287,7 @@ resource_pools:
       password: (( grab secrets.bosh_vcap_password ))
 
 networks:
-- name: private
+- name: default
   type: manual
   subnets:
   - range: (( grab terraform_outputs.bosh_subnet_cidr ))
@@ -294,6 +298,7 @@ networks:
       security_groups:
       - (( grab terraform_outputs.bosh_security_group ))
       - (( grab terraform_outputs.ssh_security_group ))
+    static: [10.0.0.6]
 - name: public
   type: vip
 
