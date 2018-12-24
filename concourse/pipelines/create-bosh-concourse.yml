@@ -493,7 +493,6 @@ jobs:
           trigger: true
         - get: bosh-CA
         - get: bosh-CA-crt
-        - get: bosh-certs
         - get: bosh-secrets
         - get: bosh-ssh-private-key
         - get: bosh-ssh-public-key
