@@ -1,0 +1,3 @@
+---
+internal_ntp: [169.254.169.123]
+internal_dns: [10.0.0.2]
