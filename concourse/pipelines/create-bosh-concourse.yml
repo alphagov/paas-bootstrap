@@ -222,6 +222,14 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-manifest.yml
 
+  - name: bosh-vars-store
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-vars-store.yml
+      initial_version: "{}"
+
   - name: bosh-init-state
     type: s3-iam
     source:
@@ -529,39 +537,6 @@ jobs:
                 file: generated-bosh-CA/bosh-CA.crt
 
       - aggregate:
-        - task: generate-bosh-certs
-          config:
-            platform: linux
-            image_resource: *certstrap-image-resource
-            inputs:
-              - name: bosh-CA
-              - name: paas-bootstrap
-              - name: bosh-certs
-            outputs:
-              - name: generated-bosh-certs
-            params:
-              SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            run:
-              path: sh
-              args:
-                - -e
-                - -c
-                - |
-                  mkdir certs
-                  echo "Extracting extant certs"
-                  tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
-
-                  ./paas-bootstrap/manifests/bosh-manifest/scripts/generate-bosh-certs.sh \
-                    certs bosh-CA/bosh-CA.tar.gz create
-
-                  echo "Creating updated cert tarball"
-                  cd certs
-                  tar -cvzf ../generated-bosh-certs/bosh-certs.tar.gz .
-          on_success:
-            put: bosh-certs
-            params:
-              file: generated-bosh-certs/bosh-certs.tar.gz
-
         - task: generate-bosh-secrets
           config:
             platform: linux
@@ -790,7 +765,7 @@ jobs:
         - get: bosh-secrets
           passed: ['bosh-terraform']
         - get: bosh-CA
-        - get: bosh-certs
+        - get: bosh-vars-store
         - get: vpc-tfstate
           passed: ['bosh-terraform']
         - get: bosh-tfstate
@@ -819,59 +794,24 @@ jobs:
                   < bosh-tfstate/bosh.tfstate \
                   > terraform-outputs/bosh.terraform-outputs.yml
 
-      - task: extract-bosh-CA-and-certs
-        config:
-          platform: linux
-          image_resource: *certstrap-image-resource
-          inputs:
-            - name: paas-bootstrap
-            - name: bosh-CA
-            - name: bosh-certs
-          outputs:
-            - name: certs
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                tar -xvzf bosh-CA/bosh-CA.tar.gz -C certs
-                tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
-
-                (
-                cd certs
-                for file in *.crt; do
-                  cn=${file%.crt}
-                  yaml_key_name=$(echo "${cn}" | tr A-Z-. a-z__)
-
-                  echo "Converting ${cn} certs to YAML"
-                  ../paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets "${yaml_key_name}_key" "${cn}.key" > "${cn}_key.yml"
-                  ../paas-bootstrap/concourse/scripts/file_to_yaml.sh secrets "${yaml_key_name}_cert" "${cn}.crt" > "${cn}_cert.yml"
-                done
-                )
-
       - task: render-bosh-manifest
         config:
           platform: linux
-          image_resource: *spruce-image-resource
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
             - name: paas-bootstrap
             - name: terraform-outputs
             - name: bosh-secrets
-            - name: certs
+            - name: bosh-CA
+            - name: bosh-vars-store
           outputs:
             - name: bosh-manifest
+            - name: bosh-vars-store-updated
           params:
             DEPLOY_ENV: ((deploy_env))
             AWS_ACCOUNT: ((aws_account))
+            AWS_DEFAULT_REGION: ((aws_region))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            BOSH_MANIFEST_STUBS: |
-              ./paas-bootstrap/manifests/bosh-manifest/bosh-manifest.yml
-              ./paas-bootstrap/manifests/bosh-manifest/((aws_region)).yml
-              ./bosh-secrets/bosh-secrets.yml
-              ./certs/*.yml
-              ./terraform-outputs/bosh.terraform-outputs.yml
-              ./terraform-outputs/vpc.terraform-outputs.yml
             BOSH_FQDN: ((bosh_fqdn))
             BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
             BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
@@ -881,12 +821,22 @@ jobs:
               - -e
               - -c
               - |
-                # shellcheck disable=SC2086
-                ./paas-bootstrap/manifests/shared/build_manifest.sh $BOSH_MANIFEST_STUBS > bosh-manifest/bosh-manifest.yml
+                mkdir -p certs
+                tar -xvzf bosh-CA/bosh-CA.tar.gz -C certs
+
+                export VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml
+                cp bosh-vars-store/bosh-vars-store.yml "${VARS_STORE}"
+
+                paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
+                  > bosh-manifest/bosh-manifest.yml
         on_success:
-          put: bosh-manifest
-          params:
-            file: bosh-manifest/bosh-manifest.yml
+          aggregate:
+          - put: bosh-manifest
+            params:
+              file: bosh-manifest/bosh-manifest.yml
+          - put: bosh-vars-store
+            params:
+              file: bosh-vars-store-updated/bosh-vars-store.yml
 
   - name: bosh-deploy
     serial: true
