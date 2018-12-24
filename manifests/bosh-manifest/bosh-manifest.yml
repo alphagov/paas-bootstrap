@@ -2,22 +2,22 @@
 name: bosh
 
 meta:
-  environment: (( grab terraform_outputs.environment ))
+  environment: (( grab terraform_outputs_environment ))
   rds:
-    host: (( grab terraform_outputs.bosh_db_address ))
-    port: (( grab terraform_outputs.bosh_db_port ))
-    user: (( grab terraform_outputs.bosh_db_username ))
+    host: (( grab terraform_outputs_bosh_db_address ))
+    port: (( grab terraform_outputs_bosh_db_port ))
+    user: (( grab terraform_outputs_bosh_db_username ))
     password: (( grab secrets.bosh_postgres_password ))
-    database: (( grab terraform_outputs.bosh_db_dbname ))
+    database: (( grab terraform_outputs_bosh_db_dbname ))
     adapter: postgres
   aws:
     default_security_groups:
-    - (( grab terraform_outputs.bosh_managed_security_group ))
-    region: (( grab terraform_outputs.region ))
+    - (( grab terraform_outputs_bosh_managed_security_group ))
+    region: (( grab terraform_outputs_region ))
     max_retries: 16
 
-  bosh_private_ip: (( grab terraform_outputs.microbosh_static_private_ip ))
-  bosh_public_ip: (( grab terraform_outputs.microbosh_static_public_ip ))
+  bosh_private_ip: (( grab terraform_outputs_microbosh_static_private_ip ))
+  bosh_public_ip: (( grab terraform_outputs_microbosh_static_public_ip ))
 
 releases:
 - name: "bosh"
@@ -113,8 +113,8 @@ instance_groups:
               passphrase: ""
 
       uaadb:
-        address: (( grab terraform_outputs.bosh_db_address ))
-        port: (( grab terraform_outputs.bosh_db_port ))
+        address: (( grab terraform_outputs_bosh_db_address ))
+        port: (( grab terraform_outputs_bosh_db_port ))
         db_scheme: postgresql
         databases:
         - tag: uaa
@@ -139,7 +139,7 @@ instance_groups:
   properties:
 
     init-db:
-      connection_string: (( concat "postgres://" terraform_outputs.bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs.bosh_db_address ":" terraform_outputs.bosh_db_port "/postgres" ))
+      connection_string: (( concat "postgres://" terraform_outputs_bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs_bosh_db_address ":" terraform_outputs_bosh_db_port "/postgres" ))
       databases:
       - name: uaa
         owner: uaa
@@ -149,7 +149,7 @@ instance_groups:
       roles:
       - name: uaa
         password: (( grab secrets.bosh_uaa_postgres_password ))
-        parent_role: (( grab terraform_outputs.bosh_db_username ))
+        parent_role: (( grab terraform_outputs_bosh_db_username ))
     nats:
       address: (( grab meta.bosh_private_ip ))
       tls:
@@ -225,12 +225,12 @@ instance_groups:
     blobstore:
       provider: s3
       credentials_source: env_or_profile
-      bucket_name: (( grab terraform_outputs.bosh_blobstore_bucket_name ))
+      bucket_name: (( grab terraform_outputs_bosh_blobstore_bucket_name ))
       s3_region: (( grab meta.aws.region ))
 
     aws:
       credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.key_pair_name ))
+      default_key_name: (( grab terraform_outputs_key_pair_name ))
       default_security_groups: (( grab meta.aws.default_security_groups ))
       default_iam_instance_profile: bosh-managed
       region: (( grab meta.aws.region ))
@@ -260,7 +260,7 @@ cloud_provider:
       path: /var/vcap/micro_bosh/data/cache
     aws:
       credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.bosh_ssh_key_pair_name ))
+      default_key_name: (( grab terraform_outputs_bosh_ssh_key_pair_name ))
       default_security_groups: (( grab meta.aws.default_security_groups ))
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
@@ -282,7 +282,7 @@ resource_pools:
   cloud_properties:
     instance_type: t2.medium
     ephemeral_disk: {size: 25000, type: gp2}
-    availability_zone: (( grab terraform_outputs.bosh_az ))
+    availability_zone: (( grab terraform_outputs_bosh_az ))
     iam_instance_profile: (( grab $BOSH_INSTANCE_PROFILE ))
   env:
     bosh:
@@ -292,17 +292,17 @@ networks:
 - name: default
   type: manual
   subnets:
-  - range: (( grab terraform_outputs.bosh_subnet_cidr ))
-    gateway: (( grab terraform_outputs.bosh_default_gw ))
+  - range: (( grab terraform_outputs_bosh_subnet_cidr ))
+    gateway: (( grab terraform_outputs_bosh_default_gw ))
     dns: [10.0.0.2]
     cloud_properties:
-      subnet: (( grab terraform_outputs.bosh_subnet_id ))
+      subnet: (( grab terraform_outputs_bosh_subnet_id ))
       security_groups:
-      - (( grab terraform_outputs.bosh_security_group ))
-      - (( grab terraform_outputs.ssh_security_group ))
+      - (( grab terraform_outputs_bosh_security_group ))
+      - (( grab terraform_outputs_ssh_security_group ))
     static: [10.0.0.6]
 - name: public
   type: vip
 
 tags:
-  deploy_env: (( grab terraform_outputs.environment ))
+  deploy_env: (( grab terraform_outputs_environment ))
