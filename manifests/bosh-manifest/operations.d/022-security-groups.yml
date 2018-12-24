@@ -1,0 +1,4 @@
+---
+- type: replace
+  path: /networks/name=default/subnets/0/cloud_properties/security_groups?
+  value: ((bosh_security_groups))
