@@ -1,0 +1,6 @@
+- type: replace
+  path: /instance_groups/name=bosh/properties/compiled_package_cache?
+  value:
+    options:
+      credentials_source: env_or_profile
+      bucket_name: gds-paas-bosh-cache-((aws_account))((s3_bucket_suffix))
