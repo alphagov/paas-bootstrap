@@ -54,7 +54,75 @@ instance_groups:
   - {name: registry, release: bosh}
   - {name: aws_cpi, release: bosh-aws-cpi}
   - {name: init-db, release: db-admin}
-  - {name: uaa, release: uaa}
+  - name: uaa
+    release: uaa
+    properties:
+      encryption:
+        encryption_keys:
+        - label: uaa-encryption-key-1
+          passphrase: (( grab secrets.bosh_uaa_uaa_encryption_key_1 ))
+        active_key_label: uaa-encryption-key-1
+      uaa:
+        url: (( concat "https://" $BOSH_FQDN ":8443" ))
+        port: -1
+        sslPrivateKey: (( grab secrets.bosh_uaa_cert ))
+        sslCertificate: (( grab secrets.bosh_uaa_key ))
+        jwt:
+          policy:
+            active_key_id: uaa-jwt-key-1
+            keys:
+              uaa-jwt-key-1:
+                signingKey: (( grab secrets.bosh_uaa_jwt_signing_key.private_key ))
+        scim:
+          groups:
+            bosh.admin: 'User has admin access on any Director'
+            bosh.read: 'User has read access on any Director'
+            bosh.stemcells.upload: 'User can upload new stemcells'
+            bosh.releases.upload: 'User can upload new releases'
+
+        clients:
+          admin:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.admin
+            secret: (( grab secrets.bosh_admin_password ))
+          hm:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.admin
+            secret: (( grab secrets.bosh_hm_director_password ))
+          bosh_exporter:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.read
+            secret: (( grab secrets.bosh_bosh_exporter_password ))
+        login:
+          client_secret: (( grab secrets.bosh_uaa_login_client_password ))
+        zones: {internal: {hostnames: []}}
+
+      login:
+        saml:
+          activeKeyId: uaa-saml-key-1
+          keys:
+            uaa-saml-key-1:
+              key: (( grab secrets.bosh_uaa_service_provider_ssl_key))
+              certificate: (( grab secrets.bosh_uaa_service_provider_ssl_cert))
+              passphrase: ""
+
+      uaadb:
+        address: (( grab terraform_outputs.bosh_db_address ))
+        port: (( grab terraform_outputs.bosh_db_port ))
+        db_scheme: postgresql
+        databases:
+        - tag: uaa
+          name: uaa
+        roles:
+        - tag: admin
+          name: uaa
+          password: (( grab secrets.bosh_uaa_postgres_password ))
 
   resource_pool: vms
   persistent_disk_pool: disks
@@ -69,72 +137,6 @@ instance_groups:
     - (( grab meta.bosh_public_ip ))
 
   properties:
-    encryption:
-      encryption_keys:
-      - label: uaa-encryption-key-1
-        passphrase: (( grab secrets.bosh_uaa_uaa_encryption_key_1 ))
-      active_key_label: uaa-encryption-key-1
-    uaa:
-      url: (( concat "https://" $BOSH_FQDN ":8443" ))
-      port: -1
-      sslPrivateKey: (( grab secrets.bosh_uaa_cert ))
-      sslCertificate: (( grab secrets.bosh_uaa_key ))
-      jwt:
-        policy:
-          active_key_id: uaa-jwt-key-1
-          keys:
-            uaa-jwt-key-1:
-              signingKey: (( grab secrets.bosh_uaa_jwt_signing_key.private_key ))
-      scim:
-        groups:
-          bosh.admin: 'User has admin access on any Director'
-          bosh.read: 'User has read access on any Director'
-          bosh.stemcells.upload: 'User can upload new stemcells'
-          bosh.releases.upload: 'User can upload new releases'
-
-      clients:
-        admin:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.admin
-          secret: (( grab secrets.bosh_admin_password ))
-        hm:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.admin
-          secret: (( grab secrets.bosh_hm_director_password ))
-        bosh_exporter:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.read
-          secret: (( grab secrets.bosh_bosh_exporter_password ))
-      login:
-        client_secret: (( grab secrets.bosh_uaa_login_client_password ))
-      zones: {internal: {hostnames: []}}
-
-    login:
-      saml:
-        activeKeyId: uaa-saml-key-1
-        keys:
-          uaa-saml-key-1:
-            key: (( grab secrets.bosh_uaa_service_provider_ssl_key))
-            certificate: (( grab secrets.bosh_uaa_service_provider_ssl_cert))
-            passphrase: ""
-
-    uaadb:
-      address: (( grab terraform_outputs.bosh_db_address ))
-      port: (( grab terraform_outputs.bosh_db_port ))
-      db_scheme: postgresql
-      databases:
-      - tag: uaa
-        name: uaa
-      roles:
-      - tag: admin
-        name: uaa
-        password: (( grab secrets.bosh_uaa_postgres_password ))
 
     init-db:
       connection_string: (( concat "postgres://" terraform_outputs.bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs.bosh_db_address ":" terraform_outputs.bosh_db_port "/postgres" ))
