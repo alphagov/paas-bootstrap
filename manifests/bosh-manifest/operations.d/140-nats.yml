@@ -1,0 +1,11 @@
+---
+- type: replace
+  path: /instance_groups/name=bosh/properties/nats/allow_legacy_agents?
+  value: false
+- type: remove
+  path: /instance_groups/name=bosh/properties/nats/password
+- type: remove
+  path: /instance_groups/name=bosh/properties/nats/user
+- type: replace
+  path: /instance_groups/name=bosh/properties/agent/mbus
+  value: "nats://((bosh_fqdn)):4222"
