@@ -65,8 +65,8 @@ instance_groups:
       uaa:
         url: (( concat "https://" $BOSH_FQDN ":8443" ))
         port: -1
-        sslPrivateKey: (( grab secrets.bosh_uaa_cert ))
-        sslCertificate: (( grab secrets.bosh_uaa_key ))
+        sslPrivateKey: (( grab secrets.bosh_uaa_key ))
+        sslCertificate: (( grab secrets.bosh_uaa_cert ))
         jwt:
           policy:
             active_key_id: uaa-jwt-key-1
