@@ -771,6 +771,7 @@ jobs:
         - get: bosh-secrets
           passed: ['bosh-terraform']
         - get: bosh-CA
+        - get: bosh-certs
         - get: bosh-vars-store
         - get: vpc-tfstate
           passed: ['bosh-terraform']
@@ -800,6 +801,45 @@ jobs:
                   < bosh-tfstate/bosh.tfstate \
                   > terraform-outputs/bosh.terraform-outputs.yml
 
+      # FIXME: Remove once it has been run once in all environments.
+      - task: migrate-secrets-to-vars-store
+        config:
+          platform: linux
+          image_resource: *spruce-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: terraform-outputs
+            - name: bosh-secrets
+            - name: bosh-certs
+            - name: bosh-CA
+            - name: bosh-vars-store
+          outputs:
+            - name: bosh-manifest
+            - name: bosh-vars-store-migrated
+          params:
+            DEPLOY_ENV: ((deploy_env))
+            AWS_ACCOUNT: ((aws_account))
+            AWS_DEFAULT_REGION: ((aws_region))
+            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+            BOSH_FQDN: ((bosh_fqdn))
+            BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+            BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                mkdir -p certs
+                tar -xvzf bosh-CA/bosh-CA.tar.gz -C certs
+                tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
+
+                paas-bootstrap/manifests/bosh-manifest/scripts/migrate-secrets-to-vars-store.sh \
+                  ./bosh-vars-store/bosh-vars-store.yml \
+                  ./bosh-secrets/bosh-secrets.yml \
+                  ./certs \
+                  > bosh-vars-store-migrated/bosh-vars-store.yml
+
       - task: render-bosh-manifest
         config:
           platform: linux
@@ -809,7 +849,7 @@ jobs:
             - name: terraform-outputs
             - name: bosh-secrets
             - name: bosh-CA
-            - name: bosh-vars-store
+            - name: bosh-vars-store-migrated
           outputs:
             - name: bosh-manifest
             - name: bosh-manifest-pre-vars
@@ -834,7 +874,7 @@ jobs:
                 paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
                   > bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
 
-                cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
+                cp bosh-vars-store-migrated/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
 
                 VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml \
                   paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
