@@ -1,0 +1,35 @@
+---
+- type: replace
+  path: /releases/-
+  value:
+    name: db-admin
+    sha1: 50b04aaefabbb8a2c371b086f570b37e25607052
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/db-admin-0.1.2.tgz
+    version: 0.1.2
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/-
+  value:
+    name: init-db
+    release: db-admin
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/init-db?
+  value:
+    connection_string: "postgres://((external_db_user)):((external_db_password))@((external_db_host)):((external_db_port))/postgres"
+    databases:
+    - name: uaa
+      owner: uaa
+      extensions:
+      - citext
+      - pgcrypto
+    roles:
+    - name: uaa
+      password: ((uaa_postgres_password))
+      parent_role: ((external_db_user))
+
+- type: replace
+  path: /variables/-
+  value:
+    name: uaa_postgres_password
+    type: password
