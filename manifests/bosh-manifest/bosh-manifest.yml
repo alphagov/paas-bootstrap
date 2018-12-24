@@ -220,7 +220,7 @@ instance_groups:
     compiled_package_cache:
       options:
         credentials_source: env_or_profile
-        bucket_name: (( concat "gds-paas-bosh-cache-" $AWS_ACCOUNT meta.bosh.compiled_package_cache.s3_bucket_suffix ))
+        bucket_name: (( concat "gds-paas-bosh-cache-" $AWS_ACCOUNT s3_bucket_suffix ))
 
     blobstore:
       provider: s3
