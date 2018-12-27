@@ -1112,7 +1112,7 @@ jobs:
         - get: pipeline-trigger
           trigger: true
           passed: ['generate-concourse-config', 'bosh-deploy']
-        - get: bosh-secrets
+        - get: bosh-vars-store
         - get: concourse-manifest
           passed: ['generate-concourse-config']
         - get: bosh-CA-crt
@@ -1125,7 +1125,7 @@ jobs:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
-            - name: bosh-secrets
+            - name: bosh-vars-store
             - name: paas-bootstrap
             - name: bosh-CA-crt
             - name: bosh-ssh-private-key
@@ -1154,7 +1154,7 @@ jobs:
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 BOSH_CLIENT=admin
-                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
 
@@ -1166,7 +1166,7 @@ jobs:
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
           - name: concourse-manifest
-          - name: bosh-secrets
+          - name: bosh-vars-store
           - name: paas-bootstrap
           - name: bosh-CA-crt
           - name: concourse-bosh-deployment
@@ -1191,7 +1191,7 @@ jobs:
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               BOSH_CLIENT=admin
-              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
@@ -1208,7 +1208,7 @@ jobs:
           trigger: true
         - get: paas-bootstrap
           passed: ['concourse-deploy']
-        - get: bosh-secrets
+        - get: bosh-vars-store
           passed: ['concourse-deploy']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
@@ -1220,7 +1220,7 @@ jobs:
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
           - name: paas-bootstrap
-          - name: bosh-secrets
+          - name: bosh-vars-store
           - name: bosh-CA-crt
           - name: bosh-ssh-private-key
           params:
@@ -1242,7 +1242,7 @@ jobs:
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               BOSH_CLIENT=admin
-              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_admin_password bosh-secrets/bosh-secrets.yml)
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 

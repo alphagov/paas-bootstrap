@@ -13,8 +13,8 @@ BOSH_IP=$(aws ec2 describe-instances \
     --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 export BOSH_IP
 
-BOSH_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
-    ruby -ryaml -e 'print YAML.load(STDIN)["secrets"]["bosh_admin_password"]')
+BOSH_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-vars-store.yml" - | \
+    ruby -ryaml -e 'print YAML.load(STDIN)["admin_password"]')
 export BOSH_CLIENT_SECRET
 
 docker run \
