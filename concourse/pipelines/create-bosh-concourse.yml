@@ -60,9 +60,9 @@ groups:
   - name: credentials
     jobs:
       - clear-concourse-credentials
-      - clear-bosh-credentials
-      - rotate-bosh-internal-certs
-      - delete-old-bosh-internal-certs
+      - rotate-bosh-credentials
+      - rotate-bosh-leaf-certs
+      - delete-old-bosh-certs
 
 resource_types:
 - name: s3-iam
@@ -221,6 +221,13 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-manifest.yml
+
+  - name: bosh-manifest-pre-vars
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-manifest-pre-vars.yml
 
   - name: bosh-vars-store
     type: s3-iam
@@ -805,6 +812,7 @@ jobs:
             - name: bosh-vars-store
           outputs:
             - name: bosh-manifest
+            - name: bosh-manifest-pre-vars
             - name: bosh-vars-store-updated
           params:
             DEPLOY_ENV: ((deploy_env))
@@ -823,16 +831,22 @@ jobs:
                 mkdir -p certs
                 tar -xvzf bosh-CA/bosh-CA.tar.gz -C certs
 
-                export VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml
-                cp bosh-vars-store/bosh-vars-store.yml "${VARS_STORE}"
-
                 paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
-                  > bosh-manifest/bosh-manifest.yml
+                  > bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
+
+                cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
+
+                VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml \
+                  paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
+                    > bosh-manifest/bosh-manifest.yml
         on_success:
           aggregate:
           - put: bosh-manifest
             params:
               file: bosh-manifest/bosh-manifest.yml
+          - put: bosh-manifest-pre-vars
+            params:
+              file: bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
           - put: bosh-vars-store
             params:
               file: bosh-vars-store-updated/bosh-vars-store.yml
@@ -1463,35 +1477,47 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: concourse_
 
-  - name: clear-bosh-credentials
+  - name: rotate-bosh-credentials
     plan:
-      - get: bosh-secrets
-      - get: paas-bootstrap
-      - task: clear-passwords
+      - aggregate:
+        - get: bosh-vars-store
+        - get: bosh-manifest-pre-vars
+        - get: paas-bootstrap
+      - task: rotate-bosh-secrets
         config:
           platform: linux
-          image_resource: *spruce-image-resource
+          image_resource: *ruby-slim-image-resource
           inputs:
             - name: paas-bootstrap
-            - name: bosh-secrets
+            - name: bosh-vars-store
+            - name: bosh-manifest-pre-vars
           outputs:
             - name: modified-secrets
+            - name: modified-bosh-vars-store
           run:
             path: sh
             args:
               - -e
               - -c
               - |
+                # Wipe all the file
+                echo {} > modified-secrets/bosh-secrets.yml
 
-                spruce merge \
-                  bosh-secrets/bosh-secrets.yml \
-                  paas-bootstrap/concourse/resources/bosh-secrets-keep.yml | \
-                  spruce merge - paas-bootstrap/concourse/resources/finalize.yml \
-                  > modified-secrets/bosh-secrets.yml
+                ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb \
+                  --vars-store bosh-vars-store/bosh-vars-store.yml \
+                  --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
+                  --passwords \
+                  --ssh \
+                  --rsa \
+                  > modified-bosh-vars-store/bosh-vars-store.yml
         on_success:
-          put: bosh-secrets
-          params:
-            file: modified-secrets/bosh-secrets.yml
+          aggregate:
+          - put: bosh-vars-store
+            params:
+              file: modified-bosh-vars-store/bosh-vars-store.yml
+          - put: bosh-secrets
+            params:
+              file: modified-secrets/bosh-secrets.yml
       - task: clear-ssh-keys
         file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
         params:
@@ -1499,77 +1525,64 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: bosh_
 
-  - name: rotate-bosh-internal-certs
+  - name: rotate-bosh-leaf-certs
     serial: true
     plan:
     - aggregate:
       - get: paas-bootstrap
-      - get: bosh-CA
-      - get: bosh-certs
-    - task: rotate-bosh-internal-certs
+      - get: bosh-vars-store
+      - get: bosh-manifest-pre-vars
+    - task: rotate-bosh-leaf-certs
       config:
         platform: linux
-        image_resource: *certstrap-image-resource
+        image_resource: *ruby-slim-image-resource
         inputs:
-          - name: bosh-CA
           - name: paas-bootstrap
-          - name: bosh-certs
+          - name: bosh-manifest-pre-vars
+          - name: bosh-vars-store
         outputs:
-          - name: generated-bosh-certs
-        params:
-          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+          - name: updated-bosh-vars-store
         run:
           path: sh
           args:
             - -e
             - -c
             - |
-              mkdir certs
-              echo "Extracting certs"
-              tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
-
-              ./paas-bootstrap/manifests/bosh-manifest/scripts/generate-bosh-certs.sh \
-                certs bosh-CA/bosh-CA.tar.gz rotate
-
-              echo "Creating updated cert tarball"
-              cd certs
-              tar -cvzf ../generated-bosh-certs/bosh-certs.tar.gz .
+              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --leaf \
+                --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
+                --vars-store bosh-vars-store/bosh-vars-store.yml \
+                > updated-bosh-vars-store/bosh-vars-store.yml
       on_success:
-        put: bosh-certs
+        put: bosh-vars-store
         params:
-          file: generated-bosh-certs/bosh-certs.tar.gz
+          file: updated-bosh-vars-store/bosh-vars-store.yml
 
-  - name: delete-old-bosh-internal-certs
+  - name: delete-old-bosh-certs
     serial: true
     plan:
     - aggregate:
       - get: paas-bootstrap
-      - get: bosh-certs
+      - get: bosh-vars-store
     - task: delete-old-bosh-internal-certs
       config:
         platform: linux
-        image_resource: *certstrap-image-resource
+        image_resource: *ruby-slim-image-resource
         inputs:
           - name: paas-bootstrap
-          - name: bosh-certs
+          - name: bosh-vars-store
         outputs:
-          - name: generated-bosh-certs
+          - name: updated-bosh-vars-store
         run:
           path: sh
           args:
             - -e
             - -c
             - |
-              mkdir certs
-              echo "Extracting certs"
-              tar -xvzf bosh-certs/bosh-certs.tar.gz -C certs
-
-              rm -vf certs/*_old.*
-
-              echo "Creating updated cert tarball"
-              cd certs
-              tar -cvzf ../generated-bosh-certs/bosh-certs.tar.gz .
+              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --delete \
+                --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
+                --vars-store bosh-vars-store/bosh-vars-store.yml \
+                > updated-bosh-certs/bosh-vars-store.yml
       on_success:
         put: bosh-certs
         params:
-          file: generated-bosh-certs/bosh-certs.tar.gz
+          file: updated-bosh-vars-store/bosh-vars-store.tar.gz
