@@ -1,0 +1,9 @@
+---
+- type: replace
+  path: /releases/name=bosh-aws-cpi
+  value:
+    name: "bosh-aws-cpi"
+    version: "72"
+    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bosh-aws-cpi-release?v=72"
+    sha1: "b7999e95115bb691a630c07f0439ef5b577884c2"
+

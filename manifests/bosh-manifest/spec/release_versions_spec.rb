@@ -37,6 +37,10 @@ RSpec.describe "release versions" do
       "bosh" => {
         local: "0.1.1",
         upstream: "268.4.0"
+      },
+      "bosh-aws-cpi" => {
+        local: "72",
+        upstream: "73"
       }
     }
 
