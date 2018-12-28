@@ -33,12 +33,7 @@ RSpec.describe "release versions" do
     #    local: "1.1.1",
     #    upstream: "2.2.2"
     #  }
-    pinned_releases = {
-      "bosh" => {
-        local: "0.1.1",
-        upstream: "268.4.0"
-      }
-    }
+    pinned_releases = {}
 
     manifest_releases = manifest.fetch("releases").map { |release|
       [release['name'], release['version']]
