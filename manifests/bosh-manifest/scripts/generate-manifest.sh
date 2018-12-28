@@ -73,6 +73,11 @@ default_ca:
   certificate: ((default_ca.certificate))
   private_key: ((default_ca.private_key))
 
+nats_ca:
+  ca: ((default_ca.certificate))
+  certificate: ((default_ca.certificate))
+  private_key: ((default_ca.private_key))
+
 bosh_vcap_password: ((secrets.bosh_vcap_password))
 EOF
 
