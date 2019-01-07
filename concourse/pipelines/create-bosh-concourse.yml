@@ -235,7 +235,8 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-vars-store.yml
-      initial_version: "{}"
+      initial_version: "-"
+      initial_content_text: "{}"
 
   - name: bosh-init-state
     type: s3-iam
