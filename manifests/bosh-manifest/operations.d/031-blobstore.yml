@@ -1,0 +1,13 @@
+- type: replace
+  path: /instance_groups/name=bosh/properties/blobstore
+  value:
+    provider: s3
+    credentials_source: env_or_profile
+    bucket_name: ((bosh_blobstore_bucket_name))
+    s3_region: ((region))
+
+- type: remove
+  path: /instance_groups/name=bosh/properties/agent/env
+
+- type: remove
+  path: /instance_groups/name=bosh/jobs/name=blobstore

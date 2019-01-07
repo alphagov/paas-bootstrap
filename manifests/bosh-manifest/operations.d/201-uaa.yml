@@ -1,0 +1,21 @@
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/user_management/uaa?/url
+  value: "https://((bosh_fqdn)):8443"
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/url
+  value: "https://((bosh_fqdn)):8443"
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaadb
+  value:
+    address: ((external_db_host))
+    port: ((external_db_port))
+    db_scheme: postgresql
+    databases:
+    - tag: uaa
+      name: uaa
+    roles:
+    - tag: admin
+      name: uaa
+      password: ((uaa_postgres_password))

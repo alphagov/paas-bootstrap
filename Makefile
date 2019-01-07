@@ -54,7 +54,7 @@ lint_terraform:
 	@./scripts/lint_terraform.sh
 
 lint_shellcheck:
-	find . -name '*.sh' -not -path '*/vendor/*' | xargs $(SHELLCHECK)
+	find . -name '*.sh' -not -path '*/vendor/*' -a -not -path './manifests/bosh-manifest/upstream/*' | xargs $(SHELLCHECK)
 
 lint_concourse:
 	cd .. && SHELLCHECK_OPTS="-e SC1091" python paas-bootstrap/concourse/scripts/pipecleaner.py --fatal-warnings paas-bootstrap/concourse/pipelines/*.yml

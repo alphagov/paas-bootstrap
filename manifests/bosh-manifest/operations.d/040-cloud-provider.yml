@@ -1,0 +1,15 @@
+- type: replace
+  path: /cloud_provider/mbus
+  value: "https://mbus:((mbus_bootstrap_password))@((bosh_fqdn_external)):6868"
+
+- type: replace
+  path: /cloud_provider/properties/agent/mbus
+  value: "https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868"
+
+- type: replace
+  path: /cloud_provider/properties/aws/max_retries?
+  value: 16
+
+- type: replace
+  path: /cloud_provider/ssh_tunnel/host
+  value: ((bosh_fqdn_external))
