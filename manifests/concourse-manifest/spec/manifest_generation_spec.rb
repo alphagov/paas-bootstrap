@@ -23,13 +23,13 @@ RSpec.describe "manifest generation" do
   it "gets values from vpc terraform outputs" do
     expect(
       manifest_with_defaults["resource_pools"].first["cloud_properties"]["availability_zone"]
-    ).to eq(fixtures["terraform_outputs"]["zone0"])
+    ).to eq(fixtures["terraform_outputs_zone0"])
   end
 
   it "gets values from concourse terraform outputs" do
     expect(
       atc_job.fetch("properties").fetch("external_url")
-    ).to eq("https://" + fixtures["terraform_outputs"]["concourse_dns_name"])
+    ).to eq("https://" + fixtures["terraform_outputs_concourse_dns_name"])
   end
 
   it "gets values from secrets" do

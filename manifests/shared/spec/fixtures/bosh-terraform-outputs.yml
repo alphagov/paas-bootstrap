@@ -1,21 +1,20 @@
 ---
-terraform_outputs:
-  bosh_subnet_id: subnet-bosh
-  bosh_security_group: bosh_security_group
-  bosh_blobstore_bucket_name: gds-paas-test-bosh-blobstore
-  bosh_managed_security_group: test-bosh-managed
-  microbosh_static_private_ip: 10.0.0.6
-  microbosh_static_public_ip: 194.1.2.4
-  bosh_db_address: 1.2.3.4
-  bosh_db_port: 5432
-  bosh_db_username: bosh
-  bosh_db_dbname: bosh
-  bosh_az: eu-west-1a
-  bosh_az_label: z1
-  bosh_default_gw: 10.0.0.1
-  bosh_subnet_cidr: 10.0.0.0/24
-  bosh_ssh_key_pair_name: bosh_keypair
-  key_pair_name: ssh_key_pair
-  bosh_api_client_security_group: bosh_api_client_sg
-  bosh_ssh_client_security_group: bosh_ssh_client_sg
-  default_security_group: test-bosh-managed
+terraform_outputs_bosh_subnet_id: subnet-bosh
+terraform_outputs_bosh_security_group: bosh_security_group
+terraform_outputs_bosh_blobstore_bucket_name: gds-paas-test-bosh-blobstore
+terraform_outputs_bosh_managed_security_group: test-bosh-managed
+terraform_outputs_microbosh_static_private_ip: 10.0.0.6
+terraform_outputs_microbosh_static_public_ip: 194.1.2.4
+terraform_outputs_bosh_db_address: 1.2.3.4
+terraform_outputs_bosh_db_port: 5432
+terraform_outputs_bosh_db_username: bosh
+terraform_outputs_bosh_db_dbname: bosh
+terraform_outputs_bosh_az: eu-west-1a
+terraform_outputs_bosh_az_label: z1
+terraform_outputs_bosh_default_gw: 10.0.0.1
+terraform_outputs_bosh_subnet_cidr: 10.0.0.0/24
+terraform_outputs_bosh_ssh_key_pair_name: bosh_keypair
+terraform_outputs_key_pair_name: ssh_key_pair
+terraform_outputs_bosh_api_client_security_group: bosh_api_client_sg
+terraform_outputs_bosh_ssh_client_security_group: bosh_ssh_client_sg
+terraform_outputs_default_security_group: test-bosh-managed

@@ -2,21 +2,22 @@
 name: bosh
 
 meta:
-  environment: (( grab terraform_outputs.environment ))
+  environment: (( grab terraform_outputs_environment ))
   rds:
-    host: (( grab terraform_outputs.bosh_db_address ))
-    port: (( grab terraform_outputs.bosh_db_port ))
-    user: (( grab terraform_outputs.bosh_db_username ))
+    host: (( grab terraform_outputs_bosh_db_address ))
+    port: (( grab terraform_outputs_bosh_db_port ))
+    user: (( grab terraform_outputs_bosh_db_username ))
     password: (( grab secrets.bosh_postgres_password ))
-    database: (( grab terraform_outputs.bosh_db_dbname ))
+    database: (( grab terraform_outputs_bosh_db_dbname ))
+    adapter: postgres
   aws:
     default_security_groups:
-    - (( grab terraform_outputs.bosh_managed_security_group ))
-    region: (( grab terraform_outputs.region ))
+    - (( grab terraform_outputs_bosh_managed_security_group ))
+    region: (( grab terraform_outputs_region ))
     max_retries: 16
 
-  bosh_private_ip: (( grab terraform_outputs.microbosh_static_private_ip ))
-  bosh_public_ip: (( grab terraform_outputs.microbosh_static_public_ip ))
+  bosh_private_ip: (( grab terraform_outputs_microbosh_static_private_ip ))
+  bosh_public_ip: (( grab terraform_outputs_microbosh_static_public_ip ))
 
 releases:
 - name: "bosh"
@@ -53,13 +54,81 @@ instance_groups:
   - {name: registry, release: bosh}
   - {name: aws_cpi, release: bosh-aws-cpi}
   - {name: init-db, release: db-admin}
-  - {name: uaa, release: uaa}
+  - name: uaa
+    release: uaa
+    properties:
+      encryption:
+        encryption_keys:
+        - label: uaa-encryption-key-1
+          passphrase: (( grab secrets.bosh_uaa_uaa_encryption_key_1 ))
+        active_key_label: uaa-encryption-key-1
+      uaa:
+        url: (( concat "https://" $BOSH_FQDN ":8443" ))
+        port: -1
+        sslPrivateKey: (( grab secrets.bosh_uaa_key ))
+        sslCertificate: (( grab secrets.bosh_uaa_cert ))
+        jwt:
+          policy:
+            active_key_id: uaa-jwt-key-1
+            keys:
+              uaa-jwt-key-1:
+                signingKey: (( grab secrets.bosh_uaa_jwt_signing_key.private_key ))
+        scim:
+          groups:
+            bosh.admin: 'User has admin access on any Director'
+            bosh.read: 'User has read access on any Director'
+            bosh.stemcells.upload: 'User can upload new stemcells'
+            bosh.releases.upload: 'User can upload new releases'
 
-  resource_pool: bosh
+        clients:
+          admin:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.admin
+            secret: (( grab secrets.bosh_admin_password ))
+          hm:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.admin
+            secret: (( grab secrets.bosh_hm_director_password ))
+          bosh_exporter:
+            override: true
+            authorized-grant-types: client_credentials
+            scope: ""
+            authorities: bosh.read
+            secret: (( grab secrets.bosh_bosh_exporter_password ))
+        login:
+          client_secret: (( grab secrets.bosh_uaa_login_client_password ))
+        zones: {internal: {hostnames: []}}
+
+      login:
+        saml:
+          activeKeyId: uaa-saml-key-1
+          keys:
+            uaa-saml-key-1:
+              key: (( grab secrets.bosh_uaa_service_provider_ssl_key))
+              certificate: (( grab secrets.bosh_uaa_service_provider_ssl_cert))
+              passphrase: ""
+
+      uaadb:
+        address: (( grab terraform_outputs_bosh_db_address ))
+        port: (( grab terraform_outputs_bosh_db_port ))
+        db_scheme: postgresql
+        databases:
+        - tag: uaa
+          name: uaa
+        roles:
+        - tag: admin
+          name: uaa
+          password: (( grab secrets.bosh_uaa_postgres_password ))
+
+  resource_pool: vms
   persistent_disk_pool: disks
 
   networks:
-  - name: private
+  - name: default
     static_ips:
     - (( grab meta.bosh_private_ip ))
     default: [dns, gateway]
@@ -68,75 +137,9 @@ instance_groups:
     - (( grab meta.bosh_public_ip ))
 
   properties:
-    encryption:
-      encryption_keys:
-      - label: uaa-encryption-key-1
-        passphrase: (( grab secrets.bosh_uaa_uaa_encryption_key_1 ))
-      active_key_label: uaa-encryption-key-1
-    uaa:
-      url: (( concat "https://" $BOSH_FQDN ":8443" ))
-      port: -1
-      sslPrivateKey: (( grab secrets.bosh_uaa_cert ))
-      sslCertificate: (( grab secrets.bosh_uaa_key ))
-      jwt:
-        policy:
-          active_key_id: uaa-jwt-key-1
-          keys:
-            uaa-jwt-key-1:
-              signingKey: (( grab secrets.bosh_uaa_jwt_signing_key.private_key ))
-      scim:
-        groups:
-          bosh.admin: 'User has admin access on any Director'
-          bosh.read: 'User has read access on any Director'
-          bosh.stemcells.upload: 'User can upload new stemcells'
-          bosh.releases.upload: 'User can upload new releases'
-
-      clients:
-        admin:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.admin
-          secret: (( grab secrets.bosh_admin_password ))
-        hm:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.admin
-          secret: (( grab secrets.bosh_hm_director_password ))
-        bosh_exporter:
-          override: true
-          authorized-grant-types: client_credentials
-          scope: ""
-          authorities: bosh.read
-          secret: (( grab secrets.bosh_bosh_exporter_password ))
-      login:
-        client_secret: (( grab secrets.bosh_uaa_login_client_password ))
-      zones: {internal: {hostnames: []}}
-
-    login:
-      saml:
-        activeKeyId: uaa-saml-key-1
-        keys:
-          uaa-saml-key-1:
-            key: (( grab secrets.bosh_uaa_service_provider_ssl_key))
-            certificate: (( grab secrets.bosh_uaa_service_provider_ssl_cert))
-            passphrase: ""
-
-    uaadb:
-      address: (( grab terraform_outputs.bosh_db_address ))
-      port: (( grab terraform_outputs.bosh_db_port ))
-      db_scheme: postgresql
-      databases:
-      - tag: uaa
-        name: uaa
-      roles:
-      - tag: admin
-        name: uaa
-        password: (( grab secrets.bosh_uaa_postgres_password ))
 
     init-db:
-      connection_string: (( concat "postgres://" terraform_outputs.bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs.bosh_db_address ":" terraform_outputs.bosh_db_port "/postgres" ))
+      connection_string: (( concat "postgres://" terraform_outputs_bosh_db_username ":" secrets.bosh_postgres_password "@" terraform_outputs_bosh_db_address ":" terraform_outputs_bosh_db_port "/postgres" ))
       databases:
       - name: uaa
         owner: uaa
@@ -146,9 +149,9 @@ instance_groups:
       roles:
       - name: uaa
         password: (( grab secrets.bosh_uaa_postgres_password ))
-        parent_role: (( grab terraform_outputs.bosh_db_username ))
+        parent_role: (( grab terraform_outputs_bosh_db_username ))
     nats:
-      address: 127.0.0.1
+      address: (( grab meta.bosh_private_ip ))
       tls:
         ca: (( grab secrets.bosh_ca_cert ))
         client_ca:
@@ -204,27 +207,30 @@ instance_groups:
       db: (( grab meta.rds ))
       http:
         # Properties used by director and registry jobs
-        user: admin
+        user: registry
         password: (( grab secrets.bosh_registry_password ))
+        port: 25777
       # Properties used by AWS CPI
-      host: (( grab $BOSH_FQDN ))
-      username: admin
+      host: (( grab meta.bosh_private_ip ))
+      address: (( grab meta.bosh_private_ip ))
+      port: 25777
+      username: registry
       password: (( grab secrets.bosh_registry_password ))
 
     compiled_package_cache:
       options:
         credentials_source: env_or_profile
-        bucket_name: (( concat "gds-paas-bosh-cache-" $AWS_ACCOUNT meta.bosh.compiled_package_cache.s3_bucket_suffix ))
+        bucket_name: (( concat "gds-paas-bosh-cache-" $AWS_ACCOUNT s3_bucket_suffix ))
 
     blobstore:
       provider: s3
       credentials_source: env_or_profile
-      bucket_name: (( grab terraform_outputs.bosh_blobstore_bucket_name ))
+      bucket_name: (( grab terraform_outputs_bosh_blobstore_bucket_name ))
       s3_region: (( grab meta.aws.region ))
 
     aws:
       credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.key_pair_name ))
+      default_key_name: (( grab terraform_outputs_key_pair_name ))
       default_security_groups: (( grab meta.aws.default_security_groups ))
       default_iam_instance_profile: bosh-managed
       region: (( grab meta.aws.region ))
@@ -254,7 +260,7 @@ cloud_provider:
       path: /var/vcap/micro_bosh/data/cache
     aws:
       credentials_source: env_or_profile
-      default_key_name: (( grab terraform_outputs.bosh_ssh_key_pair_name ))
+      default_key_name: (( grab terraform_outputs_bosh_ssh_key_pair_name ))
       default_security_groups: (( grab meta.aws.default_security_groups ))
       region: (( grab meta.aws.region ))
       max_retries: (( grab meta.aws.max_retries ))
@@ -263,39 +269,40 @@ cloud_provider:
 
 disk_pools:
 - name: disks
-  disk_size: 32768
+  disk_size: 65536
   cloud_properties:
     type: gp2
 
 resource_pools:
-- name: bosh
-  network: private
+- name: vms
+  network: default
   stemcell:
     url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-xenial-go_agent?v=170.15
     sha1: c12530cd9305e8fae2a3d0381481d05b7bd98693
   cloud_properties:
     instance_type: t2.medium
-    ephemeral_disk: {size: 40000, type: gp2}
-    availability_zone: (( grab terraform_outputs.bosh_az ))
+    ephemeral_disk: {size: 25000, type: gp2}
+    availability_zone: (( grab terraform_outputs_bosh_az ))
     iam_instance_profile: (( grab $BOSH_INSTANCE_PROFILE ))
   env:
     bosh:
       password: (( grab secrets.bosh_vcap_password ))
 
 networks:
-- name: private
+- name: default
   type: manual
   subnets:
-  - range: (( grab terraform_outputs.bosh_subnet_cidr ))
-    gateway: (( grab terraform_outputs.bosh_default_gw ))
+  - range: (( grab terraform_outputs_bosh_subnet_cidr ))
+    gateway: (( grab terraform_outputs_bosh_default_gw ))
     dns: [10.0.0.2]
     cloud_properties:
-      subnet: (( grab terraform_outputs.bosh_subnet_id ))
+      subnet: (( grab terraform_outputs_bosh_subnet_id ))
       security_groups:
-      - (( grab terraform_outputs.bosh_security_group ))
-      - (( grab terraform_outputs.ssh_security_group ))
+      - (( grab terraform_outputs_bosh_security_group ))
+      - (( grab terraform_outputs_ssh_security_group ))
+    static: [10.0.0.6]
 - name: public
   type: vip
 
 tags:
-  deploy_env: (( grab terraform_outputs.environment ))
+  deploy_env: (( grab terraform_outputs_environment ))

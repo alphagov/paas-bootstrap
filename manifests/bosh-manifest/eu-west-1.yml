@@ -1,6 +1,2 @@
 ---
-
-meta:
-  bosh:
-    compiled_package_cache:
-      s3_bucket_suffix: ""
+s3_bucket_suffix: ""
