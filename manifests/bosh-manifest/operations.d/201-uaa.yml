@@ -19,3 +19,11 @@
     - tag: admin
       name: uaa
       password: ((uaa_postgres_password))
+
+- type: replace
+  path: /variables/name=uaa_ssl/options/alternative_names/-
+  value: ((bosh_fqdn))
+
+- type: replace
+  path: /variables/name=uaa_service_provider_ssl/options/alternative_names/-
+  value: ((bosh_fqdn))

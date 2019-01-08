@@ -9,3 +9,7 @@
 - type: replace
   path: /instance_groups/name=bosh/properties/agent/mbus
   value: "nats://((bosh_fqdn)):4222"
+
+- type: replace
+  path: /variables/name=nats_server_tls/options/alternative_names/-
+  value: ((bosh_fqdn))
