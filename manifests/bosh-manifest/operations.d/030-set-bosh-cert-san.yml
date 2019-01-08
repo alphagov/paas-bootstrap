@@ -1,0 +1,8 @@
+
+- type: replace
+  path: /variables/name=director_ssl/options/alternative_names/-
+  value: ((bosh_fqdn))
+
+- type: replace
+  path: /variables/name=director_ssl/options/alternative_names/-
+  value: ((bosh_fqdn_external))
