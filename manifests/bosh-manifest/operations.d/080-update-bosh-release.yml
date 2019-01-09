@@ -1,9 +1,0 @@
----
-- type: replace
-  path: /releases/name=bosh
-  value:
-    # 268.2.0 + https://github.com/cloudfoundry/bosh/commit/bc4bc20
-    name: bosh
-    version: 0.1.1
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/bosh-0.1.1.tgz
-    sha1: b69a2e11996f7daa9658dbacfe3c13137b667811
