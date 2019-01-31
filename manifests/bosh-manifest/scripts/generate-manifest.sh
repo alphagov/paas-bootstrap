@@ -22,8 +22,8 @@ trap 'rm -f "${variables_file}"' INT TERM EXIT
 bosh interpolate - \
   --var-errs \
   --vars-file "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
-  --vars-file "${WORKDIR}/terraform-outputs/bosh.terraform-outputs.yml" \
-  --vars-file "${WORKDIR}/terraform-outputs/vpc.terraform-outputs.yml" \
+  --vars-file "${WORKDIR}/terraform-outputs/bosh-terraform-outputs.yml" \
+  --vars-file "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \
   --var-file="default_ca.certificate=${WORKDIR}/certs/bosh-CA.crt" \
   --var-file="default_ca.private_key=${WORKDIR}/certs/bosh-CA.key" \
   > "${variables_file}" \

@@ -12,8 +12,6 @@ module ManifestHelpers
     include Singleton
     attr_accessor :manifest_with_defaults
     attr_accessor :bosh_deployment_manifest
-    attr_accessor :bosh_secrets_file
-    attr_accessor :bosh_secrets_data
   end
 
   def manifest_with_defaults
@@ -22,16 +20,6 @@ module ManifestHelpers
 
   def bosh_deployment_manifest
     Cache.instance.bosh_deployment_manifest ||= load_bosh_deployment_with_upstream_opsfiles
-  end
-
-  def bosh_secrets_file
-    Cache.instance.bosh_secrets_file ||= generate_bosh_secrets
-    Cache.instance.bosh_secrets_file.path
-  end
-
-  def bosh_secrets_value(key)
-    Cache.instance.bosh_secrets_data ||= YAML.load_file(bosh_secrets_file).fetch('secrets')
-    Cache.instance.bosh_secrets_data.fetch(key)
   end
 
   def self.deploy_env
@@ -73,9 +61,9 @@ private
     env['PAAS_BOOTSTRAP_DIR'] = root.to_s
     env['WORKDIR'] = workdir.to_s
 
-    generate_bosh_secrets
+    generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
     generate_bosh_ca_certs
-    copy_terraform_outputs
+    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh))
 
     output, error, status = Open3.capture3(
       env,
@@ -102,19 +90,6 @@ private
     deep_freeze(YAML.safe_load(output))
   end
 
-  def generate_bosh_secrets
-    FileUtils.mkdir_p workdir.join('bosh-secrets').to_s
-    filename = workdir.join('bosh-secrets/bosh-secrets.yml').to_s
-    file = File.open(filename, "w")
-    output, error, status = Open3.capture3(File.expand_path("../../../scripts/generate-bosh-secrets.rb", __FILE__))
-    unless status.success?
-      raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
-    end
-    file.write(output)
-    file.close
-    file
-  end
-
   def generate_bosh_ca_certs
     output, error, status = Open3.capture3(
       "bash", "-e", "-c",
@@ -128,16 +103,6 @@ private
     unless status.success?
       raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
     end
-  end
-
-  def copy_terraform_outputs
-    FileUtils.mkdir_p workdir.join('terraform-outputs')
-    FileUtils.cp \
-      root.join('manifests/shared/spec/fixtures/vpc-terraform-outputs.yml').to_s,
-      workdir.join('terraform-outputs/vpc.terraform-outputs.yml')
-    FileUtils.cp \
-      root.join('manifests/shared/spec/fixtures/bosh-terraform-outputs.yml').to_s,
-      workdir.join('terraform-outputs/bosh.terraform-outputs.yml')
   end
 
   def deep_freeze(object)

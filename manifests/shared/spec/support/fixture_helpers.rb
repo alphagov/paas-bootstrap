@@ -14,6 +14,17 @@ module FixtureHelpers
     FileUtils.cp(fixtures_dir.join(file), "#{target_dir}/#{target_file}")
   end
 
+  def generate_bosh_secrets_fixture(target_dir)
+    FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
+    File.open("#{target_dir}/bosh-secrets.yml", 'w') do |file|
+      output, error, status = Open3.capture3(File.expand_path("../../../bosh-manifest/scripts/generate-bosh-secrets.rb", __dir__))
+      unless status.success?
+        raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
+      end
+      file.write(output)
+    end
+  end
+
 private
 
   def fixtures_dir

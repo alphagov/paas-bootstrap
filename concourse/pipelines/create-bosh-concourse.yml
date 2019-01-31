@@ -796,10 +796,10 @@ jobs:
               - |
                 ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
                   < vpc-tfstate/vpc.tfstate \
-                  > terraform-outputs/vpc.terraform-outputs.yml
+                  > terraform-outputs/vpc-terraform-outputs.yml
                 ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
                   < bosh-tfstate/bosh.tfstate \
-                  > terraform-outputs/bosh.terraform-outputs.yml
+                  > terraform-outputs/bosh-terraform-outputs.yml
 
       - task: render-bosh-manifest
         config:
