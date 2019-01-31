@@ -19,6 +19,7 @@ spruce merge \
   --prune secrets \
   --prune terraform_outputs \
   "${PAAS_BOOTSTRAP_DIR}/manifests/concourse-manifest/concourse-base.yml" \
+  "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
   "${WORKDIR}/concourse-secrets/concourse-secrets.yml" \
   "${WORKDIR}/terraform-outputs/concourse-terraform-outputs.yml" \
   "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \

@@ -63,6 +63,7 @@ private
     env['WORKDIR'] = workdir.to_s
 
     copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh concourse))
+    generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
     FileUtils.mkdir("#{workdir}/concourse-secrets")
     FileUtils.cp(concourse_secrets_file, "#{workdir}/concourse-secrets/concourse-secrets.yml")
 

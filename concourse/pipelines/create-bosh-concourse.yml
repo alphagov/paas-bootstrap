@@ -1035,6 +1035,7 @@ jobs:
         - get: concourse-tfstate
           passed: ['concourse-terraform']
         - get: concourse-secrets
+        - get: bosh-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
       - task: terraform-outputs-to-yaml
@@ -1085,6 +1086,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
+          - name: bosh-secrets
           - name: terraform-outputs
           outputs:
           - name: concourse-manifest
