@@ -11,7 +11,7 @@ trap 'rm -f ${BOSH_KEY}' EXIT
 aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh_id_rsa" ${BOSH_KEY} && chmod 400 ${BOSH_KEY}
 
 aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
-  ruby -ryaml -e 'puts "Sudo password is " + YAML.load(STDIN)["secrets"]["bosh_vcap_password_orig"]'
+  ruby -ryaml -e 'puts "Sudo password is " + YAML.load(STDIN)["secrets"]["vcap_password_orig"]'
 echo
 
 # shellcheck disable=SC2029

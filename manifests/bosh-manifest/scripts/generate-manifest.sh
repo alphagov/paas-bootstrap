@@ -78,7 +78,7 @@ nats_ca:
   certificate: ((default_ca.certificate))
   private_key: ((default_ca.private_key))
 
-bosh_vcap_password: ((secrets.bosh_vcap_password))
+vcap_password: ((secrets.vcap_password))
 EOF
 
 

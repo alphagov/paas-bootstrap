@@ -6,7 +6,7 @@ require File.expand_path("../../../shared/lib/secret_generator", __FILE__)
 
 generator = SecretGenerator.new(
   "bosh_postgres_password" => :simple,
-  "bosh_vcap_password" => :sha512_crypted,
+  "vcap_password" => :sha512_crypted,
 )
 
 option_parser = OptionParser.new do |opts|
