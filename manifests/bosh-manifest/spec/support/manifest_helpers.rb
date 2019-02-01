@@ -37,11 +37,6 @@ private
     Pathname(@vars_store_file)
   end
 
-  def workdir
-    @workdir ||= Dir.mktmpdir("workdir")
-    Pathname(@workdir)
-  end
-
   def fake_env_vars
     env = {}
     env["BOSH_FQDN_EXTERNAL"] = "bosh-external.domain"
@@ -55,6 +50,8 @@ private
   end
 
   def load_default_manifest
+    workdir = Pathname.new(Dir.mktmpdir("workdir"))
+
     env = fake_env_vars
 
     env['VARS_STORE'] = vars_store_file.to_s
@@ -62,7 +59,7 @@ private
     env['WORKDIR'] = workdir.to_s
 
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
-    generate_bosh_ca_certs
+    generate_bosh_ca_certs(workdir)
     copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh))
 
     output, error, status = Open3.capture3(
@@ -74,6 +71,8 @@ private
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
     deep_freeze(YAML.safe_load(output))
+  ensure
+    FileUtils.rm_rf(workdir)
   end
 
   def load_bosh_deployment_with_upstream_opsfiles
@@ -90,7 +89,7 @@ private
     deep_freeze(YAML.safe_load(output))
   end
 
-  def generate_bosh_ca_certs
+  def generate_bosh_ca_certs(dir)
     output, error, status = Open3.capture3(
       "bash", "-e", "-c",
       '
@@ -98,7 +97,7 @@ private
         mkdir -p certs
         mv out/* certs
       ',
-      chdir: workdir.to_s,
+      chdir: dir.to_s,
     )
     unless status.success?
       raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
