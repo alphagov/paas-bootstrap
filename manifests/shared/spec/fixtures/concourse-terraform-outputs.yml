@@ -5,4 +5,3 @@ terraform_outputs_concourse_security_group_id: sg-12345678
 terraform_outputs_concourse_elb_name: env1234-concourse
 terraform_outputs_concourse_dns_name: concourse.env1234.dev.cloudpipeline.digital
 terraform_outputs_git_concourse_pool_clone_full_url_ssh: "ssh://user@git-codecommit.us-east-1.amazonaws.com/v1/repos/concourse-pool-test"
-terraform_outputs_concourse_key_pair_name: concourse_ssh_key_pair

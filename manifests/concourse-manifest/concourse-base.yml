@@ -45,7 +45,6 @@ resource_pools:
       ephemeral_disk:
         size: 102400
         type: gp2
-      key_name: (( grab terraform_outputs_concourse_key_pair_name ))
       security_groups:
       - (( grab terraform_outputs_bosh_managed_security_group ))
       - (( grab terraform_outputs_concourse_security_group ))

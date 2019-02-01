@@ -286,22 +286,6 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
-  - name: concourse-ssh-public-key
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: concourse_id_rsa.pub
-      initial_version: "-"
-
-  - name: concourse-ssh-private-key
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: concourse_id_rsa
-      initial_version: "-"
-
   - name: concourse-bosh-deployment
     type: git
     source:
@@ -847,8 +831,6 @@ jobs:
           passed: ['bosh-terraform']
         - get: concourse-tfstate
         - get: git-ssh-public-key
-        - get: concourse-ssh-public-key
-        - get: concourse-ssh-private-key
 
       - task: terraform-outputs-to-sh
         config:
@@ -876,43 +858,6 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
-      - task: generate-concourse-ssh-keys
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          inputs:
-          - name: paas-bootstrap
-          - name: concourse-ssh-public-key
-          - name: concourse-ssh-private-key
-          outputs:
-          - name: generated-concourse-ssh-keys
-          params:
-            AWS_DEFAULT_REGION: ((aws_region))
-          run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              if [ -s concourse-ssh-public-key/concourse_id_rsa.pub ] && [ -s concourse-ssh-private-key/concourse_id_rsa ]; then
-                echo "Concourse SSH keys already exist, skipping."
-                cp concourse-ssh-public-key/concourse_id_rsa.pub generated-concourse-ssh-keys
-                cp concourse-ssh-private-key/concourse_id_rsa generated-concourse-ssh-keys
-                exit 0
-              fi
-
-              apk add --update openssh
-              cd generated-concourse-ssh-keys
-              ssh-keygen -t rsa -b 4096 -f concourse_id_rsa -N ''
-        on_success:
-          aggregate:
-            - put: concourse-ssh-public-key
-              params:
-                file: generated-concourse-ssh-keys/concourse_id_rsa.pub
-            - put: concourse-ssh-private-key
-              params:
-                file: generated-concourse-ssh-keys/concourse_id_rsa
-
       - task: terraform-apply
         config:
           platform: linux
@@ -923,7 +868,6 @@ jobs:
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
           - name: git-ssh-public-key
-          - name: generated-concourse-ssh-keys
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -938,7 +882,6 @@ jobs:
             - -e
             - -c
             - |
-              cp generated-concourse-ssh-keys/concourse_id_rsa.pub paas-bootstrap/terraform/concourse
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub

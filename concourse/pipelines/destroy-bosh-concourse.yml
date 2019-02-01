@@ -318,7 +318,7 @@ jobs:
             - -c
             - |
               . vpc-terraform-outputs/tfvars.sh
-              touch concourse.crt concourse.key paas-bootstrap/terraform/concourse/concourse_id_rsa.pub
+              touch concourse.crt concourse.key
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
 
