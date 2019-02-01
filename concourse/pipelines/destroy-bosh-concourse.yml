@@ -118,11 +118,11 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh-CA.crt
 
-  - name: bosh-ssh-private-key
+  - name: ssh-private-key
     type: s3-iam
     source:
       bucket: ((state_bucket))
-      versioned_file: bosh_id_rsa
+      versioned_file: id_rsa
       region_name: ((aws_region))
 
 jobs:
@@ -238,7 +238,7 @@ jobs:
         - get: vpc-tfstate
         - get: concourse-tfstate
         - get: bosh-CA-crt
-        - get: bosh-ssh-private-key
+        - get: ssh-private-key
 
       - task: destroy-concourse
         config:
@@ -248,7 +248,7 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-vars-store
           - name: bosh-CA-crt
-          - name: bosh-ssh-private-key
+          - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -257,7 +257,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -353,7 +353,7 @@ jobs:
         - get: vpc-tfstate
         - get: bosh-tfstate
         - get: bosh-CA-crt
-        - get: bosh-ssh-private-key
+        - get: ssh-private-key
 
       - task: check-existing-deployments
         config:
@@ -363,7 +363,7 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-vars-store
             - name: bosh-CA-crt
-            - name: bosh-ssh-private-key
+            - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -372,7 +372,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -402,7 +402,7 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-vars-store
             - name: bosh-CA-crt
-            - name: bosh-ssh-private-key
+            - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -411,7 +411,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -436,7 +436,7 @@ jobs:
             - name: paas-bootstrap
             - name: bosh-manifest
             - name: bosh-init-state
-            - name: bosh-ssh-private-key
+            - name: ssh-private-key
           params:
             BOSH_MANIFEST_STATE: ((bosh_manifest_state))
           outputs:
@@ -450,7 +450,7 @@ jobs:
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
                 mkdir bosh-init-working-dir/.ssh
-                cp bosh-ssh-private-key/bosh_id_rsa bosh-init-working-dir/.ssh/bosh_id_rsa
+                cp ssh-private-key/id_rsa bosh-init-working-dir/.ssh/id_rsa
                 bosh -n delete-env bosh-init-working-dir/bosh-manifest.yml \
                   --state bosh-init-working-dir/bosh-manifest-state.json
                 # If the delete is successful, the file will be missing
@@ -512,7 +512,7 @@ jobs:
                 . terraform-variables/vpc.tfvars.sh
                 . terraform-variables/bosh-secrets.tfvars.sh
 
-                touch paas-bootstrap/terraform/bosh/id_rsa.pub paas-bootstrap/terraform/bosh/bosh_id_rsa.pub
+                touch paas-bootstrap/terraform/bosh/id_rsa.pub
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate

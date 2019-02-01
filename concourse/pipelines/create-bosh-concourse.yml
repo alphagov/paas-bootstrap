@@ -157,24 +157,6 @@ resources:
       initial_version: "-"
       initial_content_text: ""
 
-  - name: bosh-ssh-private-key
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      versioned_file: bosh_id_rsa
-      region_name: ((aws_region))
-      initial_version: "-"
-      initial_content_text: ""
-
-  - name: bosh-ssh-public-key
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      versioned_file: bosh_id_rsa.pub
-      region_name: ((aws_region))
-      initial_version: "-"
-      initial_content_text: ""
-
   - name: ssh-private-key
     type: s3-iam
     source:
@@ -502,8 +484,6 @@ jobs:
         - get: bosh-CA
         - get: bosh-CA-crt
         - get: bosh-secrets
-        - get: bosh-ssh-private-key
-        - get: bosh-ssh-public-key
         - get: ssh-private-key
         - get: ssh-public-key
         - get: concourse-secrets
@@ -569,44 +549,6 @@ jobs:
             put: bosh-secrets
             params:
               file: generated-bosh-secrets/bosh-secrets.yml
-
-        - task: generate-bosh-ssh-keypair
-          config:
-            platform: linux
-            image_resource: *git-ssh-image-resource
-            inputs:
-              - name: paas-bootstrap
-              - name: bosh-ssh-private-key
-              - name: bosh-ssh-public-key
-            outputs:
-              - name: bosh-ssh-private-key-to-upload
-              - name: bosh-ssh-public-key-to-upload
-            run:
-              path: sh
-              args:
-                - -e
-                - -c
-                - |
-                  if [ -s bosh-ssh-private-key/bosh_id_rsa ] && [ -s bosh-ssh-public-key/bosh_id_rsa.pub ]; then
-                    echo "BOSH keys non-zero size, skipping generation..."
-                    cp bosh-ssh-private-key/bosh_id_rsa bosh-ssh-private-key-to-upload
-                    cp bosh-ssh-public-key/bosh_id_rsa.pub bosh-ssh-public-key-to-upload
-                    exit 0
-                  fi
-
-                  echo "Generating new ssh key pair for BOSH..."
-                  ssh-keygen -t rsa -b 4096 -f bosh_id_rsa -N ''
-                  cp bosh_id_rsa bosh-ssh-private-key-to-upload
-                  cp bosh_id_rsa.pub bosh-ssh-public-key-to-upload
-          on_success:
-            try:
-              aggregate:
-                - put: bosh-ssh-private-key
-                  params:
-                    file: bosh-ssh-private-key-to-upload/bosh_id_rsa
-                - put: bosh-ssh-public-key
-                  params:
-                    file: bosh-ssh-public-key-to-upload/bosh_id_rsa.pub
 
         - task: generate-deployments-ssh-keypair
           config:
@@ -685,8 +627,6 @@ jobs:
         - get: vpc-tfstate
           passed: ['vpc']
         - get: bosh-tfstate
-        - get: bosh-ssh-public-key
-          passed: ['generate-secrets']
         - get: ssh-public-key
           passed: ['generate-secrets']
 
@@ -719,7 +659,6 @@ jobs:
             - name: paas-bootstrap
             - name: terraform-variables
             - name: bosh-tfstate
-            - name: bosh-ssh-public-key
             - name: ssh-public-key
           outputs:
             - name: updated-bosh-tfstate
@@ -741,7 +680,6 @@ jobs:
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
-                cp bosh-ssh-public-key/bosh_id_rsa.pub paas-bootstrap/terraform/bosh
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
@@ -862,7 +800,7 @@ jobs:
         - get: bosh-manifest
           passed: ['generate-bosh-config']
         - get: bosh-init-state
-        - get: bosh-ssh-private-key
+        - get: ssh-private-key
 
       - task: bosh-create-env
         config:
@@ -871,7 +809,7 @@ jobs:
           inputs:
             - name: bosh-manifest
             - name: bosh-init-state
-            - name: bosh-ssh-private-key
+            - name: ssh-private-key
           outputs:
             - name: bosh-init-working-dir
           params:
@@ -883,8 +821,8 @@ jobs:
               - -c
               - |
                 mkdir -p bosh-init-working-dir/.ssh
-                cp bosh-ssh-private-key/bosh_id_rsa bosh-init-working-dir/.ssh/bosh_id_rsa
-                chmod 400 bosh-init-working-dir/.ssh/bosh_id_rsa
+                cp ssh-private-key/id_rsa bosh-init-working-dir/.ssh/id_rsa
+                chmod 400 bosh-init-working-dir/.ssh/id_rsa
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
                 bosh -n create-env bosh-init-working-dir/bosh-manifest.yml \
@@ -1119,7 +1057,7 @@ jobs:
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: concourse-bosh-deployment
-        - get: bosh-ssh-private-key
+        - get: ssh-private-key
 
       - task: get-and-upload-stemcell
         config:
@@ -1129,7 +1067,7 @@ jobs:
             - name: bosh-vars-store
             - name: paas-bootstrap
             - name: bosh-CA-crt
-            - name: bosh-ssh-private-key
+            - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1138,7 +1076,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1171,7 +1109,7 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-CA-crt
           - name: concourse-bosh-deployment
-          - name: bosh-ssh-private-key
+          - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1180,7 +1118,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1213,7 +1151,7 @@ jobs:
           passed: ['concourse-deploy']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
-        - get: bosh-ssh-private-key
+        - get: ssh-private-key
 
       - task: test-bosh-vms
         config:
@@ -1223,7 +1161,7 @@ jobs:
           - name: paas-bootstrap
           - name: bosh-vars-store
           - name: bosh-CA-crt
-          - name: bosh-ssh-private-key
+          - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
@@ -1232,7 +1170,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: bosh-ssh-private-key/bosh_id_rsa
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
             path: sh
             args:
