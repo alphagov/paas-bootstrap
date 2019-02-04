@@ -54,7 +54,7 @@ resource_pools:
       - (( grab terraform_outputs_bosh_ssh_client_security_group ))
     env:
       bosh:
-        password: (( grab secrets.concourse_vcap_password ))
+        password: (( grab secrets.vcap_password ))
         ipv6:
           enable: true
 

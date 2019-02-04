@@ -796,10 +796,10 @@ jobs:
               - |
                 ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
                   < vpc-tfstate/vpc.tfstate \
-                  > terraform-outputs/vpc.terraform-outputs.yml
+                  > terraform-outputs/vpc-terraform-outputs.yml
                 ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
                   < bosh-tfstate/bosh.tfstate \
-                  > terraform-outputs/bosh.terraform-outputs.yml
+                  > terraform-outputs/bosh-terraform-outputs.yml
 
       - task: render-bosh-manifest
         config:
@@ -1035,6 +1035,7 @@ jobs:
         - get: concourse-tfstate
           passed: ['concourse-terraform']
         - get: concourse-secrets
+        - get: bosh-secrets
         - get: bosh-tfstate
           passed: ['concourse-terraform']
       - task: terraform-outputs-to-yaml
@@ -1076,12 +1077,6 @@ jobs:
           params:
             AWS_ACCOUNT: ((aws_account))
             CONCOURSE_AUTH_DURATION: ((concourse_auth_duration))
-            CONCOURSE_MANIFEST_STUBS: |
-              ./paas-bootstrap/manifests/concourse-manifest/concourse-base.yml
-              concourse-secrets/concourse-secrets.yml
-              terraform-outputs/concourse-terraform-outputs.yml
-              terraform-outputs/vpc-terraform-outputs.yml
-              terraform-outputs/bosh-terraform-outputs.yml
             CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
             CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
             ENABLE_GITHUB: ((enable_github))
@@ -1091,6 +1086,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: concourse-secrets
+          - name: bosh-secrets
           - name: terraform-outputs
           outputs:
           - name: concourse-manifest
@@ -1100,17 +1096,7 @@ jobs:
             - -e
             - -c
             - |
-              if [ "${ENABLE_GITHUB}" = "true" ] ; then
-                CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/concourse-manifest/github_auth/config.yml"
-                if [ "${AWS_ACCOUNT}" = "dev" ] || [ "${AWS_ACCOUNT}" = "ci" ]; then
-                  CONCOURSE_MANIFEST_STUBS="${CONCOURSE_MANIFEST_STUBS}
-                                ./paas-bootstrap/manifests/concourse-manifest/github_auth/dev_ci_additional_users.yml"
-                fi
-              fi
-              # shellcheck disable=SC2086
-              ./paas-bootstrap/manifests/shared/build_manifest.sh $CONCOURSE_MANIFEST_STUBS \
-                > concourse-manifest/concourse-manifest.yml
+              ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-manifest.sh > concourse-manifest/concourse-manifest.yml
               ls -l concourse-manifest/concourse-manifest.yml
         on_success:
           put: concourse-manifest

@@ -9,12 +9,23 @@ module ManifestHelpers
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
+    attr_accessor :manifest_with_github_auth
     attr_accessor :concourse_secrets_file
     attr_accessor :concourse_secrets_data
   end
 
   def manifest_with_defaults
-    Cache.instance.manifest_with_defaults ||= load_default_manifest
+    Cache.instance.manifest_with_defaults ||= render_manifest
+  end
+
+  def manifest_with_github_auth
+    Cache.instance.manifest_with_github_auth ||= render_manifest(
+      override_env: {
+        'ENABLE_GITHUB' => 'true',
+        'GITHUB_CLIENT_ID' => 'dummy_github_client_id',
+        'GITHUB_CLIENT_SECRET' => 'dummy_github_client_secret',
+      }
+    )
   end
 
   def concourse_secrets_file
@@ -29,31 +40,44 @@ module ManifestHelpers
 
 private
 
-  def fake_env_vars
-    ENV["AWS_ACCOUNT"] = "dev"
-    ENV["CONCOURSE_INSTANCE_TYPE"] = "t2.small"
-    ENV["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
-    ENV["CONCOURSE_AUTH_DURATION"] = "5m"
-    ENV["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
+  def root
+    Pathname(File.expand_path("../../../..", __dir__))
   end
 
-  def load_default_manifest
-    fake_env_vars
+  def fake_env_vars
+    env = {}
+    env["AWS_ACCOUNT"] = "dev"
+    env["CONCOURSE_INSTANCE_TYPE"] = "t2.small"
+    env["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
+    env["CONCOURSE_AUTH_DURATION"] = "5m"
+    env["SYSTEM_DNS_ZONE_NAME"] = ManifestHelpers::SYSTEM_DNS_ZONE_NAME
+    env["ENABLE_GITHUB"] = "false"
+    env
+  end
+
+  def render_manifest(override_env: {})
+    workdir = Pathname(Dir.mktmpdir('paas-bootstrap-test'))
+
+    env = fake_env_vars.merge(override_env)
+    env['PAAS_BOOTSTRAP_DIR'] = root.to_s
+    env['WORKDIR'] = workdir.to_s
+
+    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh concourse))
+    generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
+    FileUtils.mkdir("#{workdir}/concourse-secrets")
+    FileUtils.cp(concourse_secrets_file, "#{workdir}/concourse-secrets/concourse-secrets.yml")
+
     output, error, status = Open3.capture3(
-      [
-        File.expand_path("../../../../shared/build_manifest.sh", __FILE__),
-        File.expand_path("../../../concourse-base.yml", __FILE__),
-        concourse_secrets_file,
-        File.expand_path("../../../../shared/spec/fixtures/concourse-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../../../shared/spec/fixtures/bosh-terraform-outputs.yml", __FILE__),
-        File.expand_path("../../../../shared/spec/fixtures/vpc-terraform-outputs.yml", __FILE__),
-      ].join(' ')
+      env,
+      root.join("manifests/concourse-manifest/scripts/generate-manifest.sh").to_s,
     )
-    expect(status).to be_success, "build_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"
+    expect(status).to be_success, "generate_manifest.sh exited #{status.exitstatus}, stderr:\n#{error}"
 
     # Deep freeze the object so that it's safe to use across multiple examples
     # without risk of state leaking.
     deep_freeze(YAML.safe_load(output))
+  ensure
+    FileUtils.rm_rf(workdir)
   end
 
   def generate_concourse_secrets

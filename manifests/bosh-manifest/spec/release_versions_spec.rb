@@ -5,7 +5,7 @@ RSpec.describe "release versions" do
     match do |version|
       if url =~ %r{\?v=(.+)\z}
         url_version = $1
-      elsif url =~ %r{-([\d.]+)(-[0-9a-z-.]+)?\.tgz\z}
+      elsif url =~ %r{-([\d.]+)(-[0-9a-z\-.]+)?\.tgz\z}
         url_version = $1
       else
         raise "Failed to extract version from URL '#{url}'"
