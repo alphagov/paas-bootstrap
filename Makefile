@@ -183,7 +183,7 @@ showenv: check-env-vars ## Display environment information
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	@concourse/scripts/environment.sh
 	@echo export CONCOURSE_IP=$$(aws ec2 describe-instances \
-		--filters 'Name=tag:Name,Values=concourse/*' "Name=key-name,Values=${DEPLOY_ENV}_concourse_key_pair" \
+		--filters "Name=tag:deploy_env,Values=${DEPLOY_ENV}" 'Name=tag:instance_group,Values=concourse' \
 		--query 'Reservations[].Instances[].PublicIpAddress' --output text)
 	@echo export BOOTSTRAP_CONCOURSE_IP=$$(aws ec2 describe-instances \
 		--filters 'Name=tag:Name,Values=*concourse' "Name=key-name,Values=${VAGRANT_SSH_KEY_NAME}" \

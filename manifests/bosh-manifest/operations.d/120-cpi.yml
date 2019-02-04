@@ -1,6 +1,3 @@
 - type: replace
   path: /instance_groups/name=bosh/properties/aws/max_retries?
   value: 16
-- type: replace
-  path: /instance_groups/name=bosh/properties/aws/default_key_name
-  value: ((bosh_managed_default_key_name))

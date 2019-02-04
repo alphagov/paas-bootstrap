@@ -13,8 +13,7 @@ terraform_outputs_bosh_az: eu-west-1a
 terraform_outputs_bosh_az_label: z1
 terraform_outputs_bosh_default_gw: 10.0.0.1
 terraform_outputs_bosh_subnet_cidr: 10.0.0.0/24
-terraform_outputs_bosh_ssh_key_pair_name: bosh_keypair
-terraform_outputs_key_pair_name: ssh_key_pair
+terraform_outputs_key_pair_name: test_key_pair
 terraform_outputs_bosh_api_client_security_group: bosh_api_client_sg
 terraform_outputs_bosh_ssh_client_security_group: bosh_ssh_client_sg
 terraform_outputs_default_security_group: test-bosh-managed

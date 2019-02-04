@@ -47,8 +47,7 @@ az: ((terraform_outputs_bosh_az))
 region: ((terraform_outputs_region))
 subnet_id: ((terraform_outputs_bosh_subnet_id))
 
-default_key_name: ((terraform_outputs_bosh_ssh_key_pair_name))
-bosh_managed_default_key_name: ((terraform_outputs_key_pair_name))
+default_key_name: ((terraform_outputs_key_pair_name))
 
 default_security_groups:
 - ((terraform_outputs_bosh_managed_security_group))
@@ -66,7 +65,7 @@ external_db_adapter: "postgres"
 
 bosh_blobstore_bucket_name: ((terraform_outputs_bosh_blobstore_bucket_name))
 
-private_key: ".ssh/bosh_id_rsa"
+private_key: ".ssh/id_rsa"
 
 default_ca:
   ca: ((default_ca.certificate))

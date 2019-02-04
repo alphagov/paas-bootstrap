@@ -2,14 +2,14 @@
 
 set -eu
 
-BOSH_ID_RSA="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh_id_rsa" - | base64)"
+BOSH_ID_RSA="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/id_rsa" - | base64)"
 export BOSH_ID_RSA
 
 BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
 export BOSH_CA_CERT
 
 BOSH_IP=$(aws ec2 describe-instances \
-    --filters "Name=key-name,Values=${DEPLOY_ENV}_bosh_ssh_key_pair" \
+    --filters "Name=tag:deploy_env,Values=${DEPLOY_ENV}" 'Name=tag:instance_group,Values=bosh' \
     --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 export BOSH_IP
 
