@@ -1096,22 +1096,6 @@ jobs:
           passed: ['generate-secrets']
         - get: ssh-private-key
 
-      # FIXME: remove this task once it's run everywhere
-      - task: cleanup-unused-ssh-keys
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                aws s3 rm "s3://((state_bucket))/bosh_id_rsa"
-                aws s3 rm "s3://((state_bucket))/bosh_id_rsa.pub"
-                aws s3 rm "s3://((state_bucket))/concourse_id_rsa"
-                aws s3 rm "s3://((state_bucket))/concourse_id_rsa.pub"
-
       - task: test-bosh-vms
         config:
           platform: linux
