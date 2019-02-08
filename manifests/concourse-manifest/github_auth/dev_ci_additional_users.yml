@@ -14,5 +14,4 @@ instance_groups:
                   - AP-Hunt
                   - jpluscplusm
                   - mogds
-                  - tnwhitwell
                   - venusbb
