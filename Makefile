@@ -21,6 +21,7 @@ test: spec lint_yaml lint_terraform lint_shellcheck lint_concourse lint_ruby ## 
 .PHONY: spec
 spec:
 	cd concourse/scripts &&\
+		go get -t -d . &&\
 		go test
 	cd manifests/shared &&\
 		bundle exec rspec
