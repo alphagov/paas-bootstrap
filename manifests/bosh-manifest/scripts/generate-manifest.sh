@@ -85,7 +85,6 @@ EOF
 bosh interpolate \
   --vars-file="${variables_file}" \
   --vars-file="${PAAS_BOOTSTRAP_DIR}/manifests/bosh-manifest/variables.yml" \
-  --vars-file="${PAAS_BOOTSTRAP_DIR}/manifests/bosh-manifest/${AWS_DEFAULT_REGION}.yml" \
   ${opsfile_args} \
   ${vars_store_args} \
     "${BOSH_DEPLOYMENT_DIR}/bosh.yml"
