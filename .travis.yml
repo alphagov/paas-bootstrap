@@ -51,8 +51,6 @@ before_install:
   - eval "$(gimme 1.11)"
   - export GOPATH=$HOME/gopath
   - export PATH=$HOME/gopath/bin:$PATH
-  - go get github.com/onsi/ginkgo/ginkgo
-  - go get github.com/onsi/gomega/...
 
 script:
   - make test
