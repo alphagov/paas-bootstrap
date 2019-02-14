@@ -286,12 +286,6 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
-  - name: concourse-bosh-deployment
-    type: git
-    source:
-      uri: https://github.com/concourse/concourse-bosh-deployment
-      tag_filter: "v4.2.1"
-
 jobs:
   - name: init-bucket
     serial: true
@@ -999,7 +993,6 @@ jobs:
           passed: ['generate-concourse-config']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
-        - get: concourse-bosh-deployment
         - get: ssh-private-key
 
       - task: get-and-upload-stemcell
@@ -1051,7 +1044,6 @@ jobs:
           - name: bosh-vars-store
           - name: paas-bootstrap
           - name: bosh-CA-crt
-          - name: concourse-bosh-deployment
           - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
@@ -1077,9 +1069,7 @@ jobs:
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
-              bosh deploy \
-                --vars-file concourse-bosh-deployment/versions.yml \
-                concourse-manifest/concourse-manifest.yml
+              bosh deploy concourse-manifest/concourse-manifest.yml
 
   - name: post-deploy
     serial: true
