@@ -60,7 +60,7 @@ these are defined in the repo [aws-account-wide-terraform][]
 (not public because it also contains state files).
 
 [instance profiles]: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
-[aws-account-wide-terraform]: https://github.digital.cabinet-office.gov.uk/government-paas/aws-account-wide-terraform
+[aws-account-wide-terraform]: https://github.com/alphagov/paas-aws-account-wide-terraform
 
 * Declare your environment name using the variable DEPLOY_ENV.
 
