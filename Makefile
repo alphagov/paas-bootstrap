@@ -93,6 +93,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export MAKEFILE_ENV_TARGET=ci)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 
 .PHONY: stg-lon
