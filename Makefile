@@ -106,6 +106,7 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export AWS_ACCOUNT=staging)
 	$(eval export MAKEFILE_ENV_TARGET=stg-lon)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 .PHONY: prod
@@ -118,6 +119,7 @@ prod: globals ## Set Environment to Prod
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export MAKEFILE_ENV_TARGET=prod)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 
 .PHONY: prod-lon
@@ -130,6 +132,7 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export AWS_ACCOUNT=prod)
 	$(eval export MAKEFILE_ENV_TARGET=prod-lon)
 	$(eval export ENABLE_GITHUB=true)
+	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 
 ## Concourse profiles
