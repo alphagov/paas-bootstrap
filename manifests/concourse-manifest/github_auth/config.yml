@@ -13,7 +13,6 @@ instance_groups:
               github:
                 users:
                 - 46bit
-                - alext
                 - bandesz
                 - chrisfarms
                 - LeePorte
