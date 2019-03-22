@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
-    version: "170.38"
+    version: "170.39"
 
   zone: (( grab terraform_outputs_zone0 ))
 
