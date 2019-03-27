@@ -1036,6 +1036,7 @@ jobs:
                 bosh -n upload-stemcell stemcell.tgz
 
       - task: deploy-concourse
+        attempts: 2
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
