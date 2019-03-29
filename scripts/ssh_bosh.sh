@@ -17,6 +17,7 @@ echo
 # shellcheck disable=SC2029
 ssh \
     -i "$BOSH_KEY" \
+    -o IdentitiesOnly=yes \
     -o ServerAliveInterval=60 \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \

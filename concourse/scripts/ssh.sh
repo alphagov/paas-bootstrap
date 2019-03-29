@@ -48,7 +48,7 @@ ssh_concourse() {
   echo
 
   # shellcheck disable=SC2029
-  ssh -t -i $key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
+  ssh -t -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
     vcap@"$CONCOURSE_IP" "$@"
 }
 
@@ -61,7 +61,7 @@ scp_concourse() {
 create_tunnel() {
   TUNNEL=$1
   echo "Creating tunnel at socket $(print_socket) to ${TUNNEL}"
-  ssh -i $key -fNTM -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
+  ssh -i $key -fNTM -o IdentitiesOnly=yes -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
     -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
     -L "${TUNNEL}" vcap@"${CONCOURSE_IP}"
 }
