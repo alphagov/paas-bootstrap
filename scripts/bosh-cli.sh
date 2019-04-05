@@ -17,6 +17,10 @@ BOSH_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-vars-stor
     ruby -ryaml -e 'print YAML.load(STDIN)["admin_password"]')
 export BOSH_CLIENT_SECRET
 
+[ ! -d "${HOME}/.bosh_history" ] && mkdir ~/.bosh_history
+
+touch "${HOME}/.bosh_history/${DEPLOY_ENV}"
+
 docker run \
     -it \
     --rm \
@@ -27,4 +31,5 @@ docker run \
     --env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
     --env "BOSH_CA_CERT" \
     --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
+    -v "${HOME}/.bosh_history/${DEPLOY_ENV}:/root/.bash_history" \
     governmentpaas/bosh-shell:54f216386ad6de88da6365ebb2a587504b6a3837
