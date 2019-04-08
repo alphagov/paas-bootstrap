@@ -72,16 +72,20 @@ It is important that you do not use the same `DEPLOY_ENV` for both build and dep
 
 ### Deploy
 
-Create Concourse Lite with `make`. There are targets to select the target AWS account, and to select the profiles to apply. For instance for a DEV build concourse bootstrap:
+Create Concourse Lite with `make`. There are Make targets to select the target AWS account, and to select the profiles to apply.
 
-```
-make dev build-concourse bootstrap
-```
+You can create two different things: a deployer concourse or a build concourse.
 
-Or a DEV deployer concourse bootstrap:
+To start deploying a new Cloud Foundry environment:
 
 ```
 make dev deployer-concourse bootstrap
+```
+
+Or to start deploying a new build environment:
+
+```
+make dev build-concourse bootstrap
 ```
 
 `make help` will show all available options.
