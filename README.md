@@ -82,7 +82,12 @@ To start deploying a new Cloud Foundry environment:
 make dev deployer-concourse bootstrap
 ```
 
-Or to start deploying a new build environment:
+
+The above command will deploy a Deployer Concourse which is used for deploying a PaaS.
+
+It is possible to deploy a Build Concourse instead. A Build Concourse is responsible for building and versioning releases, as well as deploying manuals, documentation, product pages, and more.
+  
+To start deploying a new build environment:
 
 ```
 make dev build-concourse bootstrap
