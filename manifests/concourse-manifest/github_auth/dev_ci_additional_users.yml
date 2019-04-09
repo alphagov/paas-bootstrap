@@ -12,6 +12,5 @@ instance_groups:
                 users:
                   - (( append ))
                   - AP-Hunt
-                  - jpluscplusm
                   - mogds
                   - venusbb
