@@ -3,6 +3,6 @@
   path: /releases/name=bpm
   value:
     name: "bpm"
-    version: "0.13.0"
-    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=0.13.0"
-    sha1: "4b6ebfdaa467c04855528172b099e565d679e0f5"
+    version: "1.0.4"
+    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.0.4"
+    sha1: "41df19697d6a69d2552bc2c132928157fa91abe0"
