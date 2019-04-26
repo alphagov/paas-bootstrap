@@ -4,8 +4,6 @@
 - type: remove
   path: /instance_groups/name=bosh/properties/director/enable_nats_delivered_templates
 - type: remove
-  path: /instance_groups/name=bosh/properties/director/enable_post_deploy
-- type: remove
   path: /instance_groups/name=bosh/properties/director/generate_vm_passwords
 - type: replace
   path: /instance_groups/name=bosh/properties/director/disks?/max_orphaned_age_in_days
