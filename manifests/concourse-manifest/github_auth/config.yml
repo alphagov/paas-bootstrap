@@ -3,7 +3,7 @@
 instance_groups:
   - name: concourse
     jobs:
-      - name: atc
+      - name: web
         properties:
           github_auth:
             client_id: (( grab $GITHUB_CLIENT_ID ))

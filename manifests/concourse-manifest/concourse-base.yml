@@ -15,14 +15,14 @@ releases:
     version: "5.1.0"
     url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.1.0"
     sha1: "e6b55fa88e1bcd0d7dfc83e73cb7dc6c053734ac"
-  - name: garden-runc
-    version: 1.18.2
-    url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.18.2
-    sha1: f761349dfe829fb2e17ab53eb058267209275038
   - name: postgres
     version: 30
     url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=30
     sha1: a798999d29b9f5aa12035cff907b26674b491200
+  - name: "bpm"
+    version: "1.0.4"
+    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.0.4"
+    sha1: "41df19697d6a69d2552bc2c132928157fa91abe0"
 
 properties:
   aws:
@@ -86,6 +86,10 @@ instance_groups:
     persistent_disk_pool: db
 
     jobs:
+      - name: bpm
+        release: bpm
+        properties: {}
+
       - name: postgres
         release: postgres
         properties:
@@ -97,7 +101,7 @@ instance_groups:
               - name: atc
                 password: (( grab secrets.concourse_postgres_password ))
 
-      - name: atc
+      - name: web
         release: concourse
         properties:
           external_url: (( concat "https://" terraform_outputs_concourse_dns_name ))
@@ -118,40 +122,19 @@ instance_groups:
           prometheus:
             bind_ip: 0.0.0.0
             bind_port: 9391
+          worker_gateway:
+            host_key: (( grab secrets.concourse_tsa_host_key ))
+            authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
 
       - name: worker
         release: concourse
         properties:
-          baggageclaim:
-            url: "http://127.0.0.1:7788"
-          tsa:
-            host: 127.0.0.1
-            port: 2222
-            host_public_key: (( grab secrets.concourse_tsa_host_key.public_key ))
-            worker_key: (( grab secrets.concourse_worker_key ))
-
-      - name: tsa
-        release: concourse
-        properties:
-          forward_host: 127.0.0.1
-          atc:
-            address: 127.0.0.1:8080
-          host_key: (( grab secrets.concourse_tsa_host_key ))
-          token_signing_key: (( grab secrets.concourse_token_signing_key ))
-          authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
-
-      - name: baggageclaim
-        release: concourse
-
-      - name: garden
-        release: garden-runc
-        properties:
+          worker_gateway:
+            hosts: ["127.0.0.1:2222"]
+            host_public_key: ((grab secrets.concourse_tsa_host_key.public_key))
+            worker_key: ((grab secrets.concourse_worker_key))
           garden:
-            listen_network: tcp
-            listen_address: 0.0.0.0:7777
-            graph_cleanup_threshold_in_mb: 3072
-            max_containers: 1024
-            network_pool: "10.254.0.0/20"
+            allow_host_access: true
 
     networks:
       - name: public
