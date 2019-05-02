@@ -11,13 +11,10 @@ name: concourse
 # These versions and checksums are taken from the versions.yml file from the
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
 releases:
-  # TODO: Use the upstream build again after the following PR was released:
-  # https://github.com/concourse/concourse/pull/2785
-  # This version is 4.2.2 + the above change
-  - name: concourse
-    version: 0.1.3
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/concourse-0.1.3.tgz
-    sha1: 77a0ce9f8e32a157bd40b4c4cd85325f9cc77a0c
+  - name: "concourse"
+    version: "5.1.0"
+    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.1.0"
+    sha1: "e6b55fa88e1bcd0d7dfc83e73cb7dc6c053734ac"
   - name: garden-runc
     version: 1.18.2
     url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.18.2
