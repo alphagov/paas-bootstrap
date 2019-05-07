@@ -4,7 +4,7 @@
 instance_groups:
   - name: concourse
     jobs:
-      - name: atc
+      - name: web
         properties:
           main_team:
             auth:
