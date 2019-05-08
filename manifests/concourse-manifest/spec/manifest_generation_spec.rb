@@ -20,7 +20,7 @@ RSpec.describe "manifest generation" do
   it "gets values from secrets" do
     expect(
       web_job.fetch("properties").fetch("add_local_users")[0].split(':', 2)[1]
-    ).to eq(concourse_secrets_value("concourse_atc_password"))
+    ).to eq(concourse_secrets_value("concourse_web_password"))
   end
 
   context "with github auth enabled" do

@@ -67,10 +67,10 @@ Vagrant.configure(2) do |config|
       s.env = ENV.select { |key|
         %w(
           AWS_ACCOUNT
-          CONCOURSE_ATC_PASSWORD
-          CONCOURSE_ATC_USER
           CONCOURSE_DATABASE_NAME
           CONCOURSE_URL
+          CONCOURSE_WEB_PASSWORD
+          CONCOURSE_WEB_USER
           BRANCH
           DEPLOY_ENV
           TARGET_CONCOURSE
