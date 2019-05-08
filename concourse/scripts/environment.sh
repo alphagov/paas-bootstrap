@@ -36,7 +36,7 @@ case "${TARGET_CONCOURSE}" in
     FLY_CMD="${PROJECT_DIR}/bin/fly"
 
     if [ -z "${CONCOURSE_WEB_PASSWORD:-}" ]; then
-      CONCOURSE_WEB_PASSWORD=$(concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password <(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/concourse-secrets.yml" -))
+      CONCOURSE_WEB_PASSWORD=$(concourse/scripts/val_from_yaml.rb secrets.concourse_web_password <(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/concourse-secrets.yml" -))
     fi
     BOSH_LOGIN_HOST=${BOSH_FQDN}
     ;;
