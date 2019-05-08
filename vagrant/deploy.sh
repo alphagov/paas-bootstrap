@@ -56,5 +56,5 @@ echo "Succeeded connecting to concourse. About to upload pipelines..."
 "${PROJECT_DIR}/concourse/scripts/concourse-lite-self-terminate.sh"
 
 echo
-echo "Concourse auth is ${CONCOURSE_ATC_USER} : ${CONCOURSE_ATC_PASSWORD}"
+echo "Concourse auth is ${CONCOURSE_WEB_USER} : ${CONCOURSE_WEB_PASSWORD}"
 echo "Concourse URL is ${CONCOURSE_URL}"

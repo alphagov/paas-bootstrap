@@ -17,16 +17,16 @@ fi
 
 BOSH_FQDN="bosh.${SYSTEM_DNS_ZONE_NAME}"
 BOSH_FQDN_EXTERNAL="bosh-external.${SYSTEM_DNS_ZONE_NAME}"
-CONCOURSE_ATC_USER=${CONCOURSE_ATC_USER:-admin}
+CONCOURSE_WEB_USER=${CONCOURSE_WEB_USER:-admin}
 case "${TARGET_CONCOURSE}" in
   bootstrap)
     CONCOURSE_URL="${CONCOURSE_URL:-http://localhost:8080}"
     FLY_TARGET="${FLY_TARGET:-${DEPLOY_ENV}-bootstrap}"
     FLY_CMD="${PROJECT_DIR}/bin/fly-bootstrap"
 
-    if [ -z "${CONCOURSE_ATC_PASSWORD:-}" ]; then
+    if [ -z "${CONCOURSE_WEB_PASSWORD:-}" ]; then
         user_id=$(aws sts get-caller-identity | awk '$1 ~ /UserId/ {sub(/:.*$/, "", $2); print $2}')
-        CONCOURSE_ATC_PASSWORD=$(hashed_password "${user_id}")
+        CONCOURSE_WEB_PASSWORD=$(hashed_password "${user_id}")
     fi
     BOSH_LOGIN_HOST=${BOSH_FQDN_EXTERNAL}
     ;;
@@ -35,8 +35,8 @@ case "${TARGET_CONCOURSE}" in
     FLY_TARGET="${FLY_TARGET:-$DEPLOY_ENV}"
     FLY_CMD="${PROJECT_DIR}/bin/fly"
 
-    if [ -z "${CONCOURSE_ATC_PASSWORD:-}" ]; then
-      CONCOURSE_ATC_PASSWORD=$(concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password <(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/concourse-secrets.yml" -))
+    if [ -z "${CONCOURSE_WEB_PASSWORD:-}" ]; then
+      CONCOURSE_WEB_PASSWORD=$(concourse/scripts/val_from_yaml.rb secrets.concourse_atc_password <(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/concourse-secrets.yml" -))
     fi
     BOSH_LOGIN_HOST=${BOSH_FQDN}
     ;;
@@ -53,8 +53,8 @@ CONCOURSE_DATABASE_PASS="$(openssl rand -hex 32)"
 cat <<EOF
 export AWS_ACCOUNT=${AWS_ACCOUNT}
 export DEPLOY_ENV=${DEPLOY_ENV}
-export CONCOURSE_ATC_USER=${CONCOURSE_ATC_USER}
-export CONCOURSE_ATC_PASSWORD=${CONCOURSE_ATC_PASSWORD}
+export CONCOURSE_WEB_USER=${CONCOURSE_WEB_USER}
+export CONCOURSE_WEB_PASSWORD=${CONCOURSE_WEB_PASSWORD}
 export CONCOURSE_URL=${CONCOURSE_URL}
 export CONCOURSE_DATABASE_NAME=${CONCOURSE_DATABASE_NAME}
 export CONCOURSE_DATABASE_USER=${CONCOURSE_DATABASE_USER}

@@ -173,7 +173,7 @@ ssh ubuntu@<bootstrap_concourse_ip> -L 8080:127.0.0.1:8080 -fN
 ## Concourse Lite credentials
 
 By default, the Concourse Lite ATC password is generated, based on a hash of AWS UserId.
-If the `CONCOURSE_ATC_PASSWORD` environment variable is set, this will be used instead.
+If the `CONCOURSE_WEB_PASSWORD` environment variable is set, this will be used instead.
 It's safe to deterministically generate the password since Concourse Lite is only accessible via an ssh tunnel.
 
 You can print the password with `make <env> showenv`

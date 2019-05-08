@@ -5,7 +5,7 @@ require 'yaml'
 require File.expand_path("../../../shared/lib/secret_generator", __FILE__)
 
 generator = SecretGenerator.new(
-  "concourse_atc_password" => :simple,
+  "concourse_web_password" => :simple,
   "concourse_postgres_password" => :simple,
   "concourse_token_signing_key" => :bosh_rsa_key,
   "concourse_tsa_host_key" => :bosh_ssh_key,

@@ -106,7 +106,7 @@ instance_groups:
         properties:
           external_url: (( concat "https://" terraform_outputs_concourse_dns_name ))
           add_local_users:
-            - (( concat "admin:" secrets.concourse_atc_password ))
+            - (( concat "admin:" secrets.concourse_web_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
           main_team:
             auth:
