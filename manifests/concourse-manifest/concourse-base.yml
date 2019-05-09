@@ -47,6 +47,32 @@ resource_pools:
       security_groups:
       - (( grab terraform_outputs_bosh_managed_security_group ))
       - (( grab terraform_outputs_concourse_security_group ))
+      - (( grab terraform_outputs_concourse_nocycle_security_group ))
+      - (( grab terraform_outputs_ssh_security_group ))
+      - (( grab terraform_outputs_bosh_api_client_security_group ))
+      - (( grab terraform_outputs_bosh_ssh_client_security_group ))
+    env:
+      bosh:
+        password: (( grab secrets.vcap_password ))
+        ipv6:
+          enable: true
+
+  - name: concourse_worker
+    network: concourse
+    stemcell:
+      name: (( grab meta.stemcell.name ))
+      version: (( grab meta.stemcell.version ))
+    cloud_properties:
+      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
+      availability_zone: (( grab meta.zone ))
+      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
+      auto_assign_public_ip: true
+      ephemeral_disk:
+        size: 102400
+        type: gp2
+      security_groups:
+      - (( grab terraform_outputs_bosh_managed_security_group ))
+      - (( grab terraform_outputs_concourse_worker_security_group ))
       - (( grab terraform_outputs_ssh_security_group ))
       - (( grab terraform_outputs_bosh_api_client_security_group ))
       - (( grab terraform_outputs_bosh_ssh_client_security_group ))
@@ -142,6 +168,28 @@ instance_groups:
         - (( grab terraform_outputs_concourse_elastic_ip ))
       - name: concourse
         static_ips: (( static_ips(0) ))
+        default: [dns, gateway]
+
+  - name: concourse-worker
+    instances: ((concourse_worker_instances))
+    resource_pool: concourse_worker
+
+    jobs:
+      - name: bpm
+        release: bpm
+        properties: {}
+
+      - name: worker
+        release: concourse
+        properties:
+          worker_gateway:
+            worker_key: ((grab secrets.concourse_worker_key))
+            host_public_key: ((grab secrets.concourse_tsa_host_key.public_key))
+          garden:
+            allow_host_access: true
+
+    networks:
+      - name: concourse
         default: [dns, gateway]
 
 compilation:

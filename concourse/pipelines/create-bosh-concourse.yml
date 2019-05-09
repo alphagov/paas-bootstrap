@@ -35,7 +35,7 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+        tag: 758eef2a762bc3a4d7df2a41f655b7a884b492fa
     terraform: &terraform-image-resource
       type: docker-image
       source:
@@ -1054,6 +1054,8 @@ jobs:
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+
+            CONCOURSE_WORKER_INSTANCES: ((concourse_worker_instances))
           run:
             path: sh
             args:
@@ -1069,7 +1071,8 @@ jobs:
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
-              bosh deploy concourse-manifest/concourse-manifest.yml
+              bosh deploy concourse-manifest/concourse-manifest.yml \
+                   -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES"
 
   - name: post-deploy
     serial: true

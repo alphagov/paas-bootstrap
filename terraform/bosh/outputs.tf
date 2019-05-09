@@ -69,3 +69,7 @@ output "bosh_ssh_client_security_group" {
 output "default_security_group" {
   value = "${aws_security_group.bosh_managed.name}"
 }
+
+output "bosh_security_group_id" {
+  value = "${aws_security_group.bosh.id}"
+}
