@@ -1,0 +1,8 @@
+---
+instance_groups:
+  - name: concourse
+    jobs:
+      - name: web
+        properties:
+          x_frame_options:
+            - "allow-from https://framesplits.cloudapps.digital/"
