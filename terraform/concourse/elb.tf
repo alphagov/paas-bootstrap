@@ -1,8 +1,12 @@
 resource "aws_elb" "concourse" {
-  name            = "${var.env}-concourse"
-  subnets         = ["${split(",", var.infra_subnet_ids)}"]
-  security_groups = ["${aws_security_group.concourse-elb.id}"]
-  idle_timeout    = 600
+  name         = "${var.env}-concourse"
+  subnets      = ["${split(",", var.infra_subnet_ids)}"]
+  idle_timeout = 600
+
+  security_groups = [
+    "${aws_security_group.concourse-elb.id}",
+    "${aws_security_group.concourse-elb-nocycle.id}",
+  ]
 
   health_check {
     target              = "TCP:8080"
@@ -57,6 +61,27 @@ resource "aws_security_group" "concourse-elb" {
 
   tags {
     Name = "${var.env}-concourse-elb"
+  }
+}
+
+resource "aws_security_group" "concourse-elb-nocycle" {
+  name        = "${var.env}-concourse-elb-nocycle"
+  description = "Concourse ELB nocycle security group"
+  vpc_id      = "${var.vpc_id}"
+
+  ingress {
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+
+    security_groups = [
+      "${aws_security_group.concourse-worker.id}",
+      "${aws_security_group.concourse-nocycle.id}",
+    ]
+  }
+
+  tags {
+    Name = "${var.env}-concourse-elb-nocycle"
   }
 }
 

@@ -10,6 +10,22 @@ output "concourse_security_group_id" {
   value = "${aws_security_group.concourse.id}"
 }
 
+output "concourse_nocycle_security_group" {
+  value = "${aws_security_group.concourse-nocycle.name}"
+}
+
+output "concourse_nocycle_security_group_id" {
+  value = "${aws_security_group.concourse-nocycle.id}"
+}
+
+output "concourse_worker_security_group" {
+  value = "${aws_security_group.concourse-worker.name}"
+}
+
+output "concourse_worker_security_group_id" {
+  value = "${aws_security_group.concourse-worker.id}"
+}
+
 output "concourse_elb_name" {
   value = "${aws_elb.concourse.name}"
 }
