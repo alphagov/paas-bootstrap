@@ -23,4 +23,15 @@ export CONCOURSE_POSTGRES_PASSWORD="$CONCOURSE_DATABASE_PASS"
 export CONCOURSE_ADD_LOCAL_USER="${CONCOURSE_WEB_USER}:${CONCOURSE_WEB_PASSWORD}"
 export CONCOURSE_EXTERNAL_URL="$CONCOURSE_URL"
 
+mkdir -p /tmp/keys
+
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse \
+  generate-key -t rsa -f /keys/session_signing_key
+
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse \
+  generate-key -t ssh -f /keys/tsa_host_key
+
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse \
+  generate-key -t ssh -f /keys/worker_key
+
 sudo -E docker-compose up -d
