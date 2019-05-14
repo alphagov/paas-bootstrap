@@ -346,6 +346,7 @@ jobs:
             file: updated-bucket-state/bucket.tfstate
 
       - task: self-update-pipelines
+        tags: [colocated-with-web]
         config:
           platform: linux
           image_resource: *self-update-pipelines-image-resource
@@ -1126,6 +1127,7 @@ jobs:
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
       - task: upload-pipeline
+        tags: [colocated-with-web]
         config:
           platform: linux
           image_resource: *self-update-pipelines-image-resource

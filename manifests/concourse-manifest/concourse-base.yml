@@ -159,6 +159,7 @@ instance_groups:
             hosts: ["127.0.0.1:2222"]
             host_public_key: ((grab secrets.concourse_tsa_host_key.public_key))
             worker_key: ((grab secrets.concourse_worker_key))
+          tags: [colocated-with-web]
           garden:
             allow_host_access: true
 
