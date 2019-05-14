@@ -157,7 +157,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export CONCOURSE_HOSTNAME=deployer)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m4.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
-	$(eval export CONCOURSE_WORKER_INSTANCES ?= 0)
+	$(eval export CONCOURSE_WORKER_INSTANCES ?= 1)
 	@true
 
 ## Actions
