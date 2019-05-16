@@ -4,7 +4,7 @@ meta:
     name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
     version: "170.69"
 
-  zone: (( grab terraform_outputs_zone0 ))
+  zone: (( grab terraform_outputs_zone1 ))
 
 name: concourse
 
@@ -92,16 +92,16 @@ networks:
   - name: concourse
     type: manual
     subnets:
-      - range: 10.0.0.0/24
+      - range: 10.0.1.0/24
         dns: [10.0.0.2]
-        gateway: 10.0.0.1
+        gateway: 10.0.1.1
         reserved:
-        - 10.0.0.0 - 10.0.0.9
+        - 10.0.1.0 - 10.0.1.9
         static:
-        - 10.0.0.10 - 10.0.0.20
+        - 10.0.1.10 - 10.0.1.20
 
         cloud_properties:
-          subnet: (( grab terraform_outputs_subnet0_id ))
+          subnet: (( grab terraform_outputs_subnet1_id ))
   - name: public
     type: vip
 

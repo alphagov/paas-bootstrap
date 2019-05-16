@@ -8,7 +8,7 @@ RSpec.describe "manifest generation" do
   it "gets values from vpc terraform outputs" do
     expect(
       manifest_with_defaults["resource_pools"].first["cloud_properties"]["availability_zone"]
-    ).to eq(terraform_fixture_value("zone0", "vpc"))
+    ).to eq(terraform_fixture_value("zone1", "vpc"))
   end
 
   it "gets values from concourse terraform outputs" do

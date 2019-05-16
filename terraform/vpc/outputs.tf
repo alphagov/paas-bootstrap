@@ -22,6 +22,10 @@ output "subnet0_id" {
   value = "${aws_subnet.infra.0.id}"
 }
 
+output "subnet1_id" {
+  value = "${aws_subnet.infra.1.id}"
+}
+
 output "zone0" {
   value = "${var.zones["zone0"]}"
 }
