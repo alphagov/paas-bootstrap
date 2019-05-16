@@ -134,6 +134,7 @@ instance_groups:
           add_local_users:
             - (( concat "admin:" secrets.concourse_web_password ))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
+          cluster_name: (( grab terraform_outputs_environment ))
           main_team:
             auth:
               local:
