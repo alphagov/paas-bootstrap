@@ -154,7 +154,7 @@ jobs:
   - name: enable-bosh-access
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['self-update-pipeline']
@@ -228,7 +228,7 @@ jobs:
   - name: destroy-concourse
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['enable-bosh-access']
         - get: pipeline-trigger
@@ -341,7 +341,7 @@ jobs:
   - name: destroy-bosh
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['destroy-concourse']
@@ -532,7 +532,7 @@ jobs:
   - name: destroy-vpc
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['destroy-bosh']
         - get: vpc-tfstate
@@ -573,7 +573,7 @@ jobs:
   - name: destroy-init-bucket
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['destroy-vpc']
         - get: bucket-terraform-state
