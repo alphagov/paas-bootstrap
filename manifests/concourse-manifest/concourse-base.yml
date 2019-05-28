@@ -15,10 +15,6 @@ releases:
     version: "5.2.0"
     url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.2.0"
     sha1: "e7c813d35e70e1a3a5334b977136ba736fae05e1"
-  - name: postgres
-    version: 30
-    url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=30
-    sha1: a798999d29b9f5aa12035cff907b26674b491200
   - name: "bpm"
     version: "1.1.1"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.1"
@@ -82,12 +78,6 @@ resource_pools:
         ipv6:
           enable: true
 
-disk_pools:
-  - name: db
-    disk_size: 20480
-    cloud_properties:
-      type: gp2
-
 networks:
   - name: concourse
     type: manual
@@ -109,23 +99,11 @@ instance_groups:
   - name: concourse
     instances: 1
     resource_pool: concourse
-    persistent_disk_pool: db
 
     jobs:
       - name: bpm
         release: bpm
         properties: {}
-
-      - name: postgres
-        release: postgres
-        properties:
-          databases:
-            port: 5432
-            databases:
-              - name: atc
-            roles:
-              - name: atc
-                password: (( grab secrets.concourse_postgres_password ))
 
       - name: web
         release: concourse
