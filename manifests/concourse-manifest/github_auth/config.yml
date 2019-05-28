@@ -13,11 +13,11 @@ instance_groups:
               github:
                 users:
                 - 46bit
+                - AP-Hunt
                 - chrisfarms
                 - LeePorte
                 - paroxp
                 - richardTowers
                 - rhowe-gds
-                - samcrang
                 - tlwr
                 - tnwhitwell

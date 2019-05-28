@@ -11,6 +11,5 @@ instance_groups:
               github:
                 users:
                   - (( append ))
-                  - AP-Hunt
                   - mogds
                   - venusbb
