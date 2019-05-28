@@ -141,10 +141,12 @@ instance_groups:
                 users:
                 - admin
           postgresql:
-            database: atc
+            host: (( grab terraform_outputs_concourse_db_address ))
+            port: (( grab terraform_outputs_concourse_db_port ))
+            database: (( grab terraform_outputs_concourse_db_dbname ))
             role:
-              name: atc
-              password: (( grab secrets.concourse_postgres_password ))
+              name: (( grab terraform_outputs_concourse_db_username ))
+              password: (( grab terraform_outputs_concourse_db_password ))
           token_signing_key: (( grab secrets.concourse_token_signing_key ))
           prometheus:
             bind_ip: 0.0.0.0
