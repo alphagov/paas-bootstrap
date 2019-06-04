@@ -5,22 +5,22 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/awscli
-        tag: b2495d6ed07f680125d19aa7d1701da7efabb289
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: 93e168b4244873902cd552ae08fc4a67a7b2e6f5
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: governmentpaas/certstrap
-        tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: governmentpaas/git-ssh
-        tag: 895cf6752c8ec64af05a3a735186b90acd3db65a
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
@@ -30,17 +30,17 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/self-update-pipelines
-        tag: 0eff5b6a9c092f865a2b19cc4e75a3b539b82fa2
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: 758eef2a762bc3a4d7df2a41f655b7a884b492fa
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: 6efea7a479f9336019155cc039ad33d2c8845cb0
+        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
 
 groups:
   - name: all
@@ -69,13 +69,13 @@ resource_types:
   type: docker-image
   source:
     repository: governmentpaas/s3-resource
-    tag: fda60bf4c5f85e96c16f704e128e5ead9e84d30d
+    tag: 97e441efbfb06ac7fb09786fd74c64b05f9cc907
 
 - name: semver-iam
   type: docker-image
   source:
     repository: governmentpaas/semver-resource
-    tag: ecbdd201e122b44de99a40ac9f24407c1a43b9a2
+    tag: f2a80c95481056aa57d837e3b14f0012b542fdb3
 
 resources:
   - name: paas-bootstrap
