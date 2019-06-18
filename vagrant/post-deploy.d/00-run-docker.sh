@@ -2,6 +2,8 @@
 
 set -eu
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo "Waiting for cloud-init to update /etc/apt/sources.list .." >&2
 until grep -q ec2.archive.ubuntu.com /etc/apt/sources.list; do
   sleep 2
@@ -9,7 +11,7 @@ until grep -q ec2.archive.ubuntu.com /etc/apt/sources.list; do
 done
 echo ".. update complete." >&2
 
-sudo apt-get update && sudo apt-get install docker-compose -y
+sudo -E apt-get update && sudo -E apt-get install docker-compose -y
 
 cd /vagrant
 
