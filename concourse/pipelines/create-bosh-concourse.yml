@@ -5,22 +5,22 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/awscli
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: governmentpaas/certstrap
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: governmentpaas/git-ssh
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
@@ -30,17 +30,17 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/self-update-pipelines
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: f3875548cbc723e9f0ea487aaba5f38302279f72
+        tag: 21e5ddc4c7265b112cbeb0993b0915fa9366a876
 
 groups:
   - name: all
