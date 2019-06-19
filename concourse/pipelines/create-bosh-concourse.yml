@@ -754,6 +754,9 @@ jobs:
 
                 cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
 
+                paas-bootstrap/manifests/bosh-manifest/scripts/cleanup-bosh-vars-store.rb \
+                  bosh-vars-store-updated/bosh-vars-store.yml
+
                 VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml \
                   paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
                     > bosh-manifest/bosh-manifest.yml
