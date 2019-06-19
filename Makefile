@@ -143,7 +143,7 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
 	$(eval export CONCOURSE_TYPE=build-concourse)
 	$(eval export CONCOURSE_HOSTNAME=concourse)
-	$(eval export CONCOURSE_INSTANCE_TYPE=m4.large)
+	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 2)
 	@true
@@ -155,7 +155,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-cf)
 	$(eval export CONCOURSE_TYPE=deployer-concourse)
 	$(eval export CONCOURSE_HOSTNAME=deployer)
-	$(eval export CONCOURSE_INSTANCE_TYPE=m4.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE=m5.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 1)
 	@true

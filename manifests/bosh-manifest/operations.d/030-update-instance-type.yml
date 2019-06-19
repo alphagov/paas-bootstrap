@@ -1,4 +1,4 @@
 ---
 - type: replace
   path: /resource_pools/name=vms/cloud_properties/instance_type
-  value: t2.medium
+  value: t3.medium

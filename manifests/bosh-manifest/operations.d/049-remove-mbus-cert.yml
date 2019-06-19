@@ -1,3 +1,0 @@
----
-- type: remove
-  path: /resource_pools/name=vms/env/bosh/mbus
