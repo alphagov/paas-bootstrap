@@ -12,9 +12,9 @@ name: concourse
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
 releases:
   - name: "concourse"
-    version: "5.2.0"
-    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.2.0"
-    sha1: "e7c813d35e70e1a3a5334b977136ba736fae05e1"
+    version: "5.4.1"
+    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.4.1"
+    sha1: "c7051a773cc33435f7d608a020d8e0765c8faf4a"
   - name: "bpm"
     version: "1.1.1"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.1"
