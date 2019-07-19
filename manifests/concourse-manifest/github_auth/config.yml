@@ -14,10 +14,8 @@ instance_groups:
                 users:
                 - 46bit
                 - AP-Hunt
-                - chrisfarms
                 - LeePorte
                 - mogds
-                - paroxp
                 - richardTowers
                 - rhowe-gds
                 - tlwr
