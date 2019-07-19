@@ -16,6 +16,7 @@ instance_groups:
                 - AP-Hunt
                 - chrisfarms
                 - LeePorte
+                - mogds
                 - paroxp
                 - richardTowers
                 - rhowe-gds
