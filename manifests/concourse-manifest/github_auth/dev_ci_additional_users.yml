@@ -11,5 +11,4 @@ instance_groups:
               github:
                 users:
                   - (( append ))
-                  - mogds
                   - venusbb
