@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
-    version: "315.64"
+    version: "456.3"
 
   zone: (( grab terraform_outputs_zone0 ))
 
@@ -20,9 +20,9 @@ releases:
     url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=30
     sha1: a798999d29b9f5aa12035cff907b26674b491200
   - name: "bpm"
-    version: "1.0.4"
-    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.0.4"
-    sha1: "41df19697d6a69d2552bc2c132928157fa91abe0"
+    version: "1.1.1"
+    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.1.1"
+    sha1: "a7ea57aaf44a8217bae2a3df72a1afc51334e930"
 
 properties:
   aws:
