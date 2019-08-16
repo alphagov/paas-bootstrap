@@ -21,7 +21,7 @@ releases:
     sha1: a798999d29b9f5aa12035cff907b26674b491200
   - name: "bpm"
     version: "1.1.1"
-    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.1.1"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.1"
     sha1: "a7ea57aaf44a8217bae2a3df72a1afc51334e930"
 
 properties:
