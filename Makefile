@@ -23,6 +23,8 @@ spec:
 	cd concourse/scripts &&\
 		go get -t -d . &&\
 		go test
+	cd concourse &&\
+		bundle exec rspec
 	cd manifests/shared &&\
 		bundle exec rspec
 	cd manifests/bosh-manifest &&\
