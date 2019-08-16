@@ -151,6 +151,10 @@ instance_groups:
           worker_gateway:
             host_key: (( grab secrets.concourse_tsa_host_key ))
             authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
+          credhub:
+            url: (( concat "https://bosh." $SYSTEM_DNS_ZONE_NAME ":8844/api" ))
+            client_id: credhub-admin
+            client_secret: (( grab secrets.bosh_credhub_admin_client_password ))
 
       - name: worker
         release: concourse
