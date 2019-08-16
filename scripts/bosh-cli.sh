@@ -32,4 +32,4 @@ docker run \
     --env "BOSH_CA_CERT" \
     --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
     -v "${HOME}/.bosh_history/${DEPLOY_ENV}:/root/.bash_history" \
-    governmentpaas/bosh-shell:54f216386ad6de88da6365ebb2a587504b6a3837
+    governmentpaas/bosh-shell:4467c23cef4a5d87d531b88700300b222fbf2916
