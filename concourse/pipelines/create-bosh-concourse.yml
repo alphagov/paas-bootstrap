@@ -1177,19 +1177,70 @@ jobs:
               credhub set --name=/concourse/main/create-bosh-concourse/test-secret --type value --value "{\"date\": $(date +%s)}"
               credhub find --path=/
 
-      - task: test-concourse-credhub-retrieval
+      - try:
+          on_error:
+            task: check-if-bootstrap-fail-if-not
+            config:
+              platform: linux
+              image_resource: *gov-paas-bosh-cli-v2-image-resource
+              params:
+                TARGET_CONCOURSE: ((target_concourse))
+              outputs:
+                - name: check-if-bootstrap
+              run:
+                path: sh
+                args:
+                  - -e
+                  - -c
+                  - |
+                    echo "${TARGET_CONCOURSE}"
+
+                    if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
+                      echo This concourse is bootstrap, passing this test
+                      echo pass > check-if-bootstrap/concourse.txt
+                    else
+                      echo This concourse is not bootstrap and the test failed
+                      echo fail > check-if-bootstrap/concourse.txt
+                    fi
+
+          task: test-concourse-credhub-retrieval
+          config:
+            platform: linux
+            image_resource: *gov-paas-bosh-cli-v2-image-resource
+            params:
+              TEST_SECRET: ((test-secret))
+            inputs:
+              - name: check-if-bootstrap
+            outputs:
+              - name: check-if-bootstrap
+            run:
+              path: sh
+              args:
+                - -e
+                - -c
+                - |
+                  echo fail > check-if-bootstrap/concourse.txt
+                  echo "${TEST_SECRET}"
+                  echo pass > check-if-bootstrap/concourse.txt
+
+      - task: check-if-bootstrap-or-concourse-credhub-retrieval
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
-          params:
-            TEST_SECRET: ((test-secret))
+          inputs:
+            - name: check-if-bootstrap
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                echo "${TEST_SECRET}"
+                if [ "$(cat check-if-bootstrap/concourse.txt)" = "pass" ]; then
+                  echo Either bootstrap or test passed
+                  exit 0
+                fi
+                echo Test failed
+                exit 1
 
       - task: upload-pipeline
         tags: [colocated-with-web]
