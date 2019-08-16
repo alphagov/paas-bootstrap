@@ -18,3 +18,11 @@
 - path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/authentication/uaa/url
   type: replace
   value: "https://((bosh_fqdn)):8443"
+
+- type: replace
+  path: /variables/name=credhub_tls/options/alternative_names/-
+  value: ((bosh_fqdn))
+
+- type: replace
+  path: /variables/name=credhub_tls/options/alternative_names/-
+  value: ((bosh_fqdn_external))
