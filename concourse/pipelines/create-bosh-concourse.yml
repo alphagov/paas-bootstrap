@@ -1129,6 +1129,31 @@ jobs:
               bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
+      - task: test-credhub
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+          - name: bosh-secrets
+          - name: paas-bootstrap
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              CREDHUB_CLIENT=credhub-admin
+              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML credhub_admin_client_secret bosh-secrets/bosh-secrets.yml)
+
+              credhub api -s $BOSH_ENVIRONMENT:8844/api --skip-tls-validation
+
+              credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
+
+              credhub find --path=/
+
       - task: upload-pipeline
         tags: [colocated-with-web]
         config:
