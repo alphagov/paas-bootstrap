@@ -1075,8 +1075,11 @@ jobs:
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
+              $VAL_FROM_YAML credhub_ca.certificate bosh-vars-store/bosh-vars-store.yml > credhub-ca-cert.yml
+
               bosh deploy concourse-manifest/concourse-manifest.yml \
-                   -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES"
+                   -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
+                   --var-file=credhub_ca_cert=credhub-ca-cert.yml
 
   - name: post-deploy
     serial: true
@@ -1153,6 +1156,22 @@ jobs:
               credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
 
               credhub find --path=/
+              credhub set --name=/concourse/main/create-bosh-concourse/test-secret --type value --value "{\"date\": $(date +%s)}"
+              credhub find --path=/
+
+      - task: test-concourse-credhub-retrieval
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          params:
+            TEST_SECRET: ((test-secret))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              echo "${TEST_SECRET}" | jq .
 
       - task: upload-pipeline
         tags: [colocated-with-web]

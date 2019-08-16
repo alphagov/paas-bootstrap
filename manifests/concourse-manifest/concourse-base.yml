@@ -155,6 +155,8 @@ instance_groups:
             url: (( concat "https://bosh." $SYSTEM_DNS_ZONE_NAME ":8844/api" ))
             client_id: credhub-admin
             client_secret: (( grab secrets.bosh_credhub_admin_client_password ))
+            tls:
+              ca_cert: ((credhub_ca_cert))
 
       - name: worker
         release: concourse
