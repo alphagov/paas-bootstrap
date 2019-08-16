@@ -915,6 +915,7 @@ jobs:
           passed: ['concourse-terraform']
         - get: concourse-secrets
         - get: bosh-secrets
+          passed: ['generate-bosh-config']
         - get: bosh-tfstate
           passed: ['concourse-terraform']
       - task: terraform-outputs-to-yaml
