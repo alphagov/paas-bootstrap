@@ -78,6 +78,7 @@ nats_ca:
   private_key: ((default_ca.private_key))
 
 vcap_password: ((secrets.vcap_password))
+bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password))
 EOF
 
 
