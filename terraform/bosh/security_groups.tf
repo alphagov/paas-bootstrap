@@ -54,7 +54,7 @@ resource "aws_security_group" "bosh" {
     ]
   }
 
-    ingress {
+  ingress {
     from_port = 8844
     to_port   = 8844
     protocol  = "tcp"
