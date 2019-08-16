@@ -2,6 +2,7 @@ AllCops:
   Exclude:
     - 'vendor/**/*'
     - 'scripts/vendor/**/*'
+    - 'concourse/spec/**/*'
   TargetRubyVersion: 2.5
 Performance/HashEachMethods:
   Enabled: false
