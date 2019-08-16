@@ -156,7 +156,8 @@ instance_groups:
             client_id: credhub-admin
             client_secret: (( grab secrets.bosh_credhub_admin_client_password ))
             tls:
-              ca_cert: ((credhub_ca_cert))
+              ca_cert:
+                certificate: ((credhub_ca_cert))
 
       - name: worker
         release: concourse
