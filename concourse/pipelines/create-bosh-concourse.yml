@@ -1142,14 +1142,29 @@ jobs:
           inputs:
           - name: bosh-secrets
           - name: paas-bootstrap
+          - name: bosh-vars-store
+          - name: bosh-CA-crt
+          - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+
+            TARGET_CONCOURSE: ((target_concourse))
           run:
             path: sh
             args:
             - -e
             - -c
             - |
+
+              if [ "${TARGET_CONCOURSE}" = "bootstrap" ]; then
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+                export HTTPS_PROXY="$BOSH_ALL_PROXY"
+              fi
+
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               CREDHUB_CLIENT=credhub-admin
               CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
