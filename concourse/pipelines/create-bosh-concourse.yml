@@ -1175,7 +1175,9 @@ jobs:
 
               credhub find --path=/
               credhub set --name=/concourse/main/create-bosh-concourse/test-secret --type value --value "{\"date\": $(date +%s)}"
+              credhub set --name=/concourse/main/bosh-credhub-admin --type password --password "${CREDHUB_CLIENT_SECRET}"
               credhub find --path=/
+
 
       - try:
           on_error:
