@@ -1,0 +1,16 @@
+---
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/host
+  type: replace
+  value: ((external_db_host))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/password
+  type: replace
+  value: ((credhub_postgres_password))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/username
+  type: replace
+  value: credhub
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/port
+  type: replace
+  value: ((external_db_port))
