@@ -14,3 +14,7 @@
 - path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/port
   type: replace
   value: ((external_db_port))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/authentication/uaa/url
+  type: replace
+  value: "https://((bosh_fqdn)):8443"

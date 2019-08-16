@@ -10,7 +10,7 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: add-credhub-to-bosh-dockerfiles
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
@@ -1134,7 +1134,7 @@ jobs:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
-          - name: bosh-secrets
+          - name: bosh-vars-store
           - name: paas-bootstrap
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
@@ -1146,7 +1146,7 @@ jobs:
             - |
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               CREDHUB_CLIENT=credhub-admin
-              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML credhub_admin_client_secret bosh-secrets/bosh-secrets.yml)
+              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML credhub_admin_client_secret bosh-vars-store/bosh-vars-store.yml)
 
               credhub api -s $BOSH_ENVIRONMENT:8844/api --skip-tls-validation
 
