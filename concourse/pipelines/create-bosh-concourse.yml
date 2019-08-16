@@ -1093,6 +1093,8 @@ jobs:
           passed: ['concourse-deploy']
         - get: bosh-vars-store
           passed: ['concourse-deploy']
+        - get: bosh-secrets
+          passed: ['generate-secrets']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: ssh-private-key
@@ -1138,7 +1140,7 @@ jobs:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
-          - name: bosh-vars-store
+          - name: bosh-secrets
           - name: paas-bootstrap
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
@@ -1150,7 +1152,7 @@ jobs:
             - |
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               CREDHUB_CLIENT=credhub-admin
-              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML credhub_admin_client_secret bosh-vars-store/bosh-vars-store.yml)
+              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
 
               credhub api -s $BOSH_ENVIRONMENT:8844/api --skip-tls-validation
 
@@ -1169,10 +1171,10 @@ jobs:
           run:
             path: sh
             args:
-            - -e
-            - -c
-            - |
-              echo "${TEST_SECRET}" | jq .
+              - -e
+              - -c
+              - |
+                echo "${TEST_SECRET}"
 
       - task: upload-pipeline
         tags: [colocated-with-web]
