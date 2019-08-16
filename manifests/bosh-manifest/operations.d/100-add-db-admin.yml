@@ -18,18 +18,32 @@
   value:
     connection_string: "postgres://((external_db_user)):((external_db_password))@((external_db_host)):((external_db_port))/postgres"
     databases:
-    - name: uaa
-      owner: uaa
-      extensions:
-      - citext
-      - pgcrypto
+      - name: uaa
+        owner: uaa
+        extensions:
+        - citext
+        - pgcrypto
+      - name: credhub
+        owner: credhub
+        extensions:
+        - citext
+        - pgcrypto
     roles:
-    - name: uaa
-      password: ((uaa_postgres_password))
-      parent_role: ((external_db_user))
+      - name: uaa
+        password: ((uaa_postgres_password))
+        parent_role: ((external_db_user))
+      - name: credhub
+        password: ((credhub_postgres_password))
+        parent_role: ((external_db_user))
 
 - type: replace
   path: /variables/-
   value:
     name: uaa_postgres_password
+    type: password
+
+- type: replace
+  path: /variables/-
+  value:
+    name: credhub_postgres_password
     type: password
