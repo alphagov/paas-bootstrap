@@ -1169,7 +1169,7 @@ jobs:
               CREDHUB_CLIENT=credhub-admin
               CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
 
-              credhub api -s $BOSH_ENVIRONMENT:8844/api --skip-tls-validation
+              credhub api -s "$BOSH_ENVIRONMENT:8844/api" --skip-tls-validation
 
               credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
 
