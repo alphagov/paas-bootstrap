@@ -1209,8 +1209,6 @@ jobs:
             image_resource: *gov-paas-bosh-cli-v2-image-resource
             params:
               TEST_SECRET: ((test-secret))
-            inputs:
-              - name: check-if-bootstrap
             outputs:
               - name: check-if-bootstrap
             run:
