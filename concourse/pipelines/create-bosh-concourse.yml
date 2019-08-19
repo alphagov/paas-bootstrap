@@ -914,6 +914,7 @@ jobs:
         - get: concourse-tfstate
           passed: ['concourse-terraform']
         - get: concourse-secrets
+          passed: ['generate-secrets']
         - get: bosh-secrets
           passed: ['generate-bosh-config']
         - get: bosh-tfstate
