@@ -5,22 +5,22 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/awscli
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: governmentpaas/certstrap
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: governmentpaas/git-ssh
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
@@ -30,17 +30,17 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/self-update-pipelines
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: 7a7678281e1f152183c7359546912df68f298664
+        tag: 4467c23cef4a5d87d531b88700300b222fbf2916
 
 groups:
   - name: all
@@ -915,6 +915,7 @@ jobs:
           passed: ['concourse-terraform']
         - get: concourse-secrets
         - get: bosh-secrets
+          passed: ['generate-bosh-config']
         - get: bosh-tfstate
           passed: ['concourse-terraform']
       - task: terraform-outputs-to-yaml
@@ -1075,8 +1076,11 @@ jobs:
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
+              $VAL_FROM_YAML credhub_ca.certificate bosh-vars-store/bosh-vars-store.yml > credhub-ca-cert.yml
+
               bosh deploy concourse-manifest/concourse-manifest.yml \
-                   -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES"
+                   -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
+                   --var-file=credhub_ca_cert=credhub-ca-cert.yml
 
   - name: post-deploy
     serial: true
@@ -1089,6 +1093,8 @@ jobs:
           passed: ['concourse-deploy']
         - get: bosh-vars-store
           passed: ['concourse-deploy']
+        - get: bosh-secrets
+          passed: ['generate-secrets']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: ssh-private-key
@@ -1128,6 +1134,113 @@ jobs:
               bosh deployment
               bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
+
+      - task: test-credhub
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+          - name: bosh-secrets
+          - name: paas-bootstrap
+          - name: bosh-vars-store
+          - name: bosh-CA-crt
+          - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+
+            TARGET_CONCOURSE: ((target_concourse))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+
+              if [ "${TARGET_CONCOURSE}" = "bootstrap" ]; then
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+                export HTTPS_PROXY="$BOSH_ALL_PROXY"
+              fi
+
+              VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+              CREDHUB_CLIENT=credhub-admin
+              CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
+
+              credhub api -s "$BOSH_ENVIRONMENT:8844/api" --skip-tls-validation
+
+              credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
+
+              credhub find --path=/
+              credhub set --name=/concourse/main/create-bosh-concourse/test-secret --type value --value "{\"date\": $(date +%s)}"
+              credhub set --name=/concourse/main/bosh-credhub-admin --type password --password "${CREDHUB_CLIENT_SECRET}"
+              credhub find --path=/
+
+
+      - try:
+          on_error:
+            task: check-if-bootstrap-fail-if-not
+            config:
+              platform: linux
+              image_resource: *gov-paas-bosh-cli-v2-image-resource
+              params:
+                TARGET_CONCOURSE: ((target_concourse))
+              outputs:
+                - name: check-if-bootstrap
+              run:
+                path: sh
+                args:
+                  - -e
+                  - -c
+                  - |
+                    echo "${TARGET_CONCOURSE}"
+
+                    if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
+                      echo This concourse is bootstrap, passing this test
+                      echo pass > check-if-bootstrap/concourse.txt
+                    else
+                      echo This concourse is not bootstrap and the test failed
+                      echo fail > check-if-bootstrap/concourse.txt
+                    fi
+
+          task: test-concourse-credhub-retrieval
+          config:
+            platform: linux
+            image_resource: *gov-paas-bosh-cli-v2-image-resource
+            params:
+              TEST_SECRET: ((test-secret))
+            outputs:
+              - name: check-if-bootstrap
+            run:
+              path: sh
+              args:
+                - -e
+                - -c
+                - |
+                  echo fail > check-if-bootstrap/concourse.txt
+                  echo "${TEST_SECRET}"
+                  echo pass > check-if-bootstrap/concourse.txt
+
+      - task: check-if-bootstrap-or-concourse-credhub-retrieval
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: check-if-bootstrap
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                if [ "$(cat check-if-bootstrap/concourse.txt)" = "pass" ]; then
+                  echo Either bootstrap or test passed
+                  exit 0
+                fi
+                echo Test failed
+                exit 1
 
       - task: upload-pipeline
         tags: [colocated-with-web]

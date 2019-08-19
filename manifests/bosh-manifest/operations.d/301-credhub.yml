@@ -1,0 +1,35 @@
+---
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/host
+  type: replace
+  value: ((external_db_host))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/password
+  type: replace
+  value: ((credhub_postgres_password))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/username
+  type: replace
+  value: credhub
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/port
+  type: replace
+  value: ((external_db_port))
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/authentication/uaa/url
+  type: replace
+  value: "https://((bosh_fqdn)):8443"
+
+- path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/credhub-admin/secret?
+  type: replace
+  value: ((bosh_credhub_admin_client_password))
+
+- type: replace
+  path: /variables/name=credhub_tls/options/alternative_names/-
+  value: ((bosh_fqdn))
+
+- type: replace
+  path: /variables/name=credhub_tls/options/alternative_names/-
+  value: ((bosh_fqdn_external))
+
+- path: /variables/name=credhub_admin_client_secret
+  type: remove

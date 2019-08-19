@@ -21,7 +21,7 @@ releases:
     sha1: a798999d29b9f5aa12035cff907b26674b491200
   - name: "bpm"
     version: "1.1.1"
-    url: "https://bosh.io/d/github.com/cloudfoundry-incubator/bpm-release?v=1.1.1"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.1"
     sha1: "a7ea57aaf44a8217bae2a3df72a1afc51334e930"
 
 properties:
@@ -151,6 +151,13 @@ instance_groups:
           worker_gateway:
             host_key: (( grab secrets.concourse_tsa_host_key ))
             authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
+          credhub:
+            url: (( concat "https://bosh." $SYSTEM_DNS_ZONE_NAME ":8844/api" ))
+            client_id: credhub-admin
+            client_secret: (( grab secrets.bosh_credhub_admin_client_password ))
+            tls:
+              ca_cert:
+                certificate: ((credhub_ca_cert))
 
       - name: worker
         release: concourse
