@@ -45,6 +45,6 @@ docker run \
     --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
     --env "CREDHUB_SERVER=https://bosh.${SYSTEM_DNS_ZONE_NAME}:8844/api" \
     --env "CREDHUB_CLIENT" --env "CREDHUB_SECRET" --env "CREDHUB_CA_CERT" \
-    --env "HTTPS_PROXY=socks5://localhost:25555" \
+    --env "CREDHUB_PROXY=socks5://localhost:25555" \
     -v "${HOME}/.bosh_history/${DEPLOY_ENV}:/root/.bash_history" \
     governmentpaas/bosh-shell:4467c23cef4a5d87d531b88700300b222fbf2916
