@@ -1170,15 +1170,24 @@ jobs:
               CREDHUB_CLIENT=credhub-admin
               CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
 
-              credhub api -s "$BOSH_ENVIRONMENT:8844/api" --skip-tls-validation
+              CREDHUB_CA_CERT="$(cat <<EOCERT
+              $($VAL_FROM_YAML credhub_ca.ca bosh-vars-store/bosh-vars-store.yml)
+              $($VAL_FROM_YAML uaa_ssl.ca bosh-vars-store/bosh-vars-store.yml)
+              EOCERT
+              )"
+              export CREDHUB_CA_CERT
+
+              credhub api -s "$BOSH_ENVIRONMENT:8844/api"
 
               credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
 
               credhub find --path=/
               credhub set --name=/concourse/main/create-bosh-concourse/test-secret --type value --value "{\"date\": $(date +%s)}"
               credhub set --name=/concourse/main/bosh-credhub-admin --type password --password "${CREDHUB_CLIENT_SECRET}"
-              credhub find --path=/
 
+              # This is a value because we do not want to store the private key
+              credhub set --name=/concourse/main/bosh-credhub-ca-cert --type value --value "${CREDHUB_CA_CERT}"
+              credhub find --path=/
 
       - try:
           on_error:
