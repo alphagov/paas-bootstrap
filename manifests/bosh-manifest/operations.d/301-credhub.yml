@@ -19,6 +19,14 @@
   type: replace
   value: "https://((bosh_fqdn)):8443"
 
+- path: /instance_groups/name=bosh/properties/director/config_server/uaa/url
+  type: replace
+  value: "https://((bosh_fqdn)):8443"
+
+- path: /instance_groups/name=bosh/properties/director/config_server/url
+  type: replace
+  value: "https://((bosh_fqdn)):8844/api/"
+
 - path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/credhub-admin/secret?
   type: replace
   value: ((bosh_credhub_admin_client_password))
