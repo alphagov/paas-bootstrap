@@ -1,4 +1,5 @@
 ---
+# Add a UAA client so that the bosh prometheus exporter can scrape via bosh
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/bosh_exporter?
   value:
