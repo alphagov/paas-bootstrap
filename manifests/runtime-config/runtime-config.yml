@@ -1,0 +1,26 @@
+# BOSH runtime config is configuration which is applied to:
+# - all VMs
+# - in all deployments
+# - except the bosh director vm
+#
+# Changing the runtime config will roll every VM in a bosh deployment during
+# the next 'bosh deploy'
+#
+# You can only apply addons and releases within the runtime config
+
+addons:
+  - name: node_exporter
+    jobs:
+      - name: node_exporter
+        release: node-exporter
+    include:
+      stemcell:
+        - os: ubuntu-trusty
+        - os: ubuntu-xenial
+    properties: {}
+
+releases:
+  - name: node-exporter
+    version: "4.2.0"
+    url: "https://bosh.io/d/github.com/cloudfoundry-community/node-exporter-boshrelease?v=4.2.0"
+    sha1: "b4ffebacc55fbb9934425ac792bb7179eed7e61c"
