@@ -31,3 +31,7 @@
 - type: replace
   path: /variables/name=uaa_service_provider_ssl/options/alternative_names/-
   value: ((bosh_fqdn))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/ca_certs?/-
+  value: ((aws_rds_combined_ca_bundle))
