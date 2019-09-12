@@ -15,6 +15,14 @@
   type: replace
   value: ((external_db_port))
 
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/require_tls
+  type: replace
+  value: true
+
+- path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/data_storage/tls_ca?
+  type: replace
+  value: ((aws_rds_combined_ca_bundle))
+
 - path: /instance_groups/name=bosh/jobs/name=credhub/properties/credhub/authentication/uaa/url
   type: replace
   value: "https://((bosh_fqdn)):8443"
