@@ -17,6 +17,5 @@ instance_groups:
                 - LeePorte
                 - mogds
                 - richardTowers
-                - rhowe-gds
                 - tlwr
                 - tnwhitwell
