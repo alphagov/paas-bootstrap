@@ -286,6 +286,13 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
+  - name: paas-bootstrap-cloud-config
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: paas-bootstrap-cloud-config.yml
+
 jobs:
   - name: init-bucket
     serial: true
@@ -946,52 +953,85 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: paas-bootstrap
-          passed: ['concourse-terraform']
-        - get: pipeline-trigger
-          trigger: true
-          passed: ['concourse-terraform']
-        - get: vpc-tfstate
-          passed: ['concourse-terraform']
-        - get: concourse-tfstate
-          passed: ['concourse-terraform']
-        - get: concourse-secrets
-          passed: ['generate-secrets']
-        - get: bosh-secrets
-          passed: ['generate-bosh-config']
-        - get: bosh-tfstate
-          passed: ['concourse-terraform']
+          - get: paas-bootstrap
+            passed: ['concourse-terraform']
+          - get: pipeline-trigger
+            trigger: true
+            passed: ['concourse-terraform']
+          - get: vpc-tfstate
+            passed: ['concourse-terraform']
+          - get: concourse-tfstate
+            passed: ['concourse-terraform']
+          - get: concourse-secrets
+            passed: ['generate-secrets']
+          - get: bosh-secrets
+            passed: ['generate-bosh-config']
+          - get: bosh-tfstate
+            passed: ['concourse-terraform']
+
       - task: terraform-outputs-to-yaml
         config:
           platform: linux
           image_resource: *ruby-slim-image-resource
           inputs:
-          - name: paas-bootstrap
-          - name: concourse-tfstate
-          - name: vpc-tfstate
-          - name: bosh-tfstate
+            - name: paas-bootstrap
+            - name: concourse-tfstate
+            - name: vpc-tfstate
+            - name: bosh-tfstate
           outputs:
-          - name: terraform-outputs
+            - name: terraform-outputs
           run:
             path: sh
             args:
-            - -e
-            - -c
-            - |
-              ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
-              < vpc-tfstate/vpc.tfstate \
-              > terraform-outputs/vpc-terraform-outputs.yml
-              ls -l terraform-outputs/vpc-terraform-outputs.yml
+              - -e
+              - -c
+              - |
+                ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
+                < vpc-tfstate/vpc.tfstate \
+                > terraform-outputs/vpc-terraform-outputs.yml
+                ls -l terraform-outputs/vpc-terraform-outputs.yml
 
-              ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
-              < concourse-tfstate/concourse.tfstate \
-              > terraform-outputs/concourse-terraform-outputs.yml
-              ls -l terraform-outputs/concourse-terraform-outputs.yml
+                ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
+                < concourse-tfstate/concourse.tfstate \
+                > terraform-outputs/concourse-terraform-outputs.yml
+                ls -l terraform-outputs/concourse-terraform-outputs.yml
 
-              ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
-              < bosh-tfstate/bosh.tfstate \
-              > terraform-outputs/bosh-terraform-outputs.yml
-              ls -l terraform-outputs/bosh-terraform-outputs.yml
+                ruby paas-bootstrap/concourse/scripts/extract_terraform_state_to_yaml.rb \
+                < bosh-tfstate/bosh.tfstate \
+                > terraform-outputs/bosh-terraform-outputs.yml
+                ls -l terraform-outputs/bosh-terraform-outputs.yml
+
+      - task: generate-paas-bootstrap-cloud-config
+        config:
+          platform: linux
+          image_resource: *spruce-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: terraform-outputs
+          outputs:
+            - name: paas-bootstrap-cloud-config
+          params:
+            CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
+            CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                spruce merge \
+                  terraform-outputs/concourse-terraform-outputs.yml \
+                  terraform-outputs/vpc-terraform-outputs.yml \
+                  terraform-outputs/bosh-terraform-outputs.yml \
+                  paas-bootstrap/manifests/cloud-config/paas-bootstrap.yml \
+                  | grep -v terraform_outputs_ \
+                  > paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+
+                cat paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+        on_success:
+          put: paas-bootstrap-cloud-config
+          params:
+            file: paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
 
       - task: generate-concourse-manifest
         config:
@@ -1007,20 +1047,20 @@ jobs:
             GITHUB_CLIENT_SECRET: ((github_client_secret))
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
           inputs:
-          - name: paas-bootstrap
-          - name: concourse-secrets
-          - name: bosh-secrets
-          - name: terraform-outputs
+            - name: paas-bootstrap
+            - name: concourse-secrets
+            - name: bosh-secrets
+            - name: terraform-outputs
           outputs:
-          - name: concourse-manifest
+            - name: concourse-manifest
           run:
             path: sh
             args:
-            - -e
-            - -c
-            - |
-              ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-manifest.sh > concourse-manifest/concourse-manifest.yml
-              ls -l concourse-manifest/concourse-manifest.yml
+              - -e
+              - -c
+              - |
+                ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-manifest.sh > concourse-manifest/concourse-manifest.yml
+                ls -l concourse-manifest/concourse-manifest.yml
         on_success:
           put: concourse-manifest
           params:
@@ -1031,17 +1071,122 @@ jobs:
     interruptible: true
     plan:
       - in_parallel:
-        - get: paas-bootstrap
-          passed: ['generate-concourse-config']
-        - get: pipeline-trigger
-          trigger: true
-          passed: ['generate-concourse-config', 'bosh-deploy']
-        - get: bosh-vars-store
-        - get: concourse-manifest
-          passed: ['generate-concourse-config']
-        - get: bosh-CA-crt
-          passed: ['generate-secrets']
-        - get: ssh-private-key
+          - get: paas-bootstrap
+            passed: ['generate-concourse-config']
+          - get: paas-bootstrap-cloud-config
+            passed: ['generate-concourse-config']
+          - get: pipeline-trigger
+            trigger: true
+            passed: ['generate-concourse-config', 'bosh-deploy']
+          - get: bosh-vars-store
+          - get: concourse-manifest
+            passed: ['generate-concourse-config']
+          - get: bosh-CA-crt
+            passed: ['generate-secrets']
+          - get: ssh-private-key
+
+      - task: upload-paas-bootstrap-cloud-config
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: paas-bootstrap-cloud-config
+            - name: bosh-vars-store
+            - name: paas-bootstrap
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+          run:
+            path: sh
+            args:
+              - -e
+              - -u
+              - -c
+              - |
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
+                bosh update-config \
+                  --name paas-bootstrap \
+                  --type cloud \
+                  paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+
+      - task: migrate-paas-cf-cloud-config
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: bosh-vars-store
+            - name: paas-bootstrap
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+          run:
+            path: sh
+            args:
+              - -e
+              - -u
+              - -c
+              - |
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
+                if bosh configs --type=cloud | grep -q default
+                then
+                  echo 'Found default cloud config, need to migrate it'
+
+                  bosh config --type=cloud --name=default \
+                    | sed '1,/UTC/d' | tr -d "\t" \
+                    > default-cloud-config.yml 2> /dev/null
+
+                cat <<EOF > remove-compilation.yml
+                - type: remove
+                  path: /compilation
+
+                - type: remove
+                  path: /vm_types/name=compilation
+                EOF
+
+                  > paas-cf-cloud-config.yml \
+                  bosh interpolate \
+                    --ops-file=remove-compilation.yml \
+                    default-cloud-config.yml \
+
+                  bosh update-config \
+                    --name paas-cf \
+                    --type cloud \
+                    paas-cf-cloud-config.yml
+
+                  bosh delete-config --name=default --type=cloud
+                else
+                  echo 'No default cloud config found, nothing to do'
+                fi
 
       - task: get-and-upload-stemcell
         config:
@@ -1089,6 +1234,7 @@ jobs:
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
           - name: concourse-manifest
+          - name: paas-bootstrap-cloud-config
           - name: bosh-vars-store
           - name: paas-bootstrap
           - name: bosh-CA-crt

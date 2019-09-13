@@ -1,0 +1,103 @@
+---
+# The azs defined here are 10.0/16 and not related to azs in paas-cf
+azs:
+  - name: b1
+    cloud_properties:
+      availability_zone: (( grab terraform_outputs_zone0 ))
+  - name: b2
+    cloud_properties:
+      availability_zone: (( grab terraform_outputs_zone1 ))
+  - name: b3
+    cloud_properties:
+      availability_zone: (( grab terraform_outputs_zone2 ))
+
+vm_types:
+  - name: compilation
+    cloud_properties:
+      iam_instance_profile: compilation-vm
+      instance_type: c5.large
+      auto_assign_public_ip: true
+      ephemeral_disk:
+        size: 20480
+        type: gp2
+
+  - name: concourse
+    cloud_properties:
+      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
+      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
+      ephemeral_disk:
+        size: 102400
+        type: gp2
+
+  - name: concourse_worker
+    cloud_properties:
+      auto_assign_public_ip: true
+      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
+      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
+      ephemeral_disk:
+        size: 102400
+        type: gp2
+
+
+vm_extensions:
+  - name: concourse
+    cloud_properties:
+      elbs:
+        - (( grab terraform_outputs_concourse_elb_name ))
+
+      security_groups:
+        - (( grab terraform_outputs_bosh_managed_security_group ))
+        - (( grab terraform_outputs_concourse_security_group ))
+        - (( grab terraform_outputs_concourse_nocycle_security_group ))
+        - (( grab terraform_outputs_ssh_security_group ))
+        - (( grab terraform_outputs_bosh_api_client_security_group ))
+        - (( grab terraform_outputs_bosh_ssh_client_security_group ))
+
+  - name: concourse_worker
+    cloud_properties:
+      availability_zone: b1
+      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
+      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
+      auto_assign_public_ip: true
+      ephemeral_disk:
+        size: 102400
+        type: gp2
+      security_groups:
+        - (( grab terraform_outputs_bosh_managed_security_group ))
+        - (( grab terraform_outputs_concourse_worker_security_group ))
+        - (( grab terraform_outputs_ssh_security_group ))
+        - (( grab terraform_outputs_bosh_api_client_security_group ))
+        - (( grab terraform_outputs_bosh_ssh_client_security_group ))
+
+networks:
+  - name: public
+    type: vip
+
+  - name: concourse
+    type: dynamic
+    subnets:
+      - az: b1
+
+        dns:
+          - 10.0.0.2
+
+        cloud_properties:
+          subnet: (( grab terraform_outputs_subnet0_id ))
+
+  - name: compilation
+    type: dynamic
+    subnets:
+      - az: b1
+
+        dns:
+          - 10.0.0.2
+
+        cloud_properties:
+          subnet: (( grab terraform_outputs_subnet2_id ))
+
+compilation:
+  vm_type: compilation
+  az: b1
+  network: compilation
+  reuse_compilation_vms: true
+  workers: 6
