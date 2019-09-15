@@ -55,13 +55,6 @@ vm_extensions:
 
   - name: concourse_worker
     cloud_properties:
-      availability_zone: b1
-      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
-      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
-      auto_assign_public_ip: true
-      ephemeral_disk:
-        size: 102400
-        type: gp2
       security_groups:
         - (( grab terraform_outputs_bosh_managed_security_group ))
         - (( grab terraform_outputs_concourse_worker_security_group ))

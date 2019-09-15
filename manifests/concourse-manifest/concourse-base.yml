@@ -4,9 +4,13 @@ meta:
     name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
     version: "456.14"
 
-  zone: (( grab terraform_outputs_zone0 ))
-
 name: concourse
+
+stemcells:
+  # Using spruce grab operation because of the upload step in pipeline
+  - alias: default
+    os: ubuntu-xenial
+    version: (( grab meta.stemcell.version ))
 
 # These versions and checksums are taken from the versions.yml file from the
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
@@ -25,80 +29,23 @@ properties:
     credentials_source: env_or_profile
     region: (( grab terraform_outputs_region ))
 
-resource_pools:
-  - name: concourse
-    network: concourse
-    stemcell:
-      name: (( grab meta.stemcell.name ))
-      version: (( grab meta.stemcell.version ))
-    cloud_properties:
-      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
-      availability_zone: (( grab meta.zone ))
-      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
-      elbs:
-      - (( grab terraform_outputs_concourse_elb_name ))
-      ephemeral_disk:
-        size: 102400
-        type: gp2
-      security_groups:
-      - (( grab terraform_outputs_bosh_managed_security_group ))
-      - (( grab terraform_outputs_concourse_security_group ))
-      - (( grab terraform_outputs_concourse_nocycle_security_group ))
-      - (( grab terraform_outputs_ssh_security_group ))
-      - (( grab terraform_outputs_bosh_api_client_security_group ))
-      - (( grab terraform_outputs_bosh_ssh_client_security_group ))
-    env:
-      bosh:
-        password: (( grab secrets.vcap_password ))
-        ipv6:
-          enable: true
-
-  - name: concourse_worker
-    network: concourse
-    stemcell:
-      name: (( grab meta.stemcell.name ))
-      version: (( grab meta.stemcell.version ))
-    cloud_properties:
-      instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
-      availability_zone: (( grab meta.zone ))
-      iam_instance_profile: (( grab $CONCOURSE_INSTANCE_PROFILE ))
-      auto_assign_public_ip: true
-      ephemeral_disk:
-        size: 102400
-        type: gp2
-      security_groups:
-      - (( grab terraform_outputs_bosh_managed_security_group ))
-      - (( grab terraform_outputs_concourse_worker_security_group ))
-      - (( grab terraform_outputs_ssh_security_group ))
-      - (( grab terraform_outputs_bosh_api_client_security_group ))
-      - (( grab terraform_outputs_bosh_ssh_client_security_group ))
-    env:
-      bosh:
-        password: (( grab secrets.vcap_password ))
-        ipv6:
-          enable: true
-
-networks:
-  - name: concourse
-    type: manual
-    subnets:
-      - range: 10.0.0.0/24
-        dns: [10.0.0.2]
-        gateway: 10.0.0.1
-        reserved:
-        - 10.0.0.0 - 10.0.0.9
-        static:
-        - 10.0.0.10 - 10.0.0.20
-
-        cloud_properties:
-          subnet: (( grab terraform_outputs_subnet0_id ))
-  - name: public
-    type: vip
-
 instance_groups:
   - name: concourse
     instances: 1
-    resource_pool: concourse
+    stemcell: default
+
+    azs:
+      - b1
+
+    vm_type: concourse
+    vm_extensions:
+      - concourse
+
+    env:
+      bosh:
+        password: (( grab secrets.vcap_password ))
+        ipv6:
+          enable: true
 
     jobs:
       - name: bpm
@@ -154,14 +101,26 @@ instance_groups:
     networks:
       - name: public
         static_ips:
-        - (( grab terraform_outputs_concourse_elastic_ip ))
+          - (( grab terraform_outputs_concourse_elastic_ip ))
       - name: concourse
-        static_ips: (( static_ips(0) ))
         default: [dns, gateway]
 
   - name: concourse-worker
     instances: ((concourse_worker_instances))
-    resource_pool: concourse_worker
+    stemcell: default
+
+    azs:
+      - b1
+
+    vm_type: concourse_worker
+    vm_extensions:
+      - concourse_worker
+
+    env:
+      bosh:
+        password: (( grab secrets.vcap_password ))
+        ipv6:
+          enable: true
 
     jobs:
       - name: bpm
@@ -180,16 +139,6 @@ instance_groups:
     networks:
       - name: concourse
         default: [dns, gateway]
-
-compilation:
-  workers: 1
-  network: concourse
-  reuse_compilation_vms: true
-  cloud_properties:
-    instance_type: c4.large
-    availability_zone: (( grab meta.zone ))
-    iam_instance_profile: compilation-vm
-    auto_assign_public_ip: true
 
 update:
   canaries: 1
