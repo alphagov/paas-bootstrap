@@ -123,6 +123,8 @@ make dev bootstrap-destroy
 
 You will need a working [Concourse Lite](#concourse-lite).
 
+You will need to either configure a [Github oauth application](https://team-manual.cloud.service.gov.uk/guides/Github_oAuth_in-Dev/) or pass `ENABLE_GITHUB=false` when uploading pipelines from this repo
+
 ### Deploy
 
 Run the `create-bosh-concourse` pipeline from your *Concourse Lite*. The pipeline will upload itself to the Concourse it has created, which means future runs of the pipeline can be done from there. In theory, we should only need the *Concourse Lite* for the initial bootstrapping.
