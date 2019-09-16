@@ -4,3 +4,11 @@
   value:
     url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-xenial-go_agent?v=456.14
     sha1: bec24356a7462d8c9e128e0734fa64dc20475c47
+
+- type: replace
+  path: /releases/name=bosh
+  value:
+    name: bosh
+    version: 0.0.1568645766
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/bosh-0.0.1568645766.tgz
+    sha1: 0d70246628244e4917f1be3679f7cdf75c994cbf
