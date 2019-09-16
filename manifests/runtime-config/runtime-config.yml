@@ -17,7 +17,6 @@ addons:
       stemcell:
         - os: ubuntu-trusty
         - os: ubuntu-xenial
-    properties: {}
 
 releases:
   - name: node-exporter

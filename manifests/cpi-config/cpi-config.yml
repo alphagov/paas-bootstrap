@@ -1,0 +1,6 @@
+cpis:
+  - name: aws
+    type: aws
+    properties:
+      credentials_source: env_or_profile
+      region: (( grab terraform_outputs_region ))

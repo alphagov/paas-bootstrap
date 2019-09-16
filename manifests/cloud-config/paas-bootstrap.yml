@@ -2,12 +2,17 @@
 # The azs defined here are 10.0/16 and not related to azs in paas-cf
 azs:
   - name: b1
+    cpi: aws
     cloud_properties:
       availability_zone: (( grab terraform_outputs_zone0 ))
+
   - name: b2
+    cpi: aws
     cloud_properties:
       availability_zone: (( grab terraform_outputs_zone1 ))
+
   - name: b3
+    cpi: aws
     cloud_properties:
       availability_zone: (( grab terraform_outputs_zone2 ))
 

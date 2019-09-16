@@ -24,11 +24,6 @@ releases:
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.1"
     sha1: "a7ea57aaf44a8217bae2a3df72a1afc51334e930"
 
-properties:
-  aws:
-    credentials_source: env_or_profile
-    region: (( grab terraform_outputs_region ))
-
 instance_groups:
   - name: concourse
     instances: 1
