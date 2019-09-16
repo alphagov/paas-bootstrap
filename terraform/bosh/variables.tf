@@ -40,3 +40,8 @@ variable "bosh_fqdn" {
 variable "bosh_fqdn_external" {
   description = "DNS record pointing to BOSH external IP"
 }
+
+variable "bosh_rds_storage_gb" {
+  description = "Storage in GB allocated to BOSH RDS"
+  default     = 25
+}
