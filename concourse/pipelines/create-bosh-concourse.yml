@@ -1499,7 +1499,7 @@ jobs:
               bosh vms | tee vms.txt
               [ "$(grep '|' vms.txt | grep -cEv "(^\|\ \ |\-\-|VM|running)")" -eq 0 ]
 
-      - task: test-credhub
+      - task: migrate-vars-to-credhub
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
@@ -1511,11 +1511,9 @@ jobs:
           - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
-
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
-
             TARGET_CONCOURSE: ((target_concourse))
           run:
             path: sh
@@ -1532,6 +1530,7 @@ jobs:
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
               CREDHUB_CLIENT=credhub-admin
               CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
+              VCAP_PASSWORD=$($VAL_FROM_YAML secrets.vcap_password bosh-secrets/bosh-secrets.yml)
 
               CREDHUB_CA_CERT="$(cat <<EOCERT
               $($VAL_FROM_YAML credhub_ca.ca bosh-vars-store/bosh-vars-store.yml)
@@ -1539,6 +1538,9 @@ jobs:
               EOCERT
               )"
               export CREDHUB_CA_CERT
+              BOSH_CA_CERT="$(cat bosh-CA-crt/bosh-CA.crt)"
+              BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+              BOSH_EXPORTER_PASSWORD=$($VAL_FROM_YAML bosh_exporter_password bosh-vars-store/bosh-vars-store.yml)
 
               credhub api -s "$BOSH_ENVIRONMENT:8844/api"
 
@@ -1550,6 +1552,11 @@ jobs:
 
               # This is a value because we do not want to store the private key
               credhub set --name=/concourse/main/bosh-credhub-ca-cert --type value --value "${CREDHUB_CA_CERT}"
+              credhub set --name=/concourse/main/bosh-ca-cert --type value --value "${BOSH_CA_CERT}"
+              credhub set --name=/concourse/main/bosh-client-secret --type value --value "${BOSH_CLIENT_SECRET}"
+              credhub set --name=/concourse/main/bosh-exporter-password --type value --value "${BOSH_EXPORTER_PASSWORD}"
+              credhub set --name=/concourse/main/vcap-password --type value --value "${VCAP_PASSWORD}"
+
               credhub find --path=/
 
       - try:
