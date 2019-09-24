@@ -10,6 +10,16 @@ cd "$SCRIPT_DIR"
 # shellcheck disable=SC2091
 $("${PROJECT_DIR}/concourse/scripts/environment.sh")
 
+CONCOURSE_WEB_USER="admin"
+CONCOURSE_WEB_PASSWORD="$(
+  aws sts get-caller-identity \
+  | awk '$1 ~ /UserId/ {sub(/:.*$/, "", $2); print $2}' \
+  | shasum -a 256 \
+  | base64 \
+  | head -c 32
+)"
+export CONCOURSE_WEB_USER CONCOURSE_WEB_PASSWORD
+
 export VAGRANT_DEFAULT_PROVIDER="aws"
 export VAGRANT_BOX_NAME="aws_vagrant_box"
 
@@ -51,10 +61,13 @@ while ! curl -f -qs http://localhost:8080/login -o /dev/null; do
 done
 
 echo
-echo "Succeeded connecting to concourse. About to upload pipelines..."
-"${PROJECT_DIR}/concourse/scripts/pipelines.sh"
-"${PROJECT_DIR}/concourse/scripts/concourse-lite-self-terminate.sh"
+echo "Succeeded connecting to concourse."
 
 echo
 echo "Concourse auth is ${CONCOURSE_WEB_USER} : ${CONCOURSE_WEB_PASSWORD}"
 echo "Concourse URL is ${CONCOURSE_URL}"
+echo
+echo "About to upload pipelines..."
+
+"${PROJECT_DIR}/concourse/scripts/pipelines.sh"
+"${PROJECT_DIR}/concourse/scripts/concourse-lite-self-terminate.sh"
