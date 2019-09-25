@@ -10,8 +10,6 @@ module ManifestHelpers
     include Singleton
     attr_accessor :manifest_with_defaults
     attr_accessor :manifest_with_github_auth
-    attr_accessor :concourse_secrets_file
-    attr_accessor :concourse_secrets_data
   end
 
   def manifest_with_defaults
@@ -26,16 +24,6 @@ module ManifestHelpers
         'GITHUB_CLIENT_SECRET' => 'dummy_github_client_secret',
       }
     )
-  end
-
-  def concourse_secrets_file
-    Cache.instance.concourse_secrets_file ||= generate_concourse_secrets
-    Cache.instance.concourse_secrets_file.path
-  end
-
-  def concourse_secrets_value(key)
-    Cache.instance.concourse_secrets_data ||= YAML.load_file(concourse_secrets_file).fetch('secrets')
-    Cache.instance.concourse_secrets_data.fetch(key)
   end
 
 private
@@ -64,8 +52,6 @@ private
 
     copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh concourse))
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
-    FileUtils.mkdir("#{workdir}/concourse-secrets")
-    FileUtils.cp(concourse_secrets_file, "#{workdir}/concourse-secrets/concourse-secrets.yml")
 
     output, error, status = Open3.capture3(
       env,
@@ -78,18 +64,6 @@ private
     deep_freeze(YAML.safe_load(output))
   ensure
     FileUtils.rm_rf(workdir)
-  end
-
-  def generate_concourse_secrets
-    file = Tempfile.new(['test-concourse-secrets', '.yml'])
-    output, error, status = Open3.capture3(File.expand_path("../../../scripts/generate-concourse-secrets.rb", __FILE__))
-    unless status.success?
-      raise "Error generating concourse-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
-    end
-    file.write(output)
-    file.flush
-    file.rewind
-    file
   end
 
   def deep_freeze(object)
