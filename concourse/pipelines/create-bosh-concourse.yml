@@ -270,15 +270,6 @@ resources:
       region_name: ((aws_region))
       initial_version: "-"
 
-  - name: concourse-secrets
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: concourse-secrets.yml
-      initial_version: "-"
-      initial_content_text: ""
-
   - name: concourse-manifest
     type: s3-iam
     source:
@@ -362,10 +353,10 @@ jobs:
                     echo "${TARGET_CONCOURSE}"
 
                     if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
-                      echo This concourse is bootstrap, passing this test
+                      echo This concourse is bootstrap, passing this task
                       echo pass > check-if-bootstrap/concourse.txt
                     else
-                      echo This concourse is not bootstrap and the test failed
+                      echo This concourse is not bootstrap and the task failed
                       echo fail > check-if-bootstrap/concourse.txt
                     fi
 
@@ -1549,32 +1540,7 @@ jobs:
   - name: clear-concourse-credentials
     plan:
       - get: paas-bootstrap
-      - get: concourse-secrets
-      - task: clear-passwords
-        config:
-          platform: linux
-          image_resource: *spruce-image-resource
-          inputs:
-            - name: paas-bootstrap
-            - name: concourse-secrets
-          outputs:
-            - name: modified-secrets
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
 
-                spruce merge \
-                  concourse-secrets/concourse-secrets.yml \
-                  paas-bootstrap/concourse/resources/concourse-secrets-keep.yml | \
-                  spruce merge - paas-bootstrap/concourse/resources/finalize.yml \
-                  > modified-secrets/concourse-secrets.yml
-        on_success:
-          put: concourse-secrets
-          params:
-            file: modified-secrets/concourse-secrets.yml
       - task: clear-ssh-keys
         file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
         params:
