@@ -338,12 +338,14 @@ jobs:
 
       - try:
           on_error:
-            task: check-if-bootstrap-fail-if-not
+            task: fail-try-block-if-not-bootstrap
             config:
               platform: linux
               image_resource: *gov-paas-bosh-cli-v2-image-resource
+              params:
+                TARGET_CONCOURSE: ((target_concourse))
               outputs:
-                - name: check-if-bootstrap
+                - name: self-update-pipeline-status
               run:
                 path: sh
                 args:
@@ -352,21 +354,22 @@ jobs:
                   - |
                     echo "${TARGET_CONCOURSE}"
 
+                    # If we are bootstrap and we error, it is okay
+                    # If we are not bootstrap and we error, it is bad
+
                     if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
-                      echo This concourse is bootstrap, passing this task
-                      echo pass > check-if-bootstrap/concourse.txt
+                      echo bootstrap > self-update-pipeline-status/state.txt
                     else
-                      echo This concourse is not bootstrap and the task failed
-                      echo fail > check-if-bootstrap/concourse.txt
+                      echo fail > self-update-pipeline-status/state.txt
                     fi
 
           do:
-            - task: mark-as-failed
+            - task: set-initial-self-update-pipeline-status
               config:
                 platform: linux
                 image_resource: *gov-paas-bosh-cli-v2-image-resource
                 outputs:
-                  - name: check-if-bootstrap
+                  - name: self-update-pipeline-status
                 run:
                   path: sh
                   args:
@@ -375,8 +378,7 @@ jobs:
                     - |
                       # If self-update-pipelines does not succeed then fail
                       # We initially always mark as failed by default
-                      # If everything is working we mark as passed
-                      echo fail > check-if-bootstrap/concourse.txt
+                      echo fail > self-update-pipeline-status/state.txt
 
             - task: self-update-pipelines
               tags: [colocated-with-web]
@@ -406,7 +408,7 @@ jobs:
                 platform: linux
                 image_resource: *gov-paas-bosh-cli-v2-image-resource
                 outputs:
-                  - name: check-if-bootstrap
+                  - name: self-update-pipeline-status
                 run:
                   path: sh
                   args:
@@ -414,26 +416,37 @@ jobs:
                     - -c
                     - |
                       # self-update-pipelines does has succeeded
-                      echo pass > check-if-bootstrap/concourse.txt
+                      echo pass > self-update-pipeline-status/state.txt
 
-      - task: show-concourse-information
+      - task: check-self-update-pipeline-status
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           params:
             TARGET_CONCOURSE: ((target_concourse))
           inputs:
-            - name: check-if-bootstrap
+            - name: self-update-pipeline-status
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                # This is to show what happened in the above steps
-                # and to stop pipecleaner.py whining
-                echo "target-concourse:   ${TARGET_CONCOURSE}"
-                echo "check-if-bootstrap: $(cat check-if-bootstrap/concourse.txt)"
+                echo "target-concourse:            ${TARGET_CONCOURSE}"
+                echo "self-update-pipeline-status: $(cat self-update-pipeline-status/state.txt)"
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "pass" ]; then
+                  echo 'self-update-pipeline passed'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "bootstrap" ]; then
+                  echo 'self-update-pipeline skipped because bootstrap'
+                  exit 0
+                fi
+
+                echo 'self-update-pipeline failed'
+                exit 1
 
       - put: pipeline-trigger
         params: {bump: patch}
