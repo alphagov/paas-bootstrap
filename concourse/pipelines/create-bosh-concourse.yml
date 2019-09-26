@@ -358,6 +358,7 @@ jobs:
               image_resource: *gov-paas-bosh-cli-v2-image-resource
               params:
                 TARGET_CONCOURSE: ((target_concourse))
+                SELF_UPDATE_PIPELINE: ((self_update_pipeline))
               outputs:
                 - name: self-update-pipeline-status
               run:
@@ -373,9 +374,15 @@ jobs:
 
                     if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
                       echo bootstrap > self-update-pipeline-status/state.txt
-                    else
-                      echo fail > self-update-pipeline-status/state.txt
+                      exit 0
                     fi
+
+                    if [ "$SELF_UPDATE_PIPELINE" = "false" ]; then
+                      echo skip > self-update-pipeline-status/state.txt
+                      exit 0
+                    fi
+
+                    echo fail > self-update-pipeline-status/state.txt
 
           do:
             - task: set-initial-self-update-pipeline-status
@@ -451,6 +458,11 @@ jobs:
 
                 if [ "$(cat self-update-pipeline-status/state.txt)" = "pass" ]; then
                   echo 'self-update-pipeline passed'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "skip" ]; then
+                  echo 'self-update-pipeline skipped'
                   exit 0
                 fi
 
