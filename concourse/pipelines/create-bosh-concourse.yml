@@ -270,15 +270,6 @@ resources:
       region_name: ((aws_region))
       initial_version: "-"
 
-  - name: concourse-secrets
-    type: s3-iam
-    source:
-      bucket: ((state_bucket))
-      region_name: ((aws_region))
-      versioned_file: concourse-secrets.yml
-      initial_version: "-"
-      initial_content_text: ""
-
   - name: concourse-manifest
     type: s3-iam
     source:
@@ -345,25 +336,129 @@ jobs:
           params:
             file: updated-bucket-state/bucket.tfstate
 
-      - task: self-update-pipelines
-        tags: [colocated-with-web]
+      - try:
+          on_error:
+            task: fail-try-block-if-not-bootstrap
+            config:
+              platform: linux
+              image_resource: *gov-paas-bosh-cli-v2-image-resource
+              params:
+                TARGET_CONCOURSE: ((target_concourse))
+                SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+              outputs:
+                - name: self-update-pipeline-status
+              run:
+                path: sh
+                args:
+                  - -e
+                  - -c
+                  - |
+                    echo "${TARGET_CONCOURSE}"
+
+                    # If we are bootstrap and we error, it is okay
+                    # If we are not bootstrap and we error, it is bad
+
+                    if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
+                      echo bootstrap > self-update-pipeline-status/state.txt
+                      exit 0
+                    fi
+
+                    if [ "$SELF_UPDATE_PIPELINE" = "false" ]; then
+                      echo skip > self-update-pipeline-status/state.txt
+                      exit 0
+                    fi
+
+                    echo fail > self-update-pipeline-status/state.txt
+
+          do:
+            - task: set-initial-self-update-pipeline-status
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                outputs:
+                  - name: self-update-pipeline-status
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      # If self-update-pipelines does not succeed then fail
+                      # We initially always mark as failed by default
+                      echo fail > self-update-pipeline-status/state.txt
+
+            - task: self-update-pipelines
+              tags: [colocated-with-web]
+              config:
+                platform: linux
+                image_resource: *self-update-pipelines-image-resource
+                inputs:
+                  - name: paas-bootstrap
+                params:
+                  DEPLOY_ENV: ((deploy_env))
+                  BRANCH: ((branch_name))
+                  MAKEFILE_ENV_TARGET: ((makefile_env_target))
+                  AWS_DEFAULT_REGION: ((aws_region))
+                  SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
+                  SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+                  TARGET_CONCOURSE: ((target_concourse))
+                  CONCOURSE_TYPE: ((concourse_type))
+                  ENABLE_GITHUB: ((enable_github))
+
+                  CONCOURSE_WEB_USER: admin
+                  CONCOURSE_WEB_PASSWORD: ((concourse_web_password))
+                run:
+                  path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+
+            - task: mark-as-passed
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                outputs:
+                  - name: self-update-pipeline-status
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      # self-update-pipelines does has succeeded
+                      echo pass > self-update-pipeline-status/state.txt
+
+      - task: check-self-update-pipeline-status
         config:
           platform: linux
-          image_resource: *self-update-pipelines-image-resource
-          inputs:
-            - name: paas-bootstrap
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           params:
-            DEPLOY_ENV: ((deploy_env))
-            BRANCH: ((branch_name))
-            MAKEFILE_ENV_TARGET: ((makefile_env_target))
-            AWS_DEFAULT_REGION: ((aws_region))
-            SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
-            SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             TARGET_CONCOURSE: ((target_concourse))
-            CONCOURSE_TYPE: ((concourse_type))
-            ENABLE_GITHUB: ((enable_github))
+          inputs:
+            - name: self-update-pipeline-status
           run:
-            path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                echo "target-concourse:            ${TARGET_CONCOURSE}"
+                echo "self-update-pipeline-status: $(cat self-update-pipeline-status/state.txt)"
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "pass" ]; then
+                  echo 'self-update-pipeline passed'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "skip" ]; then
+                  echo 'self-update-pipeline skipped'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "bootstrap" ]; then
+                  echo 'self-update-pipeline skipped because bootstrap'
+                  exit 0
+                fi
+
+                echo 'self-update-pipeline failed'
+                exit 1
 
       - put: pipeline-trigger
         params: {bump: patch}
@@ -465,7 +560,6 @@ jobs:
         - get: bosh-secrets
         - get: ssh-private-key
         - get: ssh-public-key
-        - get: concourse-secrets
 
       - task: generate-bosh-CA
         config:
@@ -566,31 +660,6 @@ jobs:
                 - put: ssh-public-key
                   params:
                     file: ssh-public-key-to-upload/id_rsa.pub
-
-      - task: generate-concourse-secrets
-        config:
-          platform: linux
-          image_resource: *ruby-slim-image-resource
-          inputs:
-          - name: paas-bootstrap
-          - name: concourse-secrets
-          outputs:
-            - name: generated-concourse-secrets
-          run:
-            path: sh
-            args:
-            - -e
-            - -c
-            - |
-              BUNDLE_GEMFILE=paas-bootstrap/Gemfile bundle install --without=default --with=secret_generator
-              ./paas-bootstrap/manifests/concourse-manifest/scripts/generate-concourse-secrets.rb \
-                --existing-secrets concourse-secrets/concourse-secrets.yml \
-                > generated-concourse-secrets/concourse-secrets.yml
-              ls -l generated-concourse-secrets/concourse-secrets.yml
-        on_success:
-          put: concourse-secrets
-          params:
-            file: generated-concourse-secrets/concourse-secrets.yml
 
   - name: bosh-terraform
     serial: true
@@ -913,8 +982,6 @@ jobs:
           passed: ['concourse-terraform']
         - get: concourse-tfstate
           passed: ['concourse-terraform']
-        - get: concourse-secrets
-          passed: ['generate-secrets']
         - get: bosh-secrets
           passed: ['generate-bosh-config']
         - get: bosh-tfstate
@@ -966,7 +1033,6 @@ jobs:
             SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
           inputs:
           - name: paas-bootstrap
-          - name: concourse-secrets
           - name: bosh-secrets
           - name: terraform-outputs
           outputs:
@@ -1099,6 +1165,66 @@ jobs:
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: ssh-private-key
+
+      - task: upload-concourse-web-password
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: bosh-secrets
+            - name: paas-bootstrap
+            - name: bosh-vars-store
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          outputs:
+            - name: upload-pipeline-secrets
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+
+            TARGET_CONCOURSE: ((target_concourse))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+
+                if [ "${TARGET_CONCOURSE}" = "bootstrap" ]; then
+                  . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+                  export HTTPS_PROXY="$BOSH_ALL_PROXY"
+                fi
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                CREDHUB_CLIENT=credhub-admin
+                CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
+
+                CREDHUB_CA_CERT="$(cat <<EOCERT
+                $($VAL_FROM_YAML credhub_ca.ca bosh-vars-store/bosh-vars-store.yml)
+                $($VAL_FROM_YAML uaa_ssl.ca bosh-vars-store/bosh-vars-store.yml)
+                EOCERT
+                )"
+                export CREDHUB_CA_CERT
+
+                credhub api -s "$BOSH_ENVIRONMENT:8844/api"
+
+                credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
+
+                echo "Getting /${DEPLOY_ENV}/concourse/concourse_web_password"
+                concourse_web_password="$(credhub get -q --name "/${DEPLOY_ENV}/concourse/concourse_web_password" | tr -d '[:space:]')"
+
+                echo 'Setting /concourse/main/concourse_web_password'
+                credhub set --name=/concourse/main/concourse_web_password --type password --password "${concourse_web_password}"
+
+                # This is for upload-pipelines task
+                # which must use the concourse_web_password
+                # so that the pipelines can be set by either the bootstrap concourse
+                # or the regular concourse
+                echo "$concourse_web_password" > upload-pipeline-secrets/concourse_web_password.txt
 
       - task: test-bosh-vms
         config:
@@ -1266,6 +1392,7 @@ jobs:
           image_resource: *self-update-pipelines-image-resource
           inputs:
             - name: paas-bootstrap
+            - name: upload-pipeline-secrets
           params:
             DEPLOY_ENV: ((deploy_env))
             BRANCH: ((branch_name))
@@ -1278,10 +1405,15 @@ jobs:
           run:
             path: sh
             args:
-            - -e
-            - -c
-            - |
-              make -C ./paas-bootstrap "${MAKEFILE_ENV_TARGET}" "${CONCOURSE_TYPE}" pipelines
+              - -e
+              - -c
+              - |
+                # We cannot use native credentials fetching here because bootstrap
+                CONCOURSE_WEB_USER=admin
+                CONCOURSE_WEB_PASSWORD="$(cat upload-pipeline-secrets/concourse_web_password.txt)"
+                export CONCOURSE_WEB_USER CONCOURSE_WEB_PASSWORD
+
+                make -C ./paas-bootstrap "${MAKEFILE_ENV_TARGET}" "${CONCOURSE_TYPE}" pipelines
 
   - name: expunge-concourse
     serial: true
@@ -1440,32 +1572,7 @@ jobs:
   - name: clear-concourse-credentials
     plan:
       - get: paas-bootstrap
-      - get: concourse-secrets
-      - task: clear-passwords
-        config:
-          platform: linux
-          image_resource: *spruce-image-resource
-          inputs:
-            - name: paas-bootstrap
-            - name: concourse-secrets
-          outputs:
-            - name: modified-secrets
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
 
-                spruce merge \
-                  concourse-secrets/concourse-secrets.yml \
-                  paas-bootstrap/concourse/resources/concourse-secrets-keep.yml | \
-                  spruce merge - paas-bootstrap/concourse/resources/finalize.yml \
-                  > modified-secrets/concourse-secrets.yml
-        on_success:
-          put: concourse-secrets
-          params:
-            file: modified-secrets/concourse-secrets.yml
       - task: clear-ssh-keys
         file: paas-bootstrap/concourse/tasks/delete-ssh-keys.yml
         params:

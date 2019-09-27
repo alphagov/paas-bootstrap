@@ -125,14 +125,14 @@ instance_groups:
               - name: atc
             roles:
               - name: atc
-                password: (( grab secrets.concourse_postgres_password ))
+                password: ((concourse_postgres_password))
 
       - name: web
         release: concourse
         properties:
           external_url: (( concat "https://" terraform_outputs_concourse_dns_name ))
           add_local_users:
-            - (( concat "admin:" secrets.concourse_web_password ))
+            - admin:((concourse_web_password))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
           main_team:
             auth:
@@ -143,14 +143,14 @@ instance_groups:
             database: atc
             role:
               name: atc
-              password: (( grab secrets.concourse_postgres_password ))
-          token_signing_key: (( grab secrets.concourse_token_signing_key ))
+              password: ((concourse_postgres_password))
+          token_signing_key: ((concourse_token_signing_key))
           prometheus:
             bind_ip: 0.0.0.0
             bind_port: 9391
           worker_gateway:
-            host_key: (( grab secrets.concourse_tsa_host_key ))
-            authorized_keys: [(( grab secrets.concourse_worker_key.public_key ))]
+            host_key: ((concourse_tsa_host_key))
+            authorized_keys: [((concourse_worker_key.public_key))]
           credhub:
             url: (( concat "https://bosh." $SYSTEM_DNS_ZONE_NAME ":8844/api" ))
             client_id: credhub-admin
@@ -164,8 +164,8 @@ instance_groups:
         properties:
           worker_gateway:
             hosts: ["127.0.0.1:2222"]
-            host_public_key: ((grab secrets.concourse_tsa_host_key.public_key))
-            worker_key: ((grab secrets.concourse_worker_key))
+            host_public_key: ((concourse_tsa_host_key.public_key))
+            worker_key: ((concourse_worker_key))
           tags: [colocated-with-web]
           garden:
             allow_host_access: true
@@ -191,8 +191,8 @@ instance_groups:
         release: concourse
         properties:
           worker_gateway:
-            worker_key: ((grab secrets.concourse_worker_key))
-            host_public_key: ((grab secrets.concourse_tsa_host_key.public_key))
+            worker_key: ((concourse_worker_key))
+            host_public_key: ((concourse_tsa_host_key.public_key))
           garden:
             allow_host_access: true
 
@@ -218,3 +218,19 @@ update:
 
 tags:
   deploy_env: (( grab terraform_outputs_environment ))
+
+variables:
+  - name: concourse_tsa_host_key
+    type: ssh
+
+  - name: concourse_worker_key
+    type: ssh
+
+  - name: concourse_token_signing_key
+    type: rsa
+
+  - name: concourse_postgres_password
+    type: password
+
+  - name: concourse_web_password
+    type: password
