@@ -277,6 +277,13 @@ resources:
       region_name: ((aws_region))
       versioned_file: concourse-manifest.yml
 
+  - name: cpi-config
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: cpi-config.yml
+
 jobs:
   - name: init-bucket
     serial: true
@@ -1018,6 +1025,36 @@ jobs:
               > terraform-outputs/bosh-terraform-outputs.yml
               ls -l terraform-outputs/bosh-terraform-outputs.yml
 
+      - task: generate-cpi-cloud-config
+        config:
+          platform: linux
+          image_resource: *spruce-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: terraform-outputs
+          outputs:
+            - name: cpi-config
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                spruce merge \
+                  terraform-outputs/concourse-terraform-outputs.yml \
+                  terraform-outputs/vpc-terraform-outputs.yml \
+                  terraform-outputs/bosh-terraform-outputs.yml \
+                  paas-bootstrap/manifests/cpi-config/cpi-config.yml \
+                | spruce merge \
+                  --cherry-pick cpis \
+                  > cpi-config/cpi-config.yml
+
+                cat cpi-config/cpi-config.yml
+        on_success:
+          put: cpi-config
+          params:
+            file: cpi-config/cpi-config.yml
+
       - task: generate-concourse-manifest
         config:
           platform: linux
@@ -1057,6 +1094,8 @@ jobs:
       - aggregate:
         - get: paas-bootstrap
           passed: ['generate-concourse-config']
+        - get: cpi-config
+          passed: ['generate-concourse-config']
         - get: pipeline-trigger
           trigger: true
           passed: ['generate-concourse-config', 'bosh-deploy']
@@ -1066,6 +1105,42 @@ jobs:
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: ssh-private-key
+
+      - task: upload-cpi-config
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: cpi-config
+            - name: bosh-vars-store
+            - name: paas-bootstrap
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+          run:
+            path: sh
+            args:
+              - -e
+              - -u
+              - -c
+              - |
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
+                bosh update-cpi-config cpi-config/cpi-config.yml
 
       - task: get-and-upload-stemcell
         config:
