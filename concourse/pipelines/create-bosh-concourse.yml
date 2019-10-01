@@ -1227,6 +1227,17 @@ jobs:
                   --type cloud \
                   paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
 
+                # TODO delete me after paas-cf has been migrated This step is
+                # necessary because we cannot have overlapping cloud configs,
+                # i.e. having compilation defined twice
+                if bosh config --type=cloud --name=default; then
+                  echo 'Deleting old combined cloud-config'
+                  bosh delete-config --type=cloud --name=default
+                else
+                  echo 'No default cloud config found'
+                  echo 'You should delete this if statement'
+                fi
+
       - task: get-and-upload-stemcell
         config:
           platform: linux
