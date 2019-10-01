@@ -284,6 +284,13 @@ resources:
       region_name: ((aws_region))
       versioned_file: cpi-config.yml
 
+  - name: paas-bootstrap-cloud-config
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: paas-bootstrap-cloud-config.yml
+
 jobs:
   - name: init-bucket
     serial: true
@@ -1055,6 +1062,43 @@ jobs:
           params:
             file: cpi-config/cpi-config.yml
 
+      - task: generate-paas-bootstrap-cloud-config
+        config:
+          platform: linux
+          image_resource: *spruce-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: terraform-outputs
+          outputs:
+            - name: paas-bootstrap-cloud-config
+          params:
+            CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
+            CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                spruce merge \
+                  terraform-outputs/concourse-terraform-outputs.yml \
+                  terraform-outputs/vpc-terraform-outputs.yml \
+                  terraform-outputs/bosh-terraform-outputs.yml \
+                  paas-bootstrap/manifests/cloud-config/paas-bootstrap-cloud-config.yml \
+                | spruce merge \
+                  --cherry-pick azs \
+                  --cherry-pick compilation \
+                  --cherry-pick networks \
+                  --cherry-pick vm_extensions \
+                  --cherry-pick vm_types \
+                  > paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+
+                cat paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+        on_success:
+          put: paas-bootstrap-cloud-config
+          params:
+            file: paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
+
       - task: generate-concourse-manifest
         config:
           platform: linux
@@ -1095,6 +1139,8 @@ jobs:
         - get: paas-bootstrap
           passed: ['generate-concourse-config']
         - get: cpi-config
+          passed: ['generate-concourse-config']
+        - get: paas-bootstrap-cloud-config
           passed: ['generate-concourse-config']
         - get: pipeline-trigger
           trigger: true
@@ -1141,6 +1187,45 @@ jobs:
                 export BOSH_CLIENT_SECRET
 
                 bosh update-cpi-config cpi-config/cpi-config.yml
+
+      - task: upload-paas-bootstrap-cloud-config
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: paas-bootstrap-cloud-config
+            - name: bosh-vars-store
+            - name: paas-bootstrap
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_DEPLOYMENT: concourse
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+          run:
+            path: sh
+            args:
+              - -e
+              - -u
+              - -c
+              - |
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+
+                bosh update-config \
+                  --name paas-bootstrap \
+                  --type cloud \
+                  paas-bootstrap-cloud-config/paas-bootstrap-cloud-config.yml
 
       - task: get-and-upload-stemcell
         config:
