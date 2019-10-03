@@ -5,6 +5,8 @@ terraform_outputs_vpc_cidr: 10.0.0.0/16
 terraform_outputs_ssh_security_group: test-office-access-ssh
 terraform_outputs_vpc_id: vpc-12345678
 terraform_outputs_subnet0_id: subnet-12345678
+terraform_outputs_subnet1_id: subnet-23456789
+terraform_outputs_subnet2_id: subnet-34567890
 terraform_outputs_zone0: eu-west-1a
 terraform_outputs_zone1: eu-west-1b
 terraform_outputs_zone2: eu-west-1c

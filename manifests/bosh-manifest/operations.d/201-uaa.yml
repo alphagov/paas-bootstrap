@@ -7,10 +7,6 @@
   value: "https://((bosh_fqdn)):8443"
 
 - type: replace
-  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/port
-  value: 8080
-
-- type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaadb
   value:
     address: ((external_db_host))

@@ -10,7 +10,8 @@ RSpec.describe "release versions" do
       else
         raise "Failed to extract version from URL '#{url}'"
       end
-      version == url_version
+
+      version.to_s == url_version.to_s
     end
   end
 
@@ -25,7 +26,7 @@ RSpec.describe "release versions" do
 
   specify "manifest versions are not older than the ones in bosh-deployment" do
     def normalise_version(v)
-      Gem::Version.new(v.gsub(/^v/, '').gsub(/^([0-9]+)$/, '0.0.\1'))
+      Gem::Version.new(v.to_s.gsub(/^v/, '').gsub(/^([0-9]+)$/, '0.0.\1'))
     end
 
     # Versions to be pinned and corresponding upstream version

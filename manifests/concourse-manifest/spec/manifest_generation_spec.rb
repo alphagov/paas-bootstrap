@@ -5,12 +5,6 @@ RSpec.describe "manifest generation" do
   let(:concourse_instance_group) { manifest.fetch("instance_groups").find { |ig| ig["name"] == "concourse" } }
   let(:web_job) { concourse_instance_group.fetch("jobs").find { |j| j["name"] == "web" } }
 
-  it "gets values from vpc terraform outputs" do
-    expect(
-      manifest_with_defaults["resource_pools"].first["cloud_properties"]["availability_zone"]
-    ).to eq(terraform_fixture_value("zone0", "vpc"))
-  end
-
   it "gets values from concourse terraform outputs" do
     expect(
       web_job.fetch("properties").fetch("external_url")
