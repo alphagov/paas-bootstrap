@@ -65,6 +65,7 @@ instance_groups:
       - name: web
         release: concourse
         properties:
+          cluster_name: (( grab terraform_outputs_environment ))
           external_url: (( concat "https://" terraform_outputs_concourse_dns_name ))
           add_local_users:
             - admin:((concourse_web_password))
