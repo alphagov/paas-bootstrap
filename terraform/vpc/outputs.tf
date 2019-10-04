@@ -19,15 +19,15 @@ output "vpc_id" {
 }
 
 output "subnet0_id" {
-  value = "${aws_subnet.infra.0.id}"
+  value = "${element(aws_subnet.infra.*.id, 0)}"
 }
 
 output "subnet1_id" {
-  value = "${aws_subnet.infra.1.id}"
+  value = "${element(aws_subnet.infra.*.id, 1)}"
 }
 
 output "subnet2_id" {
-  value = "${aws_subnet.infra.2.id}"
+  value = "${element(aws_subnet.infra.*.id, 2)}"
 }
 
 output "zone0" {
