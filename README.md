@@ -70,6 +70,22 @@ $ export DEPLOY_ENV=environment-name
 
 It is important that you do not use the same `DEPLOY_ENV` for both build and deployer concourse environments, this is to avoid conflicts in resource allocation.
 
+* Choose whether to enable GitHub access and if so, set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`
+
+By default, the developers on the team can use GitHub to log in to your dev environment. To make this work you need to
+set up a GitHub OAuth application, as [described in the team manual](https://team-manual.cloud.service.gov.uk/guides/Github_oAuth_in-Dev/)
+
+```
+$ export GITHUB_CLIENT_ID=some-github-client-id
+$ export GITHUB_CLIENT_SECRET=some-github-client-secret
+```
+
+If you'd prefer not to enable GitHub single-sign-on then you can disable it with:
+
+```
+$ export ENABLE_GITHUB=false
+```
+
 ### Deploy
 
 Create Concourse Lite with `make`. There are Make targets to select the target AWS account, and to select the profiles to apply.
