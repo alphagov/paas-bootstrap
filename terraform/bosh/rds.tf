@@ -34,18 +34,24 @@ resource "aws_db_parameter_group" "bosh_pg_9_5" {
   description = "RDS Postgres 9.5 default parameter group"
 }
 
+resource "aws_db_parameter_group" "bosh_pg_11" {
+  name        = "${var.env}-pg11-bosh"
+  family      = "postgres11"
+  description = "RDS Postgres 11 default parameter group"
+}
+
 resource "aws_db_instance" "bosh" {
   identifier                 = "${var.env}-bosh"
   name                       = "bosh"
   allocated_storage          = 25
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "9.5"
+  engine_version             = "11.1"
   instance_class             = "db.t2.small"
   username                   = "dbadmin"
   password                   = "${var.secrets_bosh_postgres_password}"
   db_subnet_group_name       = "${aws_db_subnet_group.bosh_rds.name}"
-  parameter_group_name       = "${aws_db_parameter_group.bosh_pg_9_5.id}"
+  parameter_group_name       = "${aws_db_parameter_group.bosh_pg_11.id}"
   backup_window              = "01:00-02:00"
   maintenance_window         = "${var.bosh_db_maintenance_window}"
   multi_az                   = "${var.bosh_db_multi_az}"
@@ -53,7 +59,9 @@ resource "aws_db_instance" "bosh" {
   final_snapshot_identifier  = "${var.env}-bosh-rds-final-snapshot"
   skip_final_snapshot        = "${var.bosh_db_skip_final_snapshot}"
   auto_minor_version_upgrade = true
-  apply_immediately          = true
+
+  allow_major_version_upgrade = true
+  apply_immediately           = true
 
   vpc_security_group_ids = ["${aws_security_group.bosh_rds.id}"]
 
