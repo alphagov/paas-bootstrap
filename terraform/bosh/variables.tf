@@ -4,7 +4,7 @@ variable "secrets_bosh_postgres_password" {
 
 variable "bosh_db_multi_az" {
   description = "BOSH database multi availabiliy zones"
-  default     = "true"
+  default     = "false"
 }
 
 variable "bosh_db_backup_retention_period" {
