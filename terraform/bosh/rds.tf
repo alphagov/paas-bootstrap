@@ -46,7 +46,7 @@ resource "aws_db_instance" "bosh" {
   allocated_storage          = 25
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "11.1"
+  engine_version             = "11.5"
   instance_class             = "db.t2.small"
   username                   = "dbadmin"
   password                   = "${var.secrets_bosh_postgres_password}"
