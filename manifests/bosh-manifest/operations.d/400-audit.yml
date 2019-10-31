@@ -1,0 +1,61 @@
+---
+
+- type: replace
+  path: /releases/-
+  value:
+    name: awslogs
+    version: 0.1.1
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
+    sha1: dd307700e55c6c45376a5d76583243601e7559e6
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs?/-
+  value:
+    name: awslogs-xenial
+    release: awslogs
+    properties:
+      awslogs-xenial:
+        region: ((region))
+        awslogs_files_config:
+
+          - name: /var/vcap/sys/log/credhub/credhub_security_events.log
+            file: /var/vcap/sys/log/credhub/credhub_security_events.log
+            log_group_name: bosh_d_credhub_security_events_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+          - name: /var/vcap/sys/log/uaa/uaa_events.log
+            file: /var/vcap/sys/log/uaa/uaa_events.log
+            log_group_name: bosh_d_uaa_events_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+          - name: /var/vcap/sys/log/director/audit.log
+            file: /var/vcap/sys/log/director/audit.log
+            log_group_name: bosh_d_audit_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+          - name: /var/vcap/sys/log/director/audit_worker.log
+            file: /var/vcap/sys/log/director/audit_worker*.log
+            log_group_name: bosh_d_audit_worker_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+          - name: /var/log/auth.log
+            file: /var/log/auth.log
+            log_group_name: bosh_d_auth_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+          - name: /var/log/audit/audit.log
+            file: /var/log/audit/audit.log
+            log_group_name: bosh_d_kauditd_((deploy_env))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"

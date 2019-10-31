@@ -40,3 +40,13 @@ variable "bosh_fqdn" {
 variable "bosh_fqdn_external" {
   description = "DNS record pointing to BOSH external IP"
 }
+
+variable "bosh_rds_storage_gb" {
+  description = "Storage in GB allocated to BOSH RDS"
+  default     = 25
+}
+
+variable cloudwatch_log_retention_period {
+  description = "how long cloudwatch logs should be retained for (in days). Default 18 months"
+  default     = 545
+}
