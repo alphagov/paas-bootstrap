@@ -16,6 +16,6 @@ instance_groups:
                 - AP-Hunt
                 - LeePorte
                 - mogds
+                - paroxp
                 - richardTowers
                 - tlwr
-                - tnwhitwell
