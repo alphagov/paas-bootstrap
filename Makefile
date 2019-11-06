@@ -70,6 +70,7 @@ PASSWORD_STORE_DIR?=${HOME}/.paas-pass
 globals:
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	@true
 
 ## Environments
@@ -220,7 +221,7 @@ stop-tunnel: check-env-vars ## Stop SSH tunnel
 	@./concourse/scripts/ssh.sh tunnel stop
 
 .PHONY: upload-all-secrets
-upload-all-secrets: upload-github-oauth
+upload-all-secrets: upload-github-oauth upload-cyber-tfvars
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
@@ -228,6 +229,13 @@ upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentia
 	$(if ${GITHUB_PASSWORD_STORE_DIR},,$(error Must pass GITHUB_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GITHUB_PASSWORD_STORE_DIR}),,$(error Password store ${GITHUB_PASSWORD_STORE_DIR} does not exist))
 	@scripts/manage-github-secrets.sh upload
+
+.PHONY: upload-cyber-tfvars
+upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
+	$(if ${CYBER_PASSWORD_STORE_DIR},,$(error Must pass CYBER_PASSWORD_STORE_DIR=<path_to_password_store>))
+	$(if $(wildcard ${CYBER_PASSWORD_STORE_DIR}),,$(error Password store ${CYBER_PASSWORD_STORE_DIR} does not exist))
+	@scripts/upload-cyber-tfvars.sh
 
 merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
 	$(if ${PR},,$(error Must pass PR=<number>))

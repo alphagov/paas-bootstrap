@@ -104,3 +104,17 @@ variable "assets_prefix" {
   description = "Prefix for global assests like S3 buckets"
   default     = "gds-paas"
 }
+
+variable "log_groups_to_ship_to_csls" {
+  description = "The names of the log groups to ship to CSLS, without the _env suffix"
+  type        = "list"
+
+  default = [
+    "bosh_d_audit",
+    "bosh_d_audit_worker",
+    "bosh_d_auth",
+    "bosh_d_credhub_security_events",
+    "bosh_d_kauditd",
+    "bosh_d_uaa_events",
+  ]
+}
