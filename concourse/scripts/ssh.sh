@@ -1,6 +1,9 @@
 #!/bin/bash
 
 set -euo pipefail
+
+SSH_PATH=${SSH_PATH:-"/Users/${USER}/.ssh/id_rsa"}
+
 SCRIPT=$0
 
 SOCKET_DIR=~/.ssh
@@ -48,31 +51,31 @@ ssh_concourse() {
   echo
 
   # shellcheck disable=SC2029
-  ssh -t -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
-    vcap@"$CONCOURSE_IP" "$@"
+  ssh -t -i "$SSH_PATH" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
+    "$USER"@"$CONCOURSE_IP" "$@"
 }
 
 scp_concourse() {
   # shellcheck disable=SC2029
-  scp -i $key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
-    "$1" vcap@"$CONCOURSE_IP":"$2"
+  scp -i "$SSH_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
+    "$1" "$USER"@"$CONCOURSE_IP":"$2"
 }
 
 create_tunnel() {
   TUNNEL=$1
   echo "Creating tunnel at socket $(print_socket) to ${TUNNEL}"
-  ssh -i $key -fNTM -o IdentitiesOnly=yes -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
+  ssh -i "$SSH_PATH" -fNTM -o IdentitiesOnly=yes -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
     -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
-    -L "${TUNNEL}" vcap@"${CONCOURSE_IP}"
+    -L "${TUNNEL}" "${USER}"@"${CONCOURSE_IP}"
 }
 
 stop_tunnel() {
   echo "Stopping tunnel at socket $(print_socket)"
-  ssh -T -O "exit" -o ControlPath=${SOCKET} vcap@"${CONCOURSE_IP}"
+  ssh -T -O "exit" -o ControlPath=${SOCKET} "${USER}"@"${CONCOURSE_IP}"
 }
 
 print_socket() {
-  echo -n "$SOCKET_DIR/vcap@${CONCOURSE_IP}"
+  echo -n "$SOCKET_DIR/${USER}@${CONCOURSE_IP}"
 }
 
 
