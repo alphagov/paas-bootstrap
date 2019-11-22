@@ -86,4 +86,20 @@ RSpec.describe "generic manifest validations" do
       end
     end
   end
+
+  describe "cross-references runtime-config" do
+    specify "runtime-config keys match manifest keys" do
+      runtime_config = YAML.load_file(File.expand_path("../../runtime-config/runtime-config.yml", __dir__))
+      runtime_keys = runtime_config["addons"][0]['jobs'][0]["properties"]["users"].map { |r| r["public_key"] }
+
+      manifest["instance_groups"].each do |ig|
+        ig["jobs"].each do |job|
+          if job["name"] == 'user_add'
+            expect(runtime_keys).to match_array(job["properties"]["users"].map { |r| r["public_key"] }),
+              "public keys provided in the runtime config doesn't match keys in the manifest"
+          end
+        end
+      end
+    end
+  end
 end
