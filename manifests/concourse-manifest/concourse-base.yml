@@ -19,10 +19,6 @@ releases:
     version: "5.7.0"
     url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=5.7.0"
     sha1: "7fa513c5059c44eb5cc57c1fc5aaf9f845112bf3"
-  - name: "postgres"
-    version: "39"
-    url: "https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=39"
-    sha1: "8ff395540e77a461322a01c41aa68973c10f1ffb"
   - name: "bpm"
     version: "1.1.5"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.5"
@@ -51,17 +47,6 @@ instance_groups:
         release: bpm
         properties: {}
 
-      - name: postgres
-        release: postgres
-        properties:
-          databases:
-            port: 5432
-            databases:
-              - name: atc
-            roles:
-              - name: atc
-                password: ((concourse_postgres_password))
-
       - name: web
         release: concourse
         properties:
@@ -76,10 +61,12 @@ instance_groups:
                 users:
                 - admin
           postgresql:
-            database: atc
+            database: (( grab terraform_outputs_concourse_db_name ))
+            host: (( grab terraform_outputs_concourse_db_address ))
+            port: (( grab terraform_outputs_concourse_db_port ))
             role:
-              name: atc
-              password: ((concourse_postgres_password))
+              name: (( grab terraform_outputs_concourse_db_username ))
+              password: (( grab terraform_outputs_concourse_db_password ))
           token_signing_key: ((concourse_token_signing_key))
           prometheus:
             bind_ip: 0.0.0.0
@@ -166,9 +153,6 @@ variables:
 
   - name: concourse_token_signing_key
     type: rsa
-
-  - name: concourse_postgres_password
-    type: password
 
   - name: concourse_web_password
     type: password
