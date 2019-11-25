@@ -9,3 +9,8 @@ terraform_outputs_concourse_worker_security_group_id: sg-00001111
 terraform_outputs_concourse_elb_name: env1234-concourse
 terraform_outputs_concourse_dns_name: concourse.env1234.dev.cloudpipeline.digital
 terraform_outputs_git_concourse_pool_clone_full_url_ssh: "ssh://user@git-codecommit.us-east-1.amazonaws.com/v1/repos/concourse-pool-test"
+terraform_outputs_concourse_db_username: concourse
+terraform_outputs_concourse_db_name: concourse
+terraform_outputs_concourse_db_password: oih6eeshah4gae1ooye3Foo7quuchoaph0uthee8
+terraform_outputs_concourse_db_address: stub-concourse.777777777777.eu-west-2.rds.amazonaws.com
+terraform_outputs_concourse_db_port: '5432'
