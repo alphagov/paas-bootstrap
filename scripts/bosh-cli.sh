@@ -2,8 +2,10 @@
 
 set -eu
 
-BOSH_ID_RSA="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/id_rsa" - | base64)"
-export BOSH_ID_RSA
+SSH_PATH=${SSH_PATH:-"/Users/${USER}/.ssh/id_rsa"}
+
+USER_ID_RSA="$(base64 "${SSH_PATH}")"
+export USER_ID_RSA
 
 BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
 export BOSH_CA_CERT
@@ -36,7 +38,8 @@ touch "${HOME}/.bosh_history/${DEPLOY_ENV}"
 docker run \
     -it \
     --rm \
-    --env "BOSH_ID_RSA" \
+    --env "USER_ID_RSA" \
+    --env "USER" \
     --env "BOSH_IP" \
     --env "BOSH_CLIENT=admin" \
     --env "BOSH_CLIENT_SECRET" \
@@ -47,4 +50,4 @@ docker run \
     --env "CREDHUB_CLIENT" --env "CREDHUB_SECRET" --env "CREDHUB_CA_CERT" \
     --env "CREDHUB_PROXY=socks5://localhost:25555" \
     -v "${HOME}/.bosh_history/${DEPLOY_ENV}:/root/.bash_history" \
-    governmentpaas/bosh-shell:54cc3c9f49f9032e46dd4538c626f2533bf90a94
+    governmentpaas/bosh-shell:91fe1e826f39798986d95a02fb1ccab6f0e7c746

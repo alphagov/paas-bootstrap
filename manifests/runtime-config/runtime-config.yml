@@ -1,0 +1,41 @@
+# BOSH runtime config is configuration which is applied to:
+# - all VMs
+# - in all deployments
+# - except the bosh director vm
+#
+# Changing the runtime config will roll every VM in a bosh deployment during
+# the next 'bosh deploy'
+#
+# You can only apply addons and releases within the runtime config
+
+addons:
+  - name: os_conf
+    jobs:
+      - name: user_add
+        release: os-conf
+        properties:
+          users:
+          - name: mohameddeerow
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDC/aMhZz6rqOZ9e6NmuFs3KoBMtHFpb6RLLujxrrH5SSqVylE/K2F0Q6fSDsoTULM4lzJqS1yPKUtvJX2XAVaT0uIdEIbN5KCV/ToSf6m69tH8Em4NXSAuzt2FGjml3BA9wVfuPd1vTZdJc84hrSQhOfad4h9en73Tm8pVtcnQj31kfttW8YFc58GSLKiiviUysJ7TlHZKYTBlailkj3e7CnQ0kyj5y74xU1edW/e5GCirLT/JGEvxOf4dPdyTmlc3QNAURxvOi4AebsbeEjFfKZyMeV7oAk4EPrX+XtZf/h21c4qrCUoYsBjF74PlkVE3ULzGLZlCyIEllu6ycrj/"
+          - name: leeporte
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZfIdnJMu8jArwk1XB+KbgSAzDDUHd++tWgqWJqSGKpU1oiX+1qpmK53a476nOCmXpakV//eGpYPDDH5BN/EoiM7RIZcC8sTJL00Nr5bMuMOsqkKpM7x8cUzRFDiyH3yGX86dMW5WwwonUNsChOIv67TQUOwK6ObO3yCbeE17o08IUNKHOvs+iIuGdIiGuzdsfUIStST2oBCxbz0IkQ/93gmH7Ov4LyA1JyJEE14pzyN3eXzEvv/s1IeGGdoIM27cipcQnizXRXCfX1gZjpzh6tfA845dYzvUhzsHF3Qs0YxaETeRr++Xbj4TshTd8TOgNgbZ5MJj2FgjTrmhXIjK1"
+          - name: tlwr
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDDFBXMDp6M7oo/2xQWgJIuAat9nMj5U1faZ8bAKTv0FkysBRWXPyr3DjkyJBjB9ScgmY8DHQOnxwiNn4mKDyD2niiFiVNtkYd06+/OaT1BtoM0H9ScUCOg6KEV7sywFdIpdaxl3GuA3wNTMVsjfwxaiSst+4+6aDIsq5hF657u5PuJntDNTXUfnH+7dCYJqSjWeaWktRDJQsHJchGNrzwudJGlyfQZ8cjHx9bSMkADkvZwriu2GKYvl8FZNDbix8v/d3/sNPGMH5LrwQNVIH1HZ9dZFj/lveFqQx1ayRLJotBx9nS3sl7XDsrlHgdKjVmWYdNiP6O3mU3BRnq/2je2BiCQNdEAmKPFGceV08ZjcnwUKY+PqJwtICwFNDkKD8ssbGovqbixpkFDudLwJ3JTM6ROocrFtcmC+PQvSSLSpqNlOr9JImGI6CqZqaAZHrlv/A2A+wcaFmbjdVguQXI8DzDzoE9BMIJ3Eg0INVPCiLybU/UFxGF5yrtihGeTzykYhjKyGMpsuHyuyZQfXYtP+tnajFXonnHJd86UReCoaFpy1f91x96jStLAAk3mqhq21Dp6TiEN/R2/pZW4AwUd7m4Gnuif8ovCayBrnHjPNNr4FL/Vj4arxYyTdJPInweIoCXuq5NPPVHuxn89D3lZIGcNvFygQebxfGvwe69QJQ=="
+          - name: richardtowers
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDXmBraPYRMsCCj0Hw1q73SW8d4hBXcoZMxdifRqVYs4/4GZqaJJbWKRaQ2eRAN6yeHgkAWdsrPx6NBbq12QGRIVpNF6C3eaIVQaU+fdOWepFi9dDbFWymPFspWC1pSwXBl/A3k4JbwyCsaUO7TfjzL4XB3CYjVkopmlvjjQTHBB8sdSm922A/czEK6DAqmDXrU5iDaiauN/dXx2qk9El6dfTyXDFXADgFXN3rMvPGY+V8UPSGUDSkB5K+SjyrtbkP+QaKvavoyHF/k+Tvib7Wp3fZgcBF9vQZ9tTQ22CBd4YJbrUSqMCVNFMpc09WDHw/o15acmUtKdfvbbowdPuyt2mUzkJsj5brfHTs22uHln5Bojs3RcnO74mO8aEIJ0WmbExM/Um4wuBrSOSAxxBsktnVAKkEfb2XtbYLEruyp9z/ycPELBf4iaES3pgbBVogvX+cq8TPSOSu7x8hM3+Cvkw7j07GhZsmTQEHERKPnHMa+LeaXkKAQOecHPUQZ6HhVDHuEI9agQ0GVufsUs3asOcwIZwXSLvXGymbsgnhogpxU9Cy5CXZtsPfZWSbq5n+OuRDKjT19Eks/8fSenvSuIaDkKZbCuhEwIutvTO3rZmzm/7vFnGA0YTkJX5qKNDgvtPDJJkn2MuEwyRbSCX2CH66WOEfkCE4MJqDthjERBw=="
+          - name: andyhunt
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC637lGooFduAnfb+J5DMbH22gm3IMufv6mOftPPVEccMZk7UmlaJa7WloLhGrLfN3c8hD9jwgRB7H4bSCghWrxKSoU9loYtZ5MwIx92NsUAfjrOH48/Pqr1zW2Y/VlDWFd2uUHrcYb6BP4U8PISOGyb0INe+oG4d4Q7n2fgzASmKiS/iATX8TLi1MYJguq94lCot6a6ZrPz7aoomcf3/SGZzVJOtKg1UnkAIF1IO3I0tYKvpq3w3xEBNRi1Jbkhfy0hrza+h/VT7rziK+zShL2LQM1Cfuq1UV2BzgswH7JjhG7yLJkYfGL7VIwBQuc8FgzSOq1iBz+mULBN5+Jg2b3"
+          - name: rafalproszowski
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxpPhGmoqD3T/K00eGcB4EUAQg4QszGDUg7uZ+Gz9m/mzzFCnLrq7sOs8S2UILPB4MgsiVtTUsSYx+sZ4ubkoJfsyp9Gzi/G3DvLpLrjt4n+IufvK2vuxtLwKKeIIg6GqGO6wBD+2vR+6VymFvhA75AOyUR4MRnUNnluU5+u01tErjUPS6rkKOMHm0a+xJMXImRZF3bbWaABJWPGG76OdUEfkkNh0vkHQ67zGRRcpqYCo9GeCi6udjZ76yEaItE/mSr25Y0FFuyTZQekvPe+zxwyi72pIx6a1KoTO5n/w3phlwVrjFX8kguaGWHUXOA/rOAxIif1Xm4H6uffM4aE7R"
+          - name: michaelmokrysz
+            public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDlcKuX5FKUX++rEx3wQxrh3QSDZ4FTRFGeH2K9EbQF7fOz/oz6OAZ6CcXlxmP1HhLTPtGXqf2wKh/wbz6SXyUzE3vf+kA0YhwREmQXNepmEkS9CdmB38NrjqHFq5D7DmXxgF2K3tS1B56yb1tD5v0aZ+Jsbb4xp0RsWHgpXzQt23I/U5m4WKiTyFOVbiBSMobMUCZpiOtF7dlNySq92IPSkSL4Vc/bt5Y4mYWX/9nxXJbD78kzGfPG/iM9Hpw8u0EZMc9wM0GlcFwUcwkBAoCVt07diIsGUgGSWWx6yqtJfpSPmgG9H+YugZ0mifg7aqKIygL5Fe+XDFpQZz4bG+m26e91dMr+JpIHT8wh72fPkwcAh1uznmOWvBXXU+bVleZ/LBLRHGuP828oA1cEQIgfEMqhOCv9Cncy+8ppCaMavTDAHoTl5Zx03JG0vDKN1o4OWLngycf3ktx8f9nZoGgB/cBPl+o4hdtEYWtIYrxOlgiqQaNbqn66ypMd81HhqOiQaOvwz1ZY4v/nNTgYZcjSNHQh74jq5KvJnndJenjtoDD9ezlmCLvTfLoZVTwzfCsl0cpI+aAhhjh5iDNs/ygx3NFSf+oIGOH6iHRv9hZjRojA50c8tr9dWfZTO99y8pGEe6T1z5Kd350NyWbe3bfDexmMW6olmxEusg19O2s+QQ=="
+    include:
+      stemcell:
+        - os: ubuntu-trusty
+        - os: ubuntu-xenial
+
+releases:
+  - name: os-conf
+    version: 21.0.0
+    url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=21.0.0
+    sha1: 7579a96515b265c6d828924bf4f5fae115798199

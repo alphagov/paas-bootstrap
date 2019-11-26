@@ -1,4 +1,3 @@
-
 RSpec.describe "generic manifest validations" do
   let(:manifest) { manifest_with_defaults }
 
@@ -83,6 +82,44 @@ RSpec.describe "generic manifest validations" do
       manifest["resource_pools"].each do |pool|
         expect(network_names).to include(pool["network"]),
           "network #{pool['network']} not found for resource_pool #{pool['name']}"
+      end
+    end
+  end
+
+  describe "cross-references runtime-config" do
+    specify "runtime-config keys match manifest keys" do
+      runtime_config = YAML.load_file(File.expand_path("../../runtime-config/runtime-config.yml", __dir__))
+      user_add_config = nil
+
+      # Find user add config
+      manifest["instance_groups"].each do |ig|
+        ig["jobs"].each do |job|
+          if job["name"] == 'user_add'
+            user_add_config = job
+            break
+          end
+        end
+      end
+
+      expect(user_add_config).to_not be_nil, "user_add config is missing from the manifest"
+
+      manifest_keys = user_add_config["properties"]["users"].map { |r| [r["name"], r["public_key"]] }.to_h
+      runtime_keys = runtime_config["addons"][0]['jobs'][0]["properties"]["users"].map { |r|
+        [r["name"], r["public_key"]]
+      }.to_h
+
+      # Compare manifest entries to runtime config
+      manifest_keys.each do |name, pk|
+        expect(runtime_keys.has_key?(name)).to be_truthy, "did not find username #{name} in the runtime config"
+        expect(pk).to_not be_nil, "key for username #{name} is missing"
+        expect(pk).to eq(runtime_keys[name]), "key for username #{name} is different in the runtime config and the manifest config"
+      end
+
+      # Compare runtime config to manifest entries
+      runtime_keys.each do |name, pk|
+        expect(manifest_keys.has_key?(name)).to be_truthy, "did not find username #{name} in the manifest config"
+        expect(pk).to_not be_nil, "key for username #{name} is missing"
+        expect(pk).to eq(manifest_keys[name]), "key for username #{name} is different in the manifest config and the runtime config"
       end
     end
   end

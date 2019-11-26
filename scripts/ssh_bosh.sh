@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+SSH_PATH=${SSH_PATH:-"/Users/${USER}/.ssh/id_rsa"}
+
 BOSH_KEY=/tmp/id_rsa.$RANDOM
 BOSH_IP=$(aws ec2 describe-instances \
     --filters "Name=tag:deploy_env,Values=${DEPLOY_ENV}" 'Name=tag:instance_group,Values=bosh' \
@@ -16,9 +18,9 @@ echo
 
 # shellcheck disable=SC2029
 ssh \
-    -i "$BOSH_KEY" \
+    -i "$SSH_PATH" \
     -o IdentitiesOnly=yes \
     -o ServerAliveInterval=60 \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
-    "vcap@$BOSH_IP"
+    "$USER"@"$BOSH_IP"

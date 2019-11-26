@@ -5,22 +5,22 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/awscli
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: governmentpaas/certstrap
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: governmentpaas/git-ssh
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
@@ -30,17 +30,17 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/self-update-pipelines
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: 54cc3c9f49f9032e46dd4538c626f2533bf90a94
+        tag: 91fe1e826f39798986d95a02fb1ccab6f0e7c746
 
 groups:
   - name: all
@@ -896,6 +896,12 @@ jobs:
           trigger: true
         - get: bosh-manifest
           passed: ['generate-bosh-config']
+        - get: paas-bootstrap
+          passed: ['generate-bosh-config']
+        - get: bosh-vars-store
+          passed: ['generate-bosh-config']
+        - get: bosh-CA-crt
+          passed: ['generate-secrets']
         - get: bosh-init-state
         - get: ssh-private-key
 
@@ -928,6 +934,38 @@ jobs:
           put: bosh-init-state
           params:
             file: "bosh-init-working-dir/bosh-manifest-state.json"
+
+      - task: update-runtime-config
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: bosh-vars-store
+            - name: paas-bootstrap
+            - name: bosh-CA-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_NON_INTERACTIVE: true
+
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+                BOSH_CLIENT=admin
+                BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
+                export BOSH_CLIENT
+                export BOSH_CLIENT_SECRET
+                bosh -n update-runtime-config paas-bootstrap/manifests/runtime-config/runtime-config.yml
+                bosh runtime-config
 
   - name: concourse-terraform
     serial: true
