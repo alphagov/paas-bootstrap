@@ -1,53 +1,114 @@
 #!/bin/bash
+set -euo pipefail
 
-set -eu
+dir="$(cd "$(dirname "$0")" && pwd)"
+pac_url='http://localhost:9191/proxy.pac'
+tunnel_mux='/tmp/bosh-ssh-tunnel.mux'
+pacserverpid=''
 
-SSH_PATH=${SSH_PATH:-"/Users/${USER}/.ssh/id_rsa"}
+if hash networksetup &> /dev/null; then
+  old_auto_proxy_settings=$(networksetup -getautoproxyurl Wi-Fi)
+  old_auto_proxy_url=$(awk '/^URL:/ { print $2 }' <<< "$old_auto_proxy_settings")
+  old_auto_proxy_enabled=$(awk '/^Enabled:/ { print $2 }' <<< "$old_auto_proxy_settings")
+fi
+function cleanup () {
+  if [ -n "$pacserverpid" ]; then
+    echo 'Stopping PAC server'
+    kill "$pacserverpid" &>/dev/null || true
+  fi
 
-USER_ID_RSA="$(base64 "${SSH_PATH}")"
-export USER_ID_RSA
+  echo 'Closing SSH tunnel'
+  ssh -S "$tunnel_mux" -O exit a-destination &>/dev/null || true
+
+  # Avoid keeping sensitive tokens in bosh config when we don't need them.
+  # This will mean we have to sign in to bosh every time we run this script.
+  rm -f ~/.bosh/config
+
+  if hash networksetup &> /dev/null; then
+    echo 'Restoring network settings'
+    networksetup -setautoproxyurl Wi-Fi "$old_auto_proxy_url" &>/dev/null || true
+    if [ "$old_auto_proxy_enabled" == 'No' ]; then
+      networksetup -setautoproxystate Wi-Fi off
+    fi
+  fi
+}
+
+trap cleanup EXIT
+
+echo 'Starting PAC server'
+ruby "$dir/../proxy/pacserver.rb" &>/dev/null &
+pacserverpid="$!"
+
+if hash networksetup &> /dev/null && [[ "$pac_url" != "$old_auto_proxy_url" || "$old_auto_proxy_enabled" == "No" ]]; then
+  echo
+  echo 'Your system network settings need to be changed to allow your browser to access UAA over our SSH tunnel.'
+  echo 'Your current settings are: '
+  echo "$old_auto_proxy_settings"
+  echo
+  while true; do
+    read -r -p 'Would you like these to be changed? (y/n) ' yn
+    case $yn in
+        [Yy]* )
+          echo
+          networksetup -setautoproxyurl Wi-Fi "$pac_url" &>/dev/null
+          networksetup -setautoproxystate Wi-Fi on
+          networksetup -getautoproxyurl Wi-Fi
+          echo
+          break;;
+        [Nn]* )
+          echo
+          echo 'Please configure your proxy settings to look at a PAC file or directly at the SOCKS5 proxy'
+          echo "  PAC URL: $pac_url"
+          echo '  SOCK5 URL: localhost:25555'
+          echo
+          break;;
+        * ) echo 'Please answer yes or no.';;
+    esac
+  done
+else
+  echo
+  echo 'Please configure your proxy settings to look at a PAC file or directly at the SOCKS5 proxy'
+  echo "  PAC URL: $pac_url"
+  echo '  SOCK5 URL: localhost:25555'
+  echo
+fi
+
+echo 'Getting BOSH settings'
 
 BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
-export BOSH_CA_CERT
-
 BOSH_IP=$(aws ec2 describe-instances \
     --filters "Name=tag:deploy_env,Values=${DEPLOY_ENV}" 'Name=tag:instance_group,Values=bosh' \
     --query 'Reservations[].Instances[].PublicIpAddress' --output text)
-export BOSH_IP
 
-BOSH_CLIENT_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-vars-store.yml" - | \
-    ruby -ryaml -e 'print YAML.load(STDIN)["admin_password"]')
-export BOSH_CLIENT_SECRET
+echo 'Opening SSH tunnel'
+ssh -qfNC -4 -D 25555 \
+  -o ExitOnForwardFailure=yes \
+  -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/dev/null \
+  -o ServerAliveInterval=30 \
+  -M \
+  -S "$tunnel_mux" \
+  "$BOSH_IP"
 
-CREDHUB_CLIENT='credhub-admin'
-CREDHUB_SECRET=$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
-    ruby -ryaml -e 'print YAML.load(STDIN).dig("secrets", "bosh_credhub_admin_client_password")')
-CREDHUB_CA_CERT="$(cat <<EOCERTS
-$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-vars-store.yml" - | \
-  ruby -ryaml -e 'print YAML.load(STDIN).dig("credhub_tls", "ca")')
-$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-vars-store.yml" - | \
-  ruby -ryaml -e 'print YAML.load(STDIN).dig("uaa_ssl", "ca")')
-EOCERTS
-)"
-export CREDHUB_CLIENT CREDHUB_SECRET CREDHUB_CA_CERT
+export BOSH_CA_CERT
+export BOSH_ALL_PROXY="socks5://localhost:25555"
+export BOSH_ENVIRONMENT="bosh.${SYSTEM_DNS_ZONE_NAME}"
+export BOSH_DEPLOYMENT="${DEPLOY_ENV}"
 
-[ ! -d "${HOME}/.bosh_history" ] && mkdir ~/.bosh_history
+echo "
 
-touch "${HOME}/.bosh_history/${DEPLOY_ENV}"
+  ,--.                 .--.
+  |  |-.  ,---.  ,---. |  '---.
+  | .-. '| .-. |(  .-' |  .-.  |
+  | '-' |' '-' '.-'  ')|  | |  |
+   '---'  '---' '----' '--' '--'
 
-docker run \
-    -it \
-    --rm \
-    --env "USER_ID_RSA" \
-    --env "USER" \
-    --env "BOSH_IP" \
-    --env "BOSH_CLIENT=admin" \
-    --env "BOSH_CLIENT_SECRET" \
-    --env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
-    --env "BOSH_CA_CERT" \
-    --env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
-    --env "CREDHUB_SERVER=https://bosh.${SYSTEM_DNS_ZONE_NAME}:8844/api" \
-    --env "CREDHUB_CLIENT" --env "CREDHUB_SECRET" --env "CREDHUB_CA_CERT" \
-    --env "CREDHUB_PROXY=socks5://localhost:25555" \
-    -v "${HOME}/.bosh_history/${DEPLOY_ENV}:/root/.bash_history" \
-    governmentpaas/bosh-shell:91fe1e826f39798986d95a02fb1ccab6f0e7c746
+  1. Run 'bosh login'
+
+  2. Skip entering a username and password
+
+  3. Enter a passcode from the URL given to you by BOSH
+
+"
+
+PS1="BOSH ($DEPLOY_ENV) $ " bash --login --norc --noprofile
