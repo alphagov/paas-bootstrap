@@ -259,7 +259,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c
@@ -267,7 +267,7 @@ jobs:
               . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-              BOSH_CLIENT=admin
+              BOSH_CLIENT='admin'
               BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
@@ -374,7 +374,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -382,7 +382,7 @@ jobs:
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-                BOSH_CLIENT=admin
+                BOSH_CLIENT='admin'
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
@@ -413,7 +413,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -421,7 +421,7 @@ jobs:
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-                BOSH_CLIENT=admin
+                BOSH_CLIENT='admin'
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
