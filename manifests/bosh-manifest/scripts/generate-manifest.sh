@@ -11,6 +11,14 @@ for i in "${PAAS_BOOTSTRAP_DIR}"/manifests/bosh-manifest/operations.d/*.yml; do
   opsfile_args+="-o $i "
 done
 
+uaa_users_ops_file="${WORKDIR}/uaa-users-ops-file/uaa-users-ops-file.yml"
+if [ -f "$uaa_users_ops_file" ]; then
+  opsfile_args+="-o $uaa_users_ops_file "
+else
+  >&2 echo "Could not find $uaa_users_ops_file. Aborting."
+  exit 1
+fi
+
 vars_store_args=""
 if [ -n "${VARS_STORE:-}" ]; then
   vars_store_args=" --var-errs --vars-store ${VARS_STORE}"

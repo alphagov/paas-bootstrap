@@ -64,6 +64,7 @@ private
       'some-google-client-id',
       'some-google-client-secret',
     )
+    generate_uaa_users_fixture("#{workdir}/uaa-users-ops-file")
     generate_bosh_ca_certs(workdir)
     copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh))
 

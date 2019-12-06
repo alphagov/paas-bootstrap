@@ -35,6 +35,13 @@ module FixtureHelpers
     end
   end
 
+  def generate_uaa_users_fixture(target_dir)
+    FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
+    File.open("#{target_dir}/uaa-users-ops-file.yml", 'w') do |file|
+      file.write '[]'
+    end
+  end
+
 private
 
   def fixtures_dir
