@@ -259,7 +259,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c
@@ -375,7 +375,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -415,7 +415,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c

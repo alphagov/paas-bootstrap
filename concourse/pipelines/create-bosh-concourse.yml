@@ -954,7 +954,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1244,7 +1244,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -u
@@ -1281,7 +1281,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -u
@@ -1331,7 +1331,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1375,7 +1375,7 @@ jobs:
 
             CONCOURSE_WORKER_INSTANCES: ((concourse_worker_instances))
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -u
@@ -1489,7 +1489,7 @@ jobs:
             TARGET_CONCOURSE: ((target_concourse))
             DEPLOY_ENV: ((deploy_env))
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1547,7 +1547,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c
@@ -1582,7 +1582,7 @@ jobs:
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
             TARGET_CONCOURSE: ((target_concourse))
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c
