@@ -158,6 +158,15 @@ resources:
       initial_version: "-"
       initial_content_text: ""
 
+  - name: bosh-uaa-google-oauth-secrets
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-uaa-google-oauth-secrets.yml
+      initial_version: "-"
+      initial_content_text: ""
+
   - name: bootstrap-cyber-tfvars
     type: s3-iam
     source:
@@ -809,6 +818,7 @@ jobs:
           passed: ['bosh-terraform']
         - get: bosh-tfstate
           passed: ['bosh-terraform']
+        - get: bosh-uaa-google-oauth-secrets
 
       - task: extract_terraform_outputs
         config:
@@ -843,6 +853,7 @@ jobs:
             - name: bosh-secrets
             - name: bosh-CA
             - name: bosh-vars-store
+            - name: bosh-uaa-google-oauth-secrets
           outputs:
             - name: bosh-manifest
             - name: bosh-manifest-pre-vars

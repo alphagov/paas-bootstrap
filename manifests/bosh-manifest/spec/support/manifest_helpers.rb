@@ -59,6 +59,11 @@ private
     env['WORKDIR'] = workdir.to_s
 
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
+    generate_google_oauth_secrets_fixture(
+      "#{workdir}/bosh-uaa-google-oauth-secrets",
+      'some-google-client-id',
+      'some-google-client-secret',
+    )
     generate_bosh_ca_certs(workdir)
     copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh))
 
