@@ -25,6 +25,16 @@ module FixtureHelpers
     end
   end
 
+  def generate_google_oauth_secrets_fixture(target_dir, google_oauth_client_id, google_oauth_client_secret)
+    FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
+    File.open("#{target_dir}/bosh-uaa-google-oauth-secrets.yml", 'w') do |file|
+      file.write({
+        'google_oauth_client_id' => google_oauth_client_id,
+        'google_oauth_client_secret' => google_oauth_client_secret,
+      }.to_yaml)
+    end
+  end
+
 private
 
   def fixtures_dir

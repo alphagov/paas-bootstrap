@@ -123,4 +123,21 @@ RSpec.describe "generic manifest validations" do
       end
     end
   end
+
+  describe "uaa" do
+    let(:uaa_props) { bosh_jobs.find { |j| j['name'] == 'uaa' }['properties'] }
+
+    context "login providers" do
+      let(:uaa_google_login_provider) { uaa_props.dig('login', 'oauth', 'providers', 'google') }
+
+      it 'should be configured to use google' do
+        expect(uaa_google_login_provider).to_not be_nil
+        expect(uaa_google_login_provider['issuer']).to eql 'https://accounts.google.com'
+        expect(uaa_google_login_provider['type']).to eql 'oidc1.0'
+        expect(uaa_google_login_provider['scopes']).to eql %w(openid profile email)
+        expect(uaa_google_login_provider['relyingPartyId']).to eql 'some-google-client-id'
+        expect(uaa_google_login_provider['relyingPartySecret']).to eql 'some-google-client-secret'
+      end
+    end
+  end
 end

@@ -39,3 +39,26 @@
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/ca_certs?/-
   value: ((aws_rds_combined_ca_bundle))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/oauth?/providers/google
+  value:
+    type: oidc1.0
+    authUrl: https://accounts.google.com/o/oauth2/v2/auth
+    tokenUrl: https://www.googleapis.com/oauth2/v4/token
+    tokenKeyUrl: https://www.googleapis.com/oauth2/v3/certs
+    issuer: https://accounts.google.com
+    redirectUrl: https://((bosh_fqdn_external)):8443
+    scopes:
+      - openid
+      - profile
+      - email
+    linkText: Google
+    showLinkText: true
+    addShadowUserOnLogin: false
+    relyingPartyId: ((google_oauth_client_id))
+    relyingPartySecret: ((google_oauth_client_secret))
+    skipSslValidation: false
+    attributeMappings:
+      user_name: sub
+

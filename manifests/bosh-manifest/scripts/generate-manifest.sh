@@ -24,6 +24,7 @@ bosh interpolate - \
   --vars-file "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/bosh-terraform-outputs.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \
+  --vars-file "${WORKDIR}/bosh-uaa-google-oauth-secrets/bosh-uaa-google-oauth-secrets.yml" \
   --var-file="default_ca.certificate=${WORKDIR}/certs/bosh-CA.crt" \
   --var-file="default_ca.private_key=${WORKDIR}/certs/bosh-CA.key" \
   > "${variables_file}" \
@@ -79,6 +80,9 @@ nats_ca:
 
 vcap_password: ((secrets.vcap_password))
 bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password))
+
+google_oauth_client_id: ((google_oauth_client_id))
+google_oauth_client_secret: ((google_oauth_client_secret))
 EOF
 
 
