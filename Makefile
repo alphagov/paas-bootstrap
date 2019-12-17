@@ -228,14 +228,14 @@ upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentia
 	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${GITHUB_PASSWORD_STORE_DIR},,$(error Must pass GITHUB_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GITHUB_PASSWORD_STORE_DIR}),,$(error Password store ${GITHUB_PASSWORD_STORE_DIR} does not exist))
-	@scripts/manage-github-secrets.sh upload
+	@scripts/upload-secrets/manage-github-secrets.sh upload
 
 .PHONY: upload-cyber-tfvars
 upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3
 	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${CYBER_PASSWORD_STORE_DIR},,$(error Must pass CYBER_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${CYBER_PASSWORD_STORE_DIR}),,$(error Password store ${CYBER_PASSWORD_STORE_DIR} does not exist))
-	@scripts/upload-cyber-tfvars.sh
+	@scripts/upload-secrets/upload-cyber-tfvars.sh
 
 merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
 	$(if ${PR},,$(error Must pass PR=<number>))
