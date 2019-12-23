@@ -264,6 +264,7 @@ jobs:
             - -e
             - -c
             - |
+              # shellcheck disable=SC2240
               . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
@@ -379,6 +380,7 @@ jobs:
               - -e
               - -c
               - |
+                # shellcheck disable=SC2240
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
@@ -418,6 +420,7 @@ jobs:
               - -e
               - -c
               - |
+                # shellcheck disable=SC2240
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
