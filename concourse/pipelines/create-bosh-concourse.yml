@@ -962,7 +962,7 @@ jobs:
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
                 # shellcheck disable=SC2240
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
-                BOSH_CLIENT=admin
+                BOSH_CLIENT="admin"
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
@@ -1254,7 +1254,7 @@ jobs:
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-                BOSH_CLIENT=admin
+                BOSH_CLIENT="admin"
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
@@ -1291,7 +1291,7 @@ jobs:
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
                 VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-                BOSH_CLIENT=admin
+                BOSH_CLIENT="admin"
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
@@ -1346,7 +1346,7 @@ jobs:
                 # shellcheck disable=SC2240
                 . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
-                BOSH_CLIENT=admin
+                BOSH_CLIENT="admin"
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
@@ -1385,7 +1385,7 @@ jobs:
               . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-              BOSH_CLIENT=admin
+              BOSH_CLIENT="admin"
               BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
@@ -1556,7 +1556,7 @@ jobs:
               . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
 
               VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
-              BOSH_CLIENT=admin
+              BOSH_CLIENT="admin"
               BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
@@ -1713,7 +1713,7 @@ jobs:
               - -c
               - |
                 # We cannot use native credentials fetching here because bootstrap
-                CONCOURSE_WEB_USER=admin
+                CONCOURSE_WEB_USER="admin"
                 CONCOURSE_WEB_PASSWORD="$(cat upload-pipeline-secrets/concourse_web_password.txt)"
                 export CONCOURSE_WEB_USER CONCOURSE_WEB_PASSWORD
 
