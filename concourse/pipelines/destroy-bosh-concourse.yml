@@ -154,7 +154,7 @@ jobs:
   - name: enable-bosh-access
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['self-update-pipeline']
@@ -228,7 +228,7 @@ jobs:
   - name: destroy-concourse
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['enable-bosh-access']
         - get: pipeline-trigger
@@ -257,7 +257,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -341,7 +341,7 @@ jobs:
   - name: destroy-bosh
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['destroy-concourse']
@@ -372,7 +372,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -411,7 +411,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -532,7 +532,7 @@ jobs:
   - name: destroy-vpc
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['destroy-bosh']
         - get: vpc-tfstate
@@ -573,7 +573,7 @@ jobs:
   - name: destroy-init-bucket
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['destroy-vpc']
         - get: bucket-terraform-state

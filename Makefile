@@ -60,7 +60,7 @@ lint_shellcheck:
 	find . -name '*.sh' -not -path '*/vendor/*' -a -not -path './manifests/bosh-manifest/upstream/*' | xargs $(SHELLCHECK)
 
 lint_concourse:
-	cd .. && SHELLCHECK_OPTS="-e SC1091" python paas-bootstrap/concourse/scripts/pipecleaner.py --fatal-warnings paas-bootstrap/concourse/pipelines/*.yml
+	pipecleaner concourse/pipelines/* concourse/tasks/*
 
 lint_ruby:
 	bundle exec govuk-lint-ruby

@@ -47,10 +47,11 @@ before_install:
     wget https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64
     mv bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 ~/bin/bosh && chmod +x ~/bin/bosh
   - pip install --user yamllint
-
-  - eval "$(gimme 1.11)"
+  - GIMME_OUTPUT=$(gimme 1.13 | tee -a $HOME/.bashrc) && eval "$GIMME_OUTPUT"
   - export GOPATH=$HOME/gopath
   - export PATH=$HOME/gopath/bin:$PATH
+  - go get -u github.com/alphagov/paas-cf/tools/pipecleaner
+  - bundle install
 
 script:
   - make test

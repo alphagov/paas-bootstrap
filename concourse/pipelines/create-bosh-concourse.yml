@@ -327,7 +327,7 @@ jobs:
   - name: init-bucket
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
 
       - task: try-fetch-bucket-state
@@ -343,8 +343,9 @@ jobs:
           run:
             path: sh
             args:
-            - -c
             - -e
+            - -u
+            - -c
             - |
               cd bucket-state
               aws s3 cp "s3://((state_bucket))/bucket.tfstate" . || true
@@ -512,7 +513,7 @@ jobs:
   - name: vpc
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           trigger: true
           passed: ['init-bucket']
@@ -551,7 +552,7 @@ jobs:
               cd generated-git-ssh-keys
               ssh-keygen -t rsa -b 4096 -f git_id_rsa -N ''
         on_success:
-          aggregate:
+          in_parallel:
             - put: git-ssh-public-key
               params:
                 file: generated-git-ssh-keys/git_id_rsa.pub
@@ -595,7 +596,7 @@ jobs:
   - name: generate-secrets
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['init-bucket']
         - get: pipeline-trigger
@@ -634,7 +635,7 @@ jobs:
                 fi
                 cp out/bosh-CA.crt generated-bosh-CA/bosh-CA.crt
         on_success:
-          aggregate:
+          in_parallel:
             - put: bosh-CA
               params:
                 file: generated-bosh-CA/bosh-CA.tar.gz
@@ -642,7 +643,7 @@ jobs:
               params:
                 file: generated-bosh-CA/bosh-CA.crt
 
-      - aggregate:
+      - in_parallel:
         - task: generate-bosh-secrets
           config:
             platform: linux
@@ -699,7 +700,7 @@ jobs:
                   cp id_rsa.pub ssh-public-key-to-upload
           on_success:
             try:
-              aggregate:
+              in_parallel:
                 - put: ssh-private-key
                   params:
                     file: ssh-private-key-to-upload/id_rsa
@@ -710,7 +711,7 @@ jobs:
   - name: bosh-terraform
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['generate-secrets', 'vpc']
@@ -795,7 +796,7 @@ jobs:
     serial_groups: [bosh-deploy]
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           trigger: true
           passed: ['bosh-terraform']
@@ -876,7 +877,7 @@ jobs:
                   paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
                     > bosh-manifest/bosh-manifest.yml
         on_success:
-          aggregate:
+          in_parallel:
           - put: bosh-manifest
             params:
               file: bosh-manifest/bosh-manifest.yml
@@ -890,7 +891,7 @@ jobs:
   - name: bosh-deploy
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           passed: ['generate-bosh-config']
           trigger: true
@@ -951,7 +952,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -970,7 +971,7 @@ jobs:
   - name: concourse-terraform
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['bosh-terraform']
         - get: pipeline-trigger
@@ -1056,7 +1057,7 @@ jobs:
   - name: generate-concourse-config
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['concourse-terraform']
         - get: pipeline-trigger
@@ -1205,7 +1206,7 @@ jobs:
     serial: true
     interruptible: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['generate-concourse-config']
         - get: cpi-config
@@ -1240,7 +1241,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1276,7 +1277,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1325,7 +1326,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1366,7 +1367,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
 
             CONCOURSE_WORKER_INSTANCES: ((concourse_worker_instances))
           run:
@@ -1447,7 +1448,7 @@ jobs:
   - name: post-deploy
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: pipeline-trigger
           passed: ['concourse-deploy']
           trigger: true
@@ -1478,7 +1479,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
 
             TARGET_CONCOURSE: ((target_concourse))
             DEPLOY_ENV: ((deploy_env))
@@ -1538,7 +1539,7 @@ jobs:
 
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
             path: sh
             args:
@@ -1571,7 +1572,7 @@ jobs:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
-            BOSH_GW_PRIVATE_KEY: ssh-private-key/id_rsa
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
             TARGET_CONCOURSE: ((target_concourse))
           run:
             path: sh
@@ -1713,7 +1714,7 @@ jobs:
   - name: expunge-concourse
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: paas-bootstrap
           passed: ['post-deploy']
         - get: pipeline-trigger
@@ -1877,7 +1878,7 @@ jobs:
 
   - name: rotate-bosh-credentials
     plan:
-      - aggregate:
+      - in_parallel:
         - get: bosh-vars-store
         - get: bosh-manifest-pre-vars
         - get: paas-bootstrap
@@ -1909,7 +1910,7 @@ jobs:
                   --rsa \
                   > modified-bosh-vars-store/bosh-vars-store.yml
         on_success:
-          aggregate:
+          in_parallel:
           - put: bosh-vars-store
             params:
               file: modified-bosh-vars-store/bosh-vars-store.yml
@@ -1926,7 +1927,7 @@ jobs:
   - name: rotate-bosh-leaf-certs
     serial: true
     plan:
-    - aggregate:
+    - in_parallel:
       - get: paas-bootstrap
       - get: bosh-vars-store
       - get: bosh-manifest-pre-vars
@@ -1958,7 +1959,7 @@ jobs:
   - name: delete-old-bosh-certs
     serial: true
     plan:
-    - aggregate:
+    - in_parallel:
       - get: paas-bootstrap
       - get: bosh-vars-store
     - task: delete-old-bosh-internal-certs
