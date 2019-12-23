@@ -17,18 +17,18 @@ You should run it via the Makefile target to set up the necessary environment.
 However, if you want to run it directly:
 
   MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
-    ./scripts/manage-github-secrets.sh upload
+    ./scripts/upload-secrets/manage-github-secrets.sh upload
 
   eval \$(
     MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
-    ./scripts/manage-github-secrets.sh retrieve
+    ./scripts/upload-secrets/manage-github-secrets.sh retrieve
   )
 
 EOF
 }
 
 val_from_yaml() {
-  "${SCRIPT_DIR}"/../concourse/scripts/val_from_yaml.rb "$1" "$2"
+  "${SCRIPT_DIR}"/../../concourse/scripts/val_from_yaml.rb "$1" "$2"
 }
 
 setup_env() {
