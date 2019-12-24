@@ -8,6 +8,7 @@ env:
     - SPRUCE_VERSION="1.14.0"
     - BOSH_CLI_VERSION="2.0.48"
     - CERTSTRAP_VERSION="1.1.1"
+    - SHELLCHECK_VERSION="0.7.0"
 
 addons:
   apt:
@@ -23,8 +24,8 @@ before_install:
     export PATH=~/bin:$PATH
   - |
     echo "Fetching shellcheck"
-    wget -O ~/bin/shellcheck https://github.com/alphagov/paas-cf/releases/download/shellcheck_binary_0.4.6/shellcheck_linux_amd64
-    chmod +x ~/bin/shellcheck
+    wget -qO- "https://storage.googleapis.com/shellcheck/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar -xJv
+    cp "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" ~/bin
   - |
     echo "Fetching Terraform"
     set -e
@@ -47,10 +48,11 @@ before_install:
     wget https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64
     mv bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 ~/bin/bosh && chmod +x ~/bin/bosh
   - pip install --user yamllint
-
-  - eval "$(gimme 1.11)"
+  - GIMME_OUTPUT=$(gimme 1.13 | tee -a $HOME/.bashrc) && eval "$GIMME_OUTPUT"
   - export GOPATH=$HOME/gopath
   - export PATH=$HOME/gopath/bin:$PATH
+  - go get -u github.com/alphagov/paas-cf/tools/pipecleaner
+  - bundle install
 
 script:
   - make test

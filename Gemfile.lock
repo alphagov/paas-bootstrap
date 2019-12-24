@@ -73,7 +73,8 @@ DEPENDENCIES
   json-minify (~> 0.0.2)
   net-ssh (>= 2.9.2)
   rspec (~> 3.3)
+  rubocop (~> 0.52.1)
   webmock (~> 1.24)
 
 BUNDLED WITH
-   1.16.2
+   1.17.1

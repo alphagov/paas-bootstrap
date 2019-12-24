@@ -11,7 +11,7 @@ SOCKET_DEF=%r@%h:%p
 SOCKET=$SOCKET_DIR/$SOCKET_DEF
 
 usage() {
-  if [ ! -z "${1:-}" ]; then
+  if [ -n "${1:-}" ]; then
     echo "$@"
     echo
   fi
