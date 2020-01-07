@@ -36,12 +36,9 @@ actions:
 EOF
 }
 
-download_key() {
-  key=/tmp/id_rsa.$RANDOM
-  trap 'rm -f $key' EXIT
-
-  eval "$(make "${MAKEFILE_ENV_TARGET}" showenv | grep CONCOURSE_IP=)"
-  aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/id_rsa" $key && chmod 400 $key
+get_concourse_ip() {
+  export CONCOURSE_IP
+  CONCOURSE_IP=$(./concourse/scripts/get_ip_address.sh concourse)
 }
 
 ssh_concourse() {
@@ -82,7 +79,7 @@ print_socket() {
 case ${1:-} in
   ssh|"")
     shift || true
-    download_key
+    get_concourse_ip
     ssh_concourse "$@"
     ;;
   scp)
@@ -90,18 +87,18 @@ case ${1:-} in
     if [ "$#" -ne 2 ]; then
       usage "Wrong number of arguments for scp"
     fi
-    download_key
+    get_concourse_ip
     scp_concourse "$1" "$2"
     ;;
   tunnel)
     shift
     case "$1" in
       ?*:?*:?*)
-        download_key
+        get_concourse_ip
         create_tunnel "$1"
         ;;
       stop)
-        download_key
+        get_concourse_ip
         stop_tunnel
         ;;
       *)
