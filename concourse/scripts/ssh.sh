@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-SSH_PATH=${SSH_PATH:-"/Users/${USER}/.ssh/id_rsa"}
-
 SCRIPT=$0
 
 SOCKET_DIR=~/.ssh
@@ -51,20 +49,20 @@ ssh_concourse() {
   echo
 
   # shellcheck disable=SC2029
-  ssh -t -i "$SSH_PATH" -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
+  ssh -t -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
     "$USER"@"$CONCOURSE_IP" "$@"
 }
 
 scp_concourse() {
   # shellcheck disable=SC2029
-  scp -i "$SSH_PATH" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
+  scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
     "$1" "$USER"@"$CONCOURSE_IP":"$2"
 }
 
 create_tunnel() {
   TUNNEL=$1
   echo "Creating tunnel at socket $(print_socket) to ${TUNNEL}"
-  ssh -i "$SSH_PATH" -fNTM -o IdentitiesOnly=yes -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
+  ssh -fNTM -o ControlPath=${SOCKET} -o "ExitOnForwardFailure yes" \
     -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 \
     -L "${TUNNEL}" "${USER}"@"${CONCOURSE_IP}"
 }
