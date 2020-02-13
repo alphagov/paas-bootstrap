@@ -38,6 +38,54 @@ unless mbus_bootstrap_ssl_cert.nil?
   end
 end
 
+uaa_service_provider_ssl_cert = contents.dig('uaa_service_provider_ssl', 'certificate')
+unless uaa_service_provider_ssl_cert.nil?
+  puts 'Found uaa_service_provider_ssl, checking it'
+  # We need uaa_service_provider_ssl to have:
+  # Common name => bosh-external.((system_domain))
+  begin
+    puts 'Parsing uaa_service_provider_ssl'
+    cert = OpenSSL::X509::Certificate.new(uaa_service_provider_ssl_cert)
+    san = cert.extensions.find { |ext| ext.oid == 'subjectAltName' }.value
+    puts 'Parsed uaa_service_provider_ssl'
+
+    if san.match?(/bosh-external/)
+      puts 'Nothing to do for uaa_service_provider_ssl'
+    else
+      puts 'Deleting uaa_service_provider_ssl'
+      contents.delete('uaa_service_provider_ssl')
+    end
+  rescue StandardError => e
+    puts "Handled error => #{e}\n#{e.backtrace}."
+    puts 'Deleting uaa_service_provider_ssl, due to unforeseen error, this is okay'
+    contents.delete('uaa_service_provider_ssl')
+  end
+end
+
+uaa_ssl_cert = contents.dig('uaa_ssl', 'certificate')
+unless uaa_ssl_cert.nil?
+  puts 'Found uaa_ssl, checking it'
+  # We need uaa_ssl to have:
+  # Common name => bosh-external.((system_domain))
+  begin
+    puts 'Parsing uaa_ssl'
+    cert = OpenSSL::X509::Certificate.new(uaa_ssl_cert)
+    san = cert.extensions.find { |ext| ext.oid == 'subjectAltName' }.value
+    puts 'Parsed uaa_ssl'
+
+    if san.match?(/bosh-external/)
+      puts 'Nothing to do for uaa_ssl'
+    else
+      puts 'Deleting uaa_ssl'
+      contents.delete('uaa_ssl')
+    end
+  rescue StandardError => e
+    puts "Handled error => #{e}\n#{e.backtrace}."
+    puts 'Deleting uaa_ssl, due to unforeseen error, this is okay'
+    contents.delete('uaa_ssl')
+  end
+end
+
 puts "New variable names: #{contents.keys}"
 
 puts "Writing file #{filename}"
