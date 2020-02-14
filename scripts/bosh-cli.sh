@@ -44,7 +44,7 @@ echo "
    '---'  '---' '----' '--' '--'
   1. Run 'bosh login'
   2. Skip entering a username and password
-  3. Enter the passcode from bosh-external.${SYSTEM_DNS_ZONE_NAME}
+  3. Enter the passcode from https://bosh-external.${SYSTEM_DNS_ZONE_NAME}:8443/passcode
 "
 
 PS1="BOSH ($DEPLOY_ENV) $ " bash --login --norc --noprofile
