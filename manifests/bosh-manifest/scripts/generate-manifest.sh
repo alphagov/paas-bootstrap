@@ -89,8 +89,8 @@ nats_ca:
 vcap_password: ((secrets.vcap_password))
 bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password))
 
-google_oauth_client_id: ((google_oauth_client_id))
-google_oauth_client_secret: ((google_oauth_client_secret))
+admin_google_oauth_client_id: ((admin_google_oauth_client_id))
+admin_google_oauth_client_secret: ((admin_google_oauth_client_secret))
 EOF
 
 

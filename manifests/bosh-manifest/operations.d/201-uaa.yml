@@ -58,7 +58,7 @@
   value: ((aws_rds_combined_ca_bundle))
 
 - type: replace
-  path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/oauth?/providers/google
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/oauth?/providers/admin-google
   value:
     type: oidc1.0
     authUrl: https://accounts.google.com/o/oauth2/v2/auth
@@ -73,8 +73,8 @@
     linkText: Google
     showLinkText: true
     addShadowUserOnLogin: false
-    relyingPartyId: ((google_oauth_client_id))
-    relyingPartySecret: ((google_oauth_client_secret))
+    relyingPartyId: ((admin_google_oauth_client_id))
+    relyingPartySecret: ((admin_google_oauth_client_secret))
     skipSslValidation: false
     attributeMappings:
       user_name: email

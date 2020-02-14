@@ -131,7 +131,7 @@ RSpec.describe "generic manifest validations" do
     let(:uaa_props) { bosh_jobs.find { |j| j['name'] == 'uaa' }['properties'] }
 
     context "login providers" do
-      let(:uaa_google_login_provider) { uaa_props.dig('login', 'oauth', 'providers', 'google') }
+      let(:uaa_google_login_provider) { uaa_props.dig('login', 'oauth', 'providers', 'admin-google') }
 
       it 'should be configured to use google' do
         expect(uaa_google_login_provider).to_not be_nil

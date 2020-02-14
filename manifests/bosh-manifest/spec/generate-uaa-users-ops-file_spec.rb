@@ -58,7 +58,7 @@ RSpec.describe 'Generating UAA users ops file' do
         'value' => [{
           'email' => 'some-admin-email@digital.cabinet-office.gov.uk',
           'name' => 'some-admin-email@digital.cabinet-office.gov.uk',
-          'origin' => 'google',
+          'origin' => 'admin-google',
           'groups' => ['bosh.admin'],
         }],
       }])

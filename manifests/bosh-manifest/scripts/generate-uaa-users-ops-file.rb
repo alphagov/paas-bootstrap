@@ -27,7 +27,7 @@ def generate_uaa_users_ops_file(config_file, aws_account)
         {
           'email' => email,
           'name' => email,
-          'origin' => 'google',
+          'origin' => 'admin-google',
           'groups' => groups,
         }
       end
