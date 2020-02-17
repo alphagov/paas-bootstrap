@@ -86,6 +86,15 @@ resources:
       branch: ((branch_name))
       commit_verification_keys: ((gpg_public_keys))
 
+  - name: paas-trusted-people
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: paas-trusted-people/users.yml
+      initial_version: "-"
+      initial_content_text: ""
+
   - name: bucket-terraform-state
     type: s3-iam
     source:
@@ -155,6 +164,15 @@ resources:
       bucket: ((state_bucket))
       region_name: ((aws_region))
       versioned_file: bosh-secrets.yml
+      initial_version: "-"
+      initial_content_text: ""
+
+  - name: bosh-uaa-google-oauth-secrets
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bosh-uaa-google-oauth-secrets.yml
       initial_version: "-"
       initial_content_text: ""
 
@@ -810,6 +828,8 @@ jobs:
           passed: ['bosh-terraform']
         - get: bosh-tfstate
           passed: ['bosh-terraform']
+        - get: bosh-uaa-google-oauth-secrets
+        - get: paas-trusted-people
 
       - task: extract_terraform_outputs
         config:
@@ -834,6 +854,25 @@ jobs:
                   < bosh-tfstate/bosh.tfstate \
                   > terraform-outputs/bosh-terraform-outputs.yml
 
+      - task: generate-uaa-users
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: paas-trusted-people
+          outputs:
+            - name: uaa-users-ops-file
+          run:
+            path: sh
+            args:
+              - -c
+              - -e
+              - |
+                paas-bootstrap/manifests/bosh-manifest/scripts/generate-uaa-users-ops-file.rb \
+                  paas-trusted-people/users.yml "((aws_account))" > uaa-users-ops-file/uaa-users-ops-file.yml
+                cat uaa-users-ops-file/uaa-users-ops-file.yml
+
       - task: render-bosh-manifest
         config:
           platform: linux
@@ -844,6 +883,8 @@ jobs:
             - name: bosh-secrets
             - name: bosh-CA
             - name: bosh-vars-store
+            - name: bosh-uaa-google-oauth-secrets
+            - name: uaa-users-ops-file
           outputs:
             - name: bosh-manifest
             - name: bosh-manifest-pre-vars
@@ -954,7 +995,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1244,7 +1285,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -u
@@ -1281,7 +1322,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -u
@@ -1331,7 +1372,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1375,7 +1416,7 @@ jobs:
 
             CONCOURSE_WORKER_INSTANCES: ((concourse_worker_instances))
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -u
@@ -1489,7 +1530,7 @@ jobs:
             TARGET_CONCOURSE: ((target_concourse))
             DEPLOY_ENV: ((deploy_env))
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
@@ -1547,7 +1588,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c
@@ -1582,7 +1623,7 @@ jobs:
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
             TARGET_CONCOURSE: ((target_concourse))
           run:
-            path: sh
+            path: bash
             args:
             - -e
             - -c

@@ -1,5 +1,8 @@
 RSpec.describe "generic manifest validations" do
   let(:manifest) { manifest_with_defaults }
+  let(:instance_groups) { manifest['instance_groups'] }
+  let(:bosh_instance) { instance_groups.find { |ig| ig['name'] == 'bosh' } }
+  let(:bosh_jobs) { bosh_instance['jobs'] }
 
   describe "name uniqueness" do
     %w(
@@ -120,6 +123,45 @@ RSpec.describe "generic manifest validations" do
         expect(manifest_keys.has_key?(name)).to be_truthy, "did not find username #{name} in the manifest config"
         expect(pk).to_not be_nil, "key for username #{name} is missing"
         expect(pk).to eq(manifest_keys[name]), "key for username #{name} is different in the manifest config and the runtime config"
+      end
+    end
+  end
+
+  describe "uaa" do
+    let(:uaa_props) { bosh_jobs.find { |j| j['name'] == 'uaa' }['properties'] }
+
+    context "login providers" do
+      let(:uaa_google_login_provider) { uaa_props.dig('login', 'oauth', 'providers', 'admin-google') }
+
+      it 'should be configured to use google' do
+        expect(uaa_google_login_provider).to_not be_nil
+        expect(uaa_google_login_provider['issuer']).to eql 'https://accounts.google.com'
+        expect(uaa_google_login_provider['type']).to eql 'oidc1.0'
+        expect(uaa_google_login_provider['scopes']).to eql %w(openid profile email)
+        expect(uaa_google_login_provider['relyingPartyId']).to eql 'some-google-client-id'
+        expect(uaa_google_login_provider['relyingPartySecret']).to eql 'some-google-client-secret'
+      end
+    end
+
+    context "clients" do
+      let(:uaa_clients) { uaa_props.dig('uaa', 'clients') }
+
+      it "should set up a client for the credhub cli" do
+        client = uaa_clients['credhub_cli']
+
+        expect(client['authorities']).to eq('')
+        expect(client['secret']).to eq('')
+
+        expect(client['scope']).to eq('credhub.read,credhub.write')
+      end
+
+      it "should set up a client for the bosh cli" do
+        client = uaa_clients['bosh_cli']
+
+        expect(client['authorities']).to eq('uaa.none')
+        expect(client['secret']).to eq('')
+
+        expect(client['scope'].split(',')).to include('openid', 'bosh.admin')
       end
     end
   end

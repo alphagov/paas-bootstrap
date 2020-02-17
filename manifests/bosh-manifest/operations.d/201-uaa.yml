@@ -1,10 +1,27 @@
-- type: replace
+- type: remove
   path: /instance_groups/name=bosh/properties/director/user_management/uaa?/url
-  value: "https://((bosh_fqdn)):8443"
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/user_management/uaa?/urls
+  value:
+    - "https://((bosh_fqdn)):8443"
+    - "https://((bosh_fqdn_external)):8443"
 
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/url
   value: "https://((bosh_fqdn)):8443"
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/zones/internal/hostnames/-
+  value: ((bosh_fqdn))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/zones/internal/hostnames/-
+  value: ((bosh_fqdn_external))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/links?/homeRedirect
+  value: "https://((bosh_fqdn_external)):8443/passcode"
 
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaadb
@@ -25,9 +42,39 @@
   value: ((bosh_fqdn))
 
 - type: replace
+  path: /variables/name=uaa_ssl/options/alternative_names/-
+  value: ((bosh_fqdn_external))
+
+- type: replace
   path: /variables/name=uaa_service_provider_ssl/options/alternative_names/-
   value: ((bosh_fqdn))
 
 - type: replace
+  path: /variables/name=uaa_service_provider_ssl/options/alternative_names/-
+  value: ((bosh_fqdn_external))
+
+- type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/ca_certs?/-
   value: ((aws_rds_combined_ca_bundle))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/oauth?/providers/admin-google
+  value:
+    type: oidc1.0
+    authUrl: https://accounts.google.com/o/oauth2/v2/auth
+    tokenUrl: https://www.googleapis.com/oauth2/v4/token
+    tokenKeyUrl: https://www.googleapis.com/oauth2/v3/certs
+    issuer: https://accounts.google.com
+    redirectUrl: https://((bosh_fqdn_external)):8443
+    scopes:
+      - openid
+      - profile
+      - email
+    linkText: Google
+    showLinkText: true
+    addShadowUserOnLogin: false
+    relyingPartyId: ((admin_google_oauth_client_id))
+    relyingPartySecret: ((admin_google_oauth_client_secret))
+    skipSslValidation: false
+    attributeMappings:
+      user_name: email

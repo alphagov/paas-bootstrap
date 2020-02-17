@@ -11,6 +11,14 @@ for i in "${PAAS_BOOTSTRAP_DIR}"/manifests/bosh-manifest/operations.d/*.yml; do
   opsfile_args+="-o $i "
 done
 
+uaa_users_ops_file="${WORKDIR}/uaa-users-ops-file/uaa-users-ops-file.yml"
+if [ -f "$uaa_users_ops_file" ]; then
+  opsfile_args+="-o $uaa_users_ops_file "
+else
+  >&2 echo "Could not find $uaa_users_ops_file. Aborting."
+  exit 1
+fi
+
 vars_store_args=""
 if [ -n "${VARS_STORE:-}" ]; then
   vars_store_args=" --var-errs --vars-store ${VARS_STORE}"
@@ -24,6 +32,7 @@ bosh interpolate - \
   --vars-file "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/bosh-terraform-outputs.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \
+  --vars-file "${WORKDIR}/bosh-uaa-google-oauth-secrets/bosh-uaa-google-oauth-secrets.yml" \
   --var-file="default_ca.certificate=${WORKDIR}/certs/bosh-CA.crt" \
   --var-file="default_ca.private_key=${WORKDIR}/certs/bosh-CA.key" \
   > "${variables_file}" \
@@ -79,6 +88,9 @@ nats_ca:
 
 vcap_password: ((secrets.vcap_password))
 bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password))
+
+admin_google_oauth_client_id: ((admin_google_oauth_client_id))
+admin_google_oauth_client_secret: ((admin_google_oauth_client_secret))
 EOF
 
 

@@ -17,6 +17,13 @@ resource "aws_security_group" "office-access-ssh" {
     cidr_blocks = ["${compact(concat(var.admin_cidrs, list(var.concourse_egress_cidr)))}"]
   }
 
+  ingress {
+    from_port   = 8443
+    to_port     = 8443
+    protocol    = "tcp"
+    cidr_blocks = ["${compact(concat(var.admin_cidrs, list(var.concourse_egress_cidr)))}"]
+  }
+
   tags {
     Name = "${var.env}-office-access-ssh"
   }
