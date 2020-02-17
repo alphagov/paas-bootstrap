@@ -32,3 +32,8 @@ variable "concourse_db_skip_final_snapshot" {
   description = "Whether to skip final RDS snapshot (just before destroy). Differs per environment."
   default     = "true"
 }
+
+variable cloudwatch_log_retention_period {
+  description = "how long cloudwatch logs should be retained for (in days). Default 18 months"
+  default     = 545
+}

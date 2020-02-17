@@ -1218,6 +1218,7 @@ jobs:
           image_resource: *spruce-image-resource
           params:
             AWS_ACCOUNT: ((aws_account))
+            AWS_REGION: ((aws_region))
             CONCOURSE_AUTH_DURATION: ((concourse_auth_duration))
             CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
             CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))

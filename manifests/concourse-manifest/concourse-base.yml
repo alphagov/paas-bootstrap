@@ -23,6 +23,10 @@ releases:
     version: "1.1.5"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.5"
     sha1: "e612e88543012ae5d376dd3746159d5abe748076"
+  - name: awslogs
+    version: 0.1.1
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
+    sha1: dd307700e55c6c45376a5d76583243601e7559e6
 
 instance_groups:
   - name: concourse
@@ -134,6 +138,22 @@ instance_groups:
     networks:
       - name: concourse
         default: [dns, gateway]
+
+addons:
+- name: awslogs
+  jobs:
+  - name: awslogs-xenial
+    release: awslogs
+    properties:
+      awslogs-xenial:
+        region: (( grab $AWS_REGION ))
+        awslogs_files_config:
+          - name: /var/log/auth.log
+            file: /var/log/auth.log
+            log_group_name: (( concat "concourse_auth_logs_" terraform_outputs_environment ))
+            log_stream_name: "{{instance_id}}"
+            initial_position: start_of_file
+            datetime_format: "%Y-%m-%dT%H:%M:%S"
 
 update:
   canaries: 1

@@ -106,8 +106,8 @@ variable "assets_prefix" {
   default     = "gds-paas"
 }
 
-variable "log_groups_to_ship_to_csls" {
-  description = "The names of the log groups to ship to CSLS, without the _env suffix"
+variable "bosh_log_groups_to_ship_to_csls" {
+  description = "The names of the Bosh log groups to ship to CSLS, without the _env suffix"
   type        = "list"
 
   default = [
@@ -117,5 +117,14 @@ variable "log_groups_to_ship_to_csls" {
     "bosh_d_credhub_security_events",
     "bosh_d_kauditd",
     "bosh_d_uaa_events",
+  ]
+}
+
+variable "concourse_log_groups_to_ship_to_csls" {
+  description = "The names of the Concourse log groups to ship to CSLS, without the _env suffix"
+  type        = "list"
+
+  default = [
+    "concourse_auth_logs",
   ]
 }
