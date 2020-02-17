@@ -59,7 +59,11 @@ RSpec.describe 'Generating UAA users ops file' do
           'email' => 'some-admin-email@digital.cabinet-office.gov.uk',
           'name' => 'some-admin-email@digital.cabinet-office.gov.uk',
           'origin' => 'admin-google',
-          'groups' => ['bosh.admin'],
+          'groups' => [
+            'bosh.admin',
+            'credhub.read', 'credhub.write',
+            'uaa.admin',
+          ],
         }],
       }])
     end

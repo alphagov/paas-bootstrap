@@ -1,16 +1,23 @@
 #!/usr/bin/env ruby
 
+require 'English'
 require 'yaml'
 
 def generate_uaa_users_ops_file(config_file, aws_account)
   named_roles_to_groups = {
-    'bosh-admin' => ['bosh.admin'],
+    'bosh-admin' => [
+      'bosh.admin',
+      'credhub.read', 'credhub.write',
+      'uaa.admin'
+    ]
   }
+
   ops_file = [{
     'type' => 'replace',
     'path' => '/instance_groups/name=bosh/jobs/name=uaa/properties/uaa/scim/users',
-    'value' => [],
+    'value' => []
   }]
+
   if File.file? config_file
     users_config = YAML.load_file config_file
     users_and_groups = users_config
@@ -28,7 +35,7 @@ def generate_uaa_users_ops_file(config_file, aws_account)
           'email' => email,
           'name' => email,
           'origin' => 'admin-google',
-          'groups' => groups,
+          'groups' => groups.uniq,
         }
       end
 
@@ -36,7 +43,7 @@ def generate_uaa_users_ops_file(config_file, aws_account)
   end
 end
 
-if $0 == __FILE__
+if $PROGRAM_NAME == __FILE__
   config_file = ARGV[0]
   aws_account = ARGV[1]
 
