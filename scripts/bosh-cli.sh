@@ -17,9 +17,6 @@ trap cleanup EXIT
 echo 'Getting BOSH settings'
 
 BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
-BOSH_IP=$(aws ec2 describe-instances \
-    --filters "Name=tag:deploy_env,Values=${DEPLOY_ENV}" 'Name=tag:instance_group,Values=bosh' \
-    --query 'Reservations[].Instances[].PublicIpAddress' --output text)
 
 echo 'Opening SSH tunnel'
 ssh -qfNC -4 -D 25555 \
@@ -29,7 +26,7 @@ ssh -qfNC -4 -D 25555 \
   -o ServerAliveInterval=30 \
   -M \
   -S "$tunnel_mux" \
-  "$BOSH_IP"
+  "bosh-external.${SYSTEM_DNS_ZONE_NAME}" \
 
 export BOSH_CA_CERT
 export BOSH_ALL_PROXY="socks5://localhost:25555"
