@@ -994,6 +994,9 @@ jobs:
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
+
+            AWS_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
           run:
             path: bash
             args:
@@ -1007,7 +1010,10 @@ jobs:
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
-                bosh -n update-runtime-config paas-bootstrap/manifests/runtime-config/runtime-config.yml
+                bosh -n update-runtime-config \
+                  --var "deploy_env=$DEPLOY_ENV" \
+                  --var "aws_region=$AWS_REGION" \
+                  paas-bootstrap/manifests/runtime-config/runtime-config.yml
                 bosh runtime-config
 
   - name: concourse-terraform
