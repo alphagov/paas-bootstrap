@@ -139,22 +139,6 @@ instance_groups:
       - name: concourse
         default: [dns, gateway]
 
-addons:
-- name: awslogs
-  jobs:
-  - name: awslogs-xenial
-    release: awslogs
-    properties:
-      awslogs-xenial:
-        region: (( grab $AWS_REGION ))
-        awslogs_files_config:
-          - name: /var/log/auth.log
-            file: /var/log/auth.log
-            log_group_name: (( concat "concourse_auth_logs_" terraform_outputs_environment ))
-            log_stream_name: "{{instance_id}}"
-            initial_position: start_of_file
-            datetime_format: "%Y-%m-%dT%H:%M:%S"
-
 update:
   canaries: 1
   max_in_flight: 1

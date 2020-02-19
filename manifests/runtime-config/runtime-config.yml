@@ -51,9 +51,8 @@ addons:
       jobs:
         - name: awslogs-xenial
           release: awslogs
-      lifecycle: errand
-      deployments:
-        - concourse
+    include:
+      lifecycle: service
 
 releases:
   - name: os-conf
