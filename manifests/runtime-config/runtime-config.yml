@@ -33,9 +33,33 @@ addons:
       stemcell:
         - os: ubuntu-trusty
         - os: ubuntu-xenial
+  - name: awslogs
+    jobs:
+      - name: awslogs-xenial
+        release: awslogs
+        properties:
+          awslogs-xenial:
+            region: ((aws_region))
+            awslogs_files_config:
+              - name: /var/log/auth.log
+                file: /var/log/auth.log
+                log_group_name: auth_logs_((deploy_env))
+                log_stream_name: "{{instance_id}}"
+                initial_position: start_of_file
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
+    exclude:
+      jobs:
+        - name: awslogs-xenial
+          release: awslogs
+    include:
+      lifecycle: service
 
 releases:
   - name: os-conf
     version: 21.0.0
     url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=21.0.0
     sha1: 7579a96515b265c6d828924bf4f5fae115798199
+  - name: awslogs
+    version: 0.1.1
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
+    sha1: dd307700e55c6c45376a5d76583243601e7559e6

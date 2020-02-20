@@ -35,6 +35,7 @@ private
   def fake_env_vars
     env = {}
     env["AWS_ACCOUNT"] = "dev"
+    env["AWS_REGION"] = "eu-west-1"
     env["CONCOURSE_INSTANCE_TYPE"] = "t2.small"
     env["CONCOURSE_INSTANCE_PROFILE"] = "concourse-build"
     env["CONCOURSE_AUTH_DURATION"] = "5m"

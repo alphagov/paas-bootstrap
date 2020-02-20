@@ -611,6 +611,60 @@ jobs:
           params:
             file: updated-vpc-tfstate/vpc.tfstate
 
+  - name: cyber-terraform
+    serial: true
+    # This is not in the mainline of the pipeline
+    # because we do not want to couple our deployment to Cyber
+    plan:
+      - in_parallel:
+        - get: pipeline-trigger
+          trigger: true
+          passed: ['init-bucket']
+        - get: paas-bootstrap
+          passed: ['init-bucket']
+        - get: bootstrap-cyber-tfvars
+        - get: bootstrap-cyber-tfstate
+
+      - task: terraform-apply
+        config:
+          platform: linux
+          image_resource: *terraform-image-resource
+          inputs:
+            - name: paas-bootstrap
+            - name: bootstrap-cyber-tfstate
+            - name: bootstrap-cyber-tfvars
+          outputs:
+            - name: updated-bootstrap-cyber-tfstate
+          params:
+            DEPLOY_ENV: ((deploy_env))
+            AWS_DEFAULT_REGION: ((aws_region))
+            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
+            TF_VAR_system_dns_zone_id: ((system_dns_zone_id))
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
+                   updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+
+                terraform init paas-bootstrap/terraform/cyber
+
+                terraform apply \
+                  -auto-approve=true \
+                  -var env="((deploy_env))" \
+                  -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                  -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                  -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                  -state=updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
+                  paas-bootstrap/terraform/cyber
+
+        ensure:
+          put: bootstrap-cyber-tfstate
+          params:
+            file: updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+
   - name: generate-secrets
     serial: true
     plan:
@@ -732,7 +786,7 @@ jobs:
       - in_parallel:
         - get: pipeline-trigger
           trigger: true
-          passed: ['generate-secrets', 'vpc']
+          passed: ['generate-secrets', 'vpc', 'cyber-terraform']
         - get: paas-bootstrap
           passed: ['generate-secrets']
         - get: bosh-secrets
@@ -740,6 +794,8 @@ jobs:
         - get: vpc-tfstate
           passed: ['vpc']
         - get: bosh-tfstate
+        - get: bootstrap-cyber-tfvars
+          passed: ['cyber-terraform']
         - get: ssh-public-key
           passed: ['generate-secrets']
 
@@ -773,6 +829,7 @@ jobs:
             - name: terraform-variables
             - name: bosh-tfstate
             - name: ssh-public-key
+            - name: bootstrap-cyber-tfvars
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -803,6 +860,7 @@ jobs:
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                  -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
                   -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
@@ -994,6 +1052,9 @@ jobs:
             BOSH_GW_HOST: ((bosh_login_host))
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
+
+            AWS_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
           run:
             path: bash
             args:
@@ -1007,7 +1068,10 @@ jobs:
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
-                bosh -n update-runtime-config paas-bootstrap/manifests/runtime-config/runtime-config.yml
+                bosh -n update-runtime-config \
+                  --var "deploy_env=$DEPLOY_ENV" \
+                  --var "aws_region=$AWS_REGION" \
+                  paas-bootstrap/manifests/runtime-config/runtime-config.yml
                 bosh runtime-config
 
   - name: concourse-terraform
@@ -1218,6 +1282,7 @@ jobs:
           image_resource: *spruce-image-resource
           params:
             AWS_ACCOUNT: ((aws_account))
+            AWS_REGION: ((aws_region))
             CONCOURSE_AUTH_DURATION: ((concourse_auth_duration))
             CONCOURSE_INSTANCE_TYPE: ((concourse_instance_type))
             CONCOURSE_INSTANCE_PROFILE: ((concourse_instance_profile))
@@ -1436,60 +1501,6 @@ jobs:
               bosh deploy concourse-manifest/concourse-manifest.yml \
                    -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
                    --var-file=credhub_ca_cert=credhub-ca-cert.yml
-
-  - name: cyber-terraform
-    serial: true
-    # This is not in the mainline of the pipeline
-    # because we do not want to couple our deployment to Cyber
-    plan:
-      - in_parallel:
-        - get: pipeline-trigger
-          trigger: true
-          passed: ['concourse-deploy']
-        - get: paas-bootstrap
-          passed: ['concourse-deploy']
-        - get: bootstrap-cyber-tfvars
-        - get: bootstrap-cyber-tfstate
-
-      - task: terraform-apply
-        config:
-          platform: linux
-          image_resource: *terraform-image-resource
-          inputs:
-            - name: paas-bootstrap
-            - name: bootstrap-cyber-tfstate
-            - name: bootstrap-cyber-tfvars
-          outputs:
-            - name: updated-bootstrap-cyber-tfstate
-          params:
-            DEPLOY_ENV: ((deploy_env))
-            AWS_DEFAULT_REGION: ((aws_region))
-            TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
-            TF_VAR_system_dns_zone_id: ((system_dns_zone_id))
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
-                   updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
-
-                terraform init paas-bootstrap/terraform/cyber
-
-                terraform apply \
-                  -auto-approve=true \
-                  -var env="((deploy_env))" \
-                  -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                  -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                  -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
-                  -state=updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
-                  paas-bootstrap/terraform/cyber
-
-        ensure:
-          put: bootstrap-cyber-tfstate
-          params:
-            file: updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
   - name: post-deploy
     serial: true
@@ -1772,6 +1783,7 @@ jobs:
         - get: vpc-tfstate
         - get: bosh-tfstate
         - get: concourse-tfstate
+        - get: bootstrap-cyber-tfvars
 
       - task: terraform-outputs-to-sh
         config:
@@ -1840,6 +1852,7 @@ jobs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
           - name: bosh-tfstate
+          - name: bootstrap-cyber-tfvars
           outputs:
           - name: updated-bosh-tfstate
           params:
@@ -1867,6 +1880,7 @@ jobs:
                 -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
