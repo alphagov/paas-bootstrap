@@ -1,0 +1,34 @@
+---
+# Add a UAA client so that the bosh prometheus exporter can scrape via bosh
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/bosh_exporter?
+  value:
+    override: true
+    authorized-grant-types: client_credentials
+    scope: ""
+    authorities: bosh.read
+    secret: ((bosh_exporter_password))
+
+- type: replace
+  path: /variables/-
+  value:
+    name: bosh_exporter_password
+    type: password
+
+# Add the prometheus node exporter to the bosh director vm
+
+- type: replace
+  path: /releases/-
+  value:
+    name: "node-exporter"
+    version: "4.2.0"
+    url: "https://bosh.io/d/github.com/cloudfoundry-community/node-exporter-boshrelease?v=4.2.0"
+    sha1: "b4ffebacc55fbb9934425ac792bb7179eed7e61c"
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/-
+  value:
+    name: node_exporter
+    release: node-exporter
+    properties: {}
