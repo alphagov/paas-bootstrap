@@ -16,6 +16,6 @@ resource "aws_iam_user_group_membership" "git_concourse_pool" {
 
 resource "aws_iam_user_ssh_key" "git" {
   username   = "${aws_iam_user.git.name}"
-  encoding   = "PEM"
+  encoding   = "SSH"
   public_key = "${var.git_rsa_id_pub}"
 }
