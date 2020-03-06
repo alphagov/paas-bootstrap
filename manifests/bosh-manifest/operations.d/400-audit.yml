@@ -59,3 +59,50 @@
             log_stream_name: "{{instance_id}}"
             initial_position: start_of_file
             datetime_format: "%Y-%m-%dT%H:%M:%S"
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/bosh_auditor?
+  value:
+    override: true
+    authorized-grant-types: client_credentials
+    scope: ""
+    authorities: bosh.read
+    secret: ((bosh_auditor_password))
+
+- type: replace
+  path: /variables/-
+  value:
+    name: bosh_auditor_password
+    type: password
+
+- type: replace
+  path: /releases/-
+  value:
+    name: observability
+    version: 0.1.9
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/observability-0.1.9.tgz
+    sha1: 23a18fe6431a36f5143ab52111843cd93863f50a
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs?/-
+  value:
+    name: bosh-auditor
+    release: observability
+    properties:
+      lookback_duration: 24h
+      deploy_env: ((deploy_env))
+
+      fetcher:
+        bosh_client_id: bosh_auditor
+        bosh_client_secret: ((bosh_auditor_password))
+
+        bosh_ca_cert: ((default_ca.certificate))
+        uaa_ca_cert: ((default_ca.certificate))
+
+        bosh_url: https://((bosh_fqdn)):25555
+        uaa_url: https://((bosh_fqdn)):8443
+
+      shippers:
+        splunk:
+          hec_endpoint: https://http-inputs-gds.splunkcloud.com/services/collector
+          token: ((bosh_auditor_splunk_hec_token))

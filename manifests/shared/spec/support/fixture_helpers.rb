@@ -35,6 +35,15 @@ module FixtureHelpers
     end
   end
 
+  def generate_cyber_secrets_fixture(target_dir, bosh_auditor_splunk_hec_token)
+    FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
+    File.open("#{target_dir}/bosh-cyber-secrets.yml", 'w') do |file|
+      file.write({
+        'bosh_auditor_splunk_hec_token' => bosh_auditor_splunk_hec_token,
+      }.to_yaml)
+    end
+  end
+
   def generate_uaa_users_fixture(target_dir)
     FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
     File.open("#{target_dir}/uaa-users-ops-file.yml", 'w') do |file|
