@@ -71,7 +71,6 @@ globals:
 	$(eval export PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR})
 	$(eval export GITHUB_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export GOOGLE_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
-	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	@true
 
 ## Environments
@@ -89,6 +88,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
@@ -99,6 +99,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 
 .PHONY: stg-lon
 stg-lon: globals ## Set Environment to stg-lon
@@ -112,6 +113,7 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 
 .PHONY: prod
 prod: globals ## Set Environment to Prod
@@ -125,6 +127,7 @@ prod: globals ## Set Environment to Prod
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 
 .PHONY: prod-lon
 prod-lon: globals ## Set Environment to prod-lon
@@ -138,6 +141,7 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
+	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 
 ## Concourse profiles
 
@@ -222,7 +226,7 @@ stop-tunnel: check-env-vars ## Stop SSH tunnel
 	@./concourse/scripts/ssh.sh tunnel stop
 
 .PHONY: upload-all-secrets
-upload-all-secrets: upload-github-oauth upload-google-oauth upload-cyber-tfvars upload-paas-trusted-people
+upload-all-secrets: upload-github-oauth upload-google-oauth upload-cyber-tfvars upload-cyber-secrets upload-paas-trusted-people
 
 .PHONY: upload-github-oauth
 upload-github-oauth: check-env-vars ## Decrypt and upload github OAuth credentials to S3
@@ -237,6 +241,13 @@ upload-google-oauth: check-env-vars ## Decrypt and upload google OAuth credentia
 	$(if ${GOOGLE_PASSWORD_STORE_DIR},,$(error Must pass GOOGLE_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GOOGLE_PASSWORD_STORE_DIR}),,$(error Password store ${GOOGLE_PASSWORD_STORE_DIR} does not exist))
 	@scripts/upload-secrets/upload-google-oauth-secrets.sh
+
+.PHONY: upload-cyber-secrets
+upload-cyber-secrets: check-env-vars ## Decrypt and upload cyber credentials to S3
+	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
+	$(if ${CYBER_PASSWORD_STORE_DIR},,$(error Must pass CYBER_PASSWORD_STORE_DIR=<path_to_password_store>))
+	$(if $(wildcard ${CYBER_PASSWORD_STORE_DIR}),,$(error Password store ${CYBER_PASSWORD_STORE_DIR} does not exist))
+	@scripts/upload-secrets/upload-cyber-secrets.sh
 
 .PHONY: upload-cyber-tfvars
 upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3

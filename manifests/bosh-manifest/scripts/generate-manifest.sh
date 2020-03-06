@@ -32,6 +32,7 @@ bosh interpolate - \
   --vars-file "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/bosh-terraform-outputs.yml" \
   --vars-file "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \
+  --vars-file "${WORKDIR}/bosh-cyber-secrets/bosh-cyber-secrets.yml" \
   --vars-file "${WORKDIR}/bosh-uaa-google-oauth-secrets/bosh-uaa-google-oauth-secrets.yml" \
   --var-file="default_ca.certificate=${WORKDIR}/certs/bosh-CA.crt" \
   --var-file="default_ca.private_key=${WORKDIR}/certs/bosh-CA.key" \
@@ -91,6 +92,8 @@ bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password
 
 admin_google_oauth_client_id: ((admin_google_oauth_client_id))
 admin_google_oauth_client_secret: ((admin_google_oauth_client_secret))
+
+bosh_auditor_splunk_hec_token: ((bosh_auditor_splunk_hec_token))
 EOF
 
 
