@@ -236,7 +236,7 @@ upload-google-oauth: check-env-vars ## Decrypt and upload google OAuth credentia
 	$(if ${MAKEFILE_ENV_TARGET},,$(error Must set MAKEFILE_ENV_TARGET))
 	$(if ${GOOGLE_PASSWORD_STORE_DIR},,$(error Must pass GOOGLE_PASSWORD_STORE_DIR=<path_to_password_store>))
 	$(if $(wildcard ${GOOGLE_PASSWORD_STORE_DIR}),,$(error Password store ${GOOGLE_PASSWORD_STORE_DIR} does not exist))
-	@scripts/upload-google-oauth-secrets.sh
+	@scripts/upload-secrets/upload-google-oauth-secrets.sh
 
 .PHONY: upload-cyber-tfvars
 upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3
@@ -247,7 +247,7 @@ upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3
 
 .PHONY: upload-paas-trusted-people
 upload-paas-trusted-people: check-env-vars
-	@scripts/upload-paas-trusted-people.sh
+	@scripts/upload-secrets/upload-paas-trusted-people.sh
 
 merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
 	$(if ${PR},,$(error Must pass PR=<number>))
