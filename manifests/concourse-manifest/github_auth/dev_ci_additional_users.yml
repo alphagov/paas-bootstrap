@@ -11,6 +11,6 @@ instance_groups:
               github:
                 users:
                   - (( append ))
-                  - schmie
+                  - kr8n3r
                   - venusbb
                   - poveyd

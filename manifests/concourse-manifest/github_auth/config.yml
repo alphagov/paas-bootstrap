@@ -18,4 +18,5 @@ instance_groups:
                 - mogds
                 - paroxp
                 - richardTowers
+                - schmie
                 - tlwr
