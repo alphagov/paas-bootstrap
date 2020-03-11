@@ -72,9 +72,10 @@ DEPENDENCIES
   govuk-lint (~> 3.8.0)
   json-minify (~> 0.0.2)
   net-ssh (>= 2.9.2)
+  rake (~> 12.3.3)
   rspec (~> 3.3)
   rubocop (~> 0.52.1)
   webmock (~> 1.24)
 
 BUNDLED WITH
-   1.17.1
+   1.17.3
