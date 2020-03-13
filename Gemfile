@@ -3,6 +3,7 @@ source "https://rubygems.org"
 gem 'github_merge_sign', '1.0.0'
 gem 'govuk-lint', "~> 3.8.0"
 gem 'json-minify', '~> 0.0.2'
+gem 'rake', '~>12.3.3'
 gem 'rspec', '~> 3.3'
 gem 'rubocop', '~> 0.52.1'
 gem 'webmock', "~> 1.24"
