@@ -43,8 +43,9 @@ director_name: ${DEPLOY_ENV}
 deploy_env: ${DEPLOY_ENV}
 system_domain: ${SYSTEM_DNS_ZONE_NAME}
 aws_account: ${AWS_ACCOUNT}
-bosh_fqdn: ${BOSH_FQDN}
-bosh_fqdn_external: ${BOSH_FQDN_EXTERNAL}
+bosh_fqdn: bosh.${SYSTEM_DNS_ZONE_NAME}
+bosh_fqdn_external: bosh-external.${SYSTEM_DNS_ZONE_NAME}
+bosh_uaa_fqdn_external: bosh-uaa-external.${SYSTEM_DNS_ZONE_NAME}
 
 iam_instance_profile: ${BOSH_INSTANCE_PROFILE}
 
