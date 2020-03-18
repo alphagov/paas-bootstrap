@@ -6,6 +6,7 @@
   value:
     - "https://((bosh_fqdn)):8443"
     - "https://((bosh_fqdn_external)):8443"
+    - "https://((bosh_uaa_fqdn_external))"
 
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/url
@@ -20,8 +21,12 @@
   value: ((bosh_fqdn_external))
 
 - type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/zones/internal/hostnames/-
+  value: ((bosh_uaa_fqdn_external))
+
+- type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/login/links?/homeRedirect
-  value: "https://((bosh_fqdn_external)):8443/passcode"
+  value: "https://((bosh_uaa_fqdn_external))/passcode"
 
 - type: replace
   path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaadb
@@ -65,7 +70,7 @@
     tokenUrl: https://www.googleapis.com/oauth2/v4/token
     tokenKeyUrl: https://www.googleapis.com/oauth2/v3/certs
     issuer: https://accounts.google.com
-    redirectUrl: https://((bosh_fqdn_external)):8443
+    redirectUrl: https://((bosh_uaa_fqdn_external))
     scopes:
       - openid
       - profile

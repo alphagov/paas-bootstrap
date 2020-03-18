@@ -76,6 +76,37 @@ resources:
       region_name: ((aws_region))
       versioned_file: bosh.tfstate
 
+  - name: bootstrap-cyber-tfvars
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      region_name: ((aws_region))
+      versioned_file: bootstrap-cyber.tfvars
+      initial_version: "-"
+      initial_content_text: ""
+
+  - name: bootstrap-cyber-tfstate
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      versioned_file: bootstrap-cyber.tfstate
+      region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: |
+        {
+            "version": 1,
+            "serial": 0,
+            "modules": [
+                {
+                    "path": [
+                        "root"
+                    ],
+                    "outputs": {},
+                    "resources": {}
+                }
+            ]
+        }
+
   - name: bosh-secrets
     type: s3-iam
     source:
@@ -161,6 +192,7 @@ jobs:
         - get: paas-bootstrap
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: bootstrap-cyber-tfvars
 
       - task: vpc-terraform-outputs-to-sh
         config:
@@ -190,6 +222,7 @@ jobs:
             - name: paas-bootstrap
             - name: vpc-terraform-outputs
             - name: bosh-tfstate
+            - name: bootstrap-cyber-tfvars
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -219,6 +252,7 @@ jobs:
                 -state=updated-bosh-tfstate/bosh.tfstate \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
                 paas-bootstrap/terraform/bosh
         ensure:
           put: bosh-tfstate
@@ -353,6 +387,7 @@ jobs:
         - get: bosh-manifest
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: bootstrap-cyber-tfvars
         - get: bosh-CA-crt
         - get: ssh-private-key
 
@@ -496,6 +531,7 @@ jobs:
             - name: paas-bootstrap
             - name: terraform-variables
             - name: bosh-tfstate
+            - name: bootstrap-cyber-tfvars
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -525,6 +561,7 @@ jobs:
                   -var env="((deploy_env))" \
                   -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                  -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
                   -state=updated-bosh-tfstate/bosh.tfstate \
                   paas-bootstrap/terraform/bosh
         ensure:
@@ -573,16 +610,61 @@ jobs:
           params:
             file: updated-vpc-tfstate/vpc.tfstate
 
+  - name: destroy-cyber
+    serial: true
+    plan:
+      - in_parallel:
+        - get: paas-bootstrap
+          passed: ['destroy-bosh']
+        - get: bootstrap-cyber-tfstate
+        - get: bootstrap-cyber-tfvars
+        - get: pipeline-trigger
+          trigger: true
+          passed: ['destroy-bosh']
+
+      - task: tf-destroy-cyber
+        config:
+          platform: linux
+          image_resource: *terraform-image-resource
+          params:
+              TF_VAR_env: ((deploy_env))
+              AWS_DEFAULT_REGION: ((aws_region))
+          inputs:
+            - name: paas-bootstrap
+            - name: bootstrap-cyber-tfstate
+            - name: bootstrap-cyber-tfvars
+          outputs:
+            - name: updated-bootstrap-cyber-tfstate
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+              terraform init paas-bootstrap/terraform/cyber
+              terraform destroy -force \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                -state=updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
+                paas-bootstrap/terraform/cyber
+        ensure:
+          put: bootstrap-cyber-tfstate
+          params:
+            file: updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+
+
   - name: destroy-init-bucket
     serial: true
     plan:
       - in_parallel:
         - get: paas-bootstrap
-          passed: ['destroy-vpc']
+          passed: ['destroy-vpc', 'destroy-cyber']
         - get: bucket-terraform-state
         - get: pipeline-trigger
           trigger: true
-          passed: ['destroy-vpc']
+          passed: ['destroy-vpc', 'destroy-cyber']
 
       - task: tf-destroy-init-bucket
         config:
