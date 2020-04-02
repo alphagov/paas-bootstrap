@@ -2,5 +2,5 @@
 - type: replace
   path: /resource_pools/name=vms/stemcell
   value:
-    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-xenial-go_agent?v=621.59
-    sha1: d77ced450b5bd7d9dc8562c5899ec723e67002fd
+    url: https://bosh.io/d/stemcells/bosh-aws-xen-hvm-ubuntu-xenial-go_agent?v=621.61
+    sha1: feda88fc8656226f17de9dd9331a5bc58959e650
