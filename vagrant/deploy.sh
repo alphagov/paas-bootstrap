@@ -39,13 +39,9 @@ fi
 
 vagrant up
 
-# Try to start a SSH tunnel to localhost
 echo "Setting up SSH tunnel to concourse..."
-if ! ( [ -a .vagrant/tunnel-ctrl-socket ] && \
-  vagrant ssh -- -S .vagrant/tunnel-ctrl-socket -O check ); then
-  vagrant ssh -- -L 8080:127.0.0.1:8080 -fN \
-    -M -S .vagrant/tunnel-ctrl-socket -o "ExitOnForwardFailure yes"
-fi
+
+vagrant ssh -- -L 8080:127.0.0.1:8080 -fN
 
 timeout=180
 deadline=$(($(date +%s) + timeout))
