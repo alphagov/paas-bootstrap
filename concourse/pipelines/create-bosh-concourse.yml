@@ -1031,6 +1031,8 @@ jobs:
           passed: ['generate-bosh-config']
         - get: bosh-vars-store
           passed: ['generate-bosh-config']
+        - get: paas-trusted-people
+          passed: ['generate-bosh-config']
         - get: bosh-CA-crt
           passed: ['generate-secrets']
         - get: bosh-init-state
@@ -1073,6 +1075,7 @@ jobs:
           inputs:
             - name: bosh-vars-store
             - name: paas-bootstrap
+            - name: paas-trusted-people
             - name: bosh-CA-crt
             - name: ssh-private-key
           params:
@@ -1099,10 +1102,16 @@ jobs:
                 BOSH_CLIENT_SECRET=$($VAL_FROM_YAML admin_password bosh-vars-store/bosh-vars-store.yml)
                 export BOSH_CLIENT
                 export BOSH_CLIENT_SECRET
+
+                mkdir -p unix-users-ops-file
+                paas-bootstrap/manifests/runtime-config/scripts/generate-unix-users-ops-file.rb \
+                  paas-trusted-people/users.yml "((aws_account))" > unix-users-ops-file/unix-users-ops-file.yml
+
                 bosh -n update-runtime-config \
                   --var "deploy_env=$DEPLOY_ENV" \
                   --var "aws_region=$AWS_REGION" \
-                  paas-bootstrap/manifests/runtime-config/runtime-config.yml
+                  <(./paas-bootstrap/manifests/runtime-config/scripts/generate-runtime-config.sh)
+
                 bosh runtime-config
 
   - name: concourse-terraform
