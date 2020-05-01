@@ -1,0 +1,52 @@
+# BOSH runtime config is configuration which is applied to:
+# - all VMs
+# - in all deployments
+# - except the bosh director vm
+#
+# Changing the runtime config will roll every VM in a bosh deployment during
+# the next 'bosh deploy'
+#
+# You can only apply addons and releases within the runtime config
+
+addons:
+  - name: awslogs
+    jobs:
+      - name: awslogs-xenial
+        release: awslogs
+        properties:
+          awslogs-xenial:
+            region: ((aws_region))
+            awslogs_files_config:
+              - name: /var/log/auth.log
+                file: /var/log/auth.log
+                log_group_name: auth_logs_((deploy_env))
+                log_stream_name: "{{instance_id}}"
+                initial_position: start_of_file
+                datetime_format: "%Y-%m-%dT%H:%M:%S"
+    exclude:
+      jobs:
+        - name: awslogs-xenial
+          release: awslogs
+    include:
+      lifecycle: service
+
+  - name: node_exporter
+    jobs:
+      - name: node_exporter
+        release: node-exporter
+    include:
+      stemcell:
+        - os: ubuntu-trusty
+        - os: ubuntu-xenial
+
+releases:
+  - name: awslogs
+    version: 0.1.1
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
+    sha1: dd307700e55c6c45376a5d76583243601e7559e6
+    properties: {}
+
+  - name: node-exporter
+    version: "4.2.0"
+    url: "https://bosh.io/d/github.com/cloudfoundry-community/node-exporter-boshrelease?v=4.2.0"
+    sha1: "b4ffebacc55fbb9934425ac792bb7179eed7e61c"
