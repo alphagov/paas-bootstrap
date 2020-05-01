@@ -19,6 +19,14 @@ else
   exit 1
 fi
 
+unix_users_ops_file="${WORKDIR}/unix-users-ops-file/unix-users-ops-file.yml"
+if [ -f "$unix_users_ops_file" ]; then
+  opsfile_args+="-o $unix_users_ops_file "
+else
+  >&2 echo "Could not find $unix_users_ops_file. Aborting."
+  exit 1
+fi
+
 vars_store_args=""
 if [ -n "${VARS_STORE:-}" ]; then
   vars_store_args=" --var-errs --vars-store ${VARS_STORE}"
