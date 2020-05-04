@@ -7,19 +7,16 @@ def generate_unix_users_ops_file(config_file, aws_account)
   if File.file? config_file
     users_config = YAML.load_file config_file
 
-    unix_users = users_config
-      .fetch('users')
-      .select do |u|
-        u
-          .dig('roles', aws_account)
-          &.any? { |r| r['role'] == 'ssh-access' }
-      end
-      .map do |user|
-        {
-          'name' => user.dig('ssh', 'username'),
-          'public_key' => user.dig('ssh', 'public_key'),
-        }
-      end
+    unix_users = users_config.fetch('users').select do |u|
+      u.dig('roles', aws_account)&.any? { |r| r['role'] == 'ssh-access' }
+    end
+
+    ssh_users = unix_users.map do |user|
+      {
+        'name' => user.dig('ssh', 'username'),
+        'public_key' => user.dig('ssh', 'public_key'),
+      }
+    end
 
     [{
       'type' => 'replace',
@@ -45,7 +42,7 @@ def generate_unix_users_ops_file(config_file, aws_account)
           'name' => 'user_add',
           'release' => 'os-conf',
           'properties' => {
-            'users' => unix_users
+            'users' => ssh_users
           },
         }],
       },
