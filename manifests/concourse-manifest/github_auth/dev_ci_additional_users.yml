@@ -12,5 +12,5 @@ instance_groups:
                 users:
                   - (( append ))
                   - kr8n3r
-                  - venusbb
                   - poveyd
+                  - barsutka
