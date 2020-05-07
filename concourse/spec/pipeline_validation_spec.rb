@@ -13,7 +13,7 @@ RSpec.describe 'pipeline validations' do
         .flatten
         .uniq
     )
-    .concat(%w[vagrant_ssh_key_name test-secret concourse_web_password])
+    .concat(%w[vagrant_ssh_key_name test-secret concourse_web_password bosh-credhub-ca-cert bosh-credhub-admin])
 
   it 'should have pipeline variables' do
     expect(ALL_PIPELINE_VARS.length).to_not eq(0)

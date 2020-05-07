@@ -1744,23 +1744,109 @@ jobs:
                       echo fail > check-if-bootstrap/concourse.txt
                     fi
 
-          task: test-concourse-credhub-retrieval
-          config:
-            platform: linux
-            image_resource: *gov-paas-bosh-cli-v2-image-resource
-            params:
-              TEST_SECRET: ((test-secret))
-            outputs:
-              - name: check-if-bootstrap
-            run:
-              path: sh
-              args:
-                - -e
-                - -c
-                - |
-                  echo fail > check-if-bootstrap/concourse.txt
-                  echo "${TEST_SECRET}"
-                  echo pass > check-if-bootstrap/concourse.txt
+          do:
+            - task: test-concourse-credhub-retrieval
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                params:
+                  TEST_SECRET: ((test-secret))
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      echo "${TEST_SECRET}"
+
+            - task: test-credhub-certificate-imports-work
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                params:
+                  BOSH_ENVIRONMENT: ((bosh_fqdn))
+                  CREDHUB_CA_CERT: ((bosh-credhub-ca-cert))
+                  CREDHUB_CLIENT: credhub-admin
+                  CREDHUB_CLIENT_SECRET: ((bosh-credhub-admin))
+                run:
+                  path: bash
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      credhub api -s "$BOSH_ENVIRONMENT:8844/api"
+
+                      credhub login \
+                        --client-name="${CREDHUB_CLIENT}" \
+                        --client-secret="${CREDHUB_CLIENT_SECRET}"
+
+                      echo 'Cleaning up previously used credentials if they exist'
+                      credhub delete --name /paas-bootstrap-tests/bosh-generated-cert || true
+                      credhub delete --name /paas-bootstrap-tests/bosh-generated-ca || true
+
+                      variable_value='(('
+                      variable_value+='bosh_generated_ca'
+                      variable_value+='))'
+
+                      cat > test-credentials.yml.tpl <<EOF
+                      variables:
+                      - name: bosh_generated_ca
+                        type: certificate
+                        options:
+                          is_ca: true
+                          common_name: bosh.io
+
+                      credentials:
+                      - name: /paas-bootstrap-tests/bosh-generated-ca
+                        type: certificate
+                        value: ${variable_value}
+                      EOF
+
+                      bosh interpolate \
+                        --vars-store vars.yml \
+                        test-credentials.yml.tpl \
+                      > test-credentials.yml
+
+                      echo 'Importing credentials'
+                      credhub import -f test-credentials.yml
+
+                      echo 'Generating credentials'
+                      credhub generate \
+                        --name /paas-bootstrap-tests/bosh-issued-cert \
+                        --type certificate \
+                        --ca /paas-bootstrap-tests/bosh-generated-ca \
+                        --common-name "paas-bootstrap-test.cloud.service.gov.uk"
+
+                      credhub get \
+                        --name /paas-bootstrap-tests/bosh-issued-cert \
+                        --key certificate \
+                      > bosh-issued-cert.pem
+
+                      credhub get \
+                        --name /paas-bootstrap-tests/bosh-issued-cert \
+                        --key ca \
+                      > bosh-issued-ca.pem
+
+                      echo 'Verifying certificate chain'
+                      openssl verify \
+                        -verbose \
+                        -issuer_checks \
+                        -CAfile bosh-issued-ca.pem \
+                        bosh-issued-cert.pem
+
+            - task: mark-credhub-tests-as-passed
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                outputs:
+                  - name: check-if-bootstrap
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      echo pass > check-if-bootstrap/concourse.txt
 
       - task: check-if-bootstrap-or-concourse-credhub-retrieval
         config:
