@@ -92,7 +92,7 @@ RSpec.describe "generic manifest validations" do
   describe "uaa" do
     let(:uaa_props) { bosh_jobs.find { |j| j["name"] == "uaa" }["properties"] }
 
-    context "login providers" do
+    describe "login providers" do
       let(:uaa_google_login_provider) { uaa_props.dig("login", "oauth", "providers", "admin-google") }
 
       it "is configured to use google" do
@@ -105,7 +105,7 @@ RSpec.describe "generic manifest validations" do
       end
     end
 
-    context "clients" do
+    describe "clients" do
       let(:uaa_clients) { uaa_props.dig("uaa", "clients") }
 
       it "sets up a client for the credhub cli" do
