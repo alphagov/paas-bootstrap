@@ -48,11 +48,11 @@ RSpec.describe SecretGenerator do
       fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
-    before(:each) do
+    let(:generated_key) { SecretGenerator.generate_ssh_key }
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_ssh_key }
 
     it "returns a PEM encoded private SSH key" do
       expect(generated_key).to include(
@@ -73,15 +73,15 @@ RSpec.describe SecretGenerator do
       fixture_file = File.expand_path("fixtures/sample_key.pub", __dir__)
       File.read(fixture_file)
     end
+    let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
     let(:ssh_key_fixture) do
       fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
-    before(:each) do
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
 
     it "returns the PEM encoded private SSH key" do
       expect(generated_key).to include(
@@ -108,11 +108,11 @@ RSpec.describe SecretGenerator do
       fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
-    before(:each) do
+    let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
 
     it "returns a PEM encoded private RSA key" do
       expect(generated_key).to include(
