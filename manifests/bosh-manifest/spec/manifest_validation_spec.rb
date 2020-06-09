@@ -95,7 +95,7 @@ RSpec.describe "generic manifest validations" do
     context "login providers" do
       let(:uaa_google_login_provider) { uaa_props.dig("login", "oauth", "providers", "admin-google") }
 
-      it "should be configured to use google" do
+      it "is configured to use google" do
         expect(uaa_google_login_provider).to_not be_nil
         expect(uaa_google_login_provider["issuer"]).to eql "https://accounts.google.com"
         expect(uaa_google_login_provider["type"]).to eql "oidc1.0"
@@ -108,7 +108,7 @@ RSpec.describe "generic manifest validations" do
     context "clients" do
       let(:uaa_clients) { uaa_props.dig("uaa", "clients") }
 
-      it "should set up a client for the credhub cli" do
+      it "sets up a client for the credhub cli" do
         client = uaa_clients["credhub_cli"]
 
         expect(client["authorities"]).to eq("")
@@ -117,7 +117,7 @@ RSpec.describe "generic manifest validations" do
         expect(client["scope"]).to eq("credhub.read,credhub.write")
       end
 
-      it "should set up a client for the bosh cli" do
+      it "sets up a client for the bosh cli" do
         client = uaa_clients["bosh_cli"]
 
         expect(client["authorities"]).to eq("uaa.none")

@@ -54,13 +54,13 @@ RSpec.describe SecretGenerator do
 
     let(:generated_key) { SecretGenerator.generate_ssh_key }
 
-    it "should return a PEM encoded private SSH key" do
+    it "returns a PEM encoded private SSH key" do
       expect(generated_key).to include(
         "private_key" => ssh_key_fixture.to_pem,
       )
     end
 
-    it "should return the fingerprint of the public key" do
+    it "returns the fingerprint of the public key" do
       # expected fingerprint generated with `ssh-keygen -lf fixtures/sample_key.pub`
       expect(generated_key).to include(
         "public_fingerprint" => "ce:f2:03:7f:22:3e:c5:ec:18:b8:c0:70:b5:42:91:e7",
@@ -83,19 +83,19 @@ RSpec.describe SecretGenerator do
 
     let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
 
-    it "should return the PEM encoded private SSH key" do
+    it "returns the PEM encoded private SSH key" do
       expect(generated_key).to include(
         "private_key" => ssh_key_fixture.to_pem,
       )
     end
 
-    it "should return the public SSH key" do
+    it "returns the public SSH key" do
       expect(generated_key).to include(
         "public_key" => ssh_key_fixture_public.rstrip,
       )
     end
 
-    it "should return the fingerprint of the public key" do
+    it "returns the fingerprint of the public key" do
       # expected fingerprint generated with `ssh-keygen -lf fixtures/sample_key.pub`
       expect(generated_key).to include(
         "public_key_fingerprint" => "ce:f2:03:7f:22:3e:c5:ec:18:b8:c0:70:b5:42:91:e7",
@@ -114,13 +114,13 @@ RSpec.describe SecretGenerator do
 
     let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
 
-    it "should return a PEM encoded private RSA key" do
+    it "returns a PEM encoded private RSA key" do
       expect(generated_key).to include(
         "private_key" => rsa_key_fixture.to_pem,
       )
     end
 
-    it "should return a PEM encoded public RSA key" do
+    it "returns a PEM encoded public RSA key" do
       expect(generated_key).to include(
         "public_key" => rsa_key_fixture.public_key.to_pem,
       )

@@ -179,7 +179,7 @@ FIXTURE
   end
 
   describe "no variables" do
-    it "should return no variables without raising exceptions" do
+    it "returns no variables without raising exceptions" do
       expect(rotate(manifest,
                     empty_vars_store,
                     ca: true,
@@ -199,11 +199,11 @@ FIXTURE
   ].each do |type|
 
     describe "#{type} type secrets" do
-      it "should not change if #{type}: false" do
+      it "does not change if #{type}: false" do
         expect(rotate(manifest, vars_store)).to eq(vars_store)
       end
 
-      it "should delete existing passwords so they can be regenerated" do
+      it "deletes existing passwords so they can be regenerated" do
         # Build a call like: rotate(manifest , ca: true, vars_to_preserve: vars_to_preserve)
         args = {
           type.to_sym => true,
@@ -223,7 +223,7 @@ FIXTURE
   end
 
   describe "delete true" do
-    it "should delete _old secrets that are not certs" do
+    it "deletes _old secrets that are not certs" do
       rotated_vars_store = rotate(manifest, vars_store, delete: true)
 
       rotated_vars_store.each do |k, _v|
@@ -233,7 +233,7 @@ FIXTURE
       end
     end
 
-    it "should ablank existing _old certs so that they are not regenerated and kept empty" do
+    it "ablanks existing _old certs so that they are not regenerated and kept empty" do
       rotated_vars_store = rotate(manifest, vars_store, delete: true)
 
       rotated_vars_store.each do |k, v|
