@@ -55,8 +55,6 @@ AWS_AMI = {
   "eu-west-1" => "ami-00035f41c82244dab",
   "eu-west-2" => "ami-0b0a60c0a2bd40612",
 }.freeze
-
-# rubocop:disable Metrics/BlockLength
 Vagrant.configure(2) do |config|
   config.vm.box = ENV["VAGRANT_BOX_NAME"] || "aws_vagrant_box"
   config.vm.allowed_synced_folder_types = :rsync
@@ -78,7 +76,7 @@ Vagrant.configure(2) do |config|
           BOSH_FQDN
           BOSH_FQDN_EXTERNAL
           BOSH_LOGIN_HOST
-].include? key
+        ].include? key
       end
       s.name = post_deploy_file
       s.path = post_deploy_file
@@ -112,4 +110,3 @@ Vagrant.configure(2) do |config|
     override.ssh.private_key_path = ENV["VAGRANT_SSH_KEY"]
   end
 end
-# rubocop:enable Metrics/BlockLength

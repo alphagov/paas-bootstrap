@@ -62,7 +62,7 @@ RSpec.describe "Generating UAA users ops file" do
           "groups" => [
             "bosh.admin",
             "credhub.read", "credhub.write",
-            "uaa.admin",
+            "uaa.admin"
           ],
         }],
       }])

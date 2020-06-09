@@ -197,7 +197,6 @@ RSpec.describe "rotate-cf-certs" do
     rsa
     ssh
   ].each do |type|
-
     describe "#{type} type secrets" do
       it "does not change if #{type}: false" do
         expect(rotate(manifest, vars_store)).to eq(vars_store)
@@ -237,13 +236,13 @@ RSpec.describe "rotate-cf-certs" do
       rotated_vars_store = rotate(manifest, vars_store, delete: true)
 
       rotated_vars_store.each do |k, v|
-        if (k.start_with? "ca_", "leaf_") && k.end_with?("_old")
-          expect(v).to include(
-            "ca" => "",
-            "certificate" => "",
-            "private_key" => "",
-          )
-        end
+        next unless (k.start_with? "ca_", "leaf_") && k.end_with?("_old")
+
+        expect(v).to include(
+          "ca" => "",
+          "certificate" => "",
+          "private_key" => "",
+        )
       end
     end
   end

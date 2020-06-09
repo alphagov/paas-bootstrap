@@ -27,7 +27,7 @@ def parse_args
   parser.parse!
 
   if options[:vars_store].nil? || options[:manifest].nil?
-    fail "--manifest and --vars-store arguments are mandatory"
+    raise "--manifest and --vars-store arguments are mandatory"
   end
 
   options
