@@ -68,7 +68,7 @@ RSpec.describe "rotate-cf-certs" do
         type: rsa
       - name: rsa_to_keep
         type: rsa
-FIXTURE
+    FIXTURE
   end
 
   let(:empty_vars_store) do
@@ -165,7 +165,7 @@ FIXTURE
         private_key: Private key keep
         public_key: Public key keep
         public_key_fingerprint: Public key's MD5 fingerprint keep
-FIXTURE
+    FIXTURE
   end
 
   let(:vars_to_preserve) do
