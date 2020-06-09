@@ -33,11 +33,11 @@ class PropertyTree
 
   def get(key)
     key_array = key.split(".")
-    self.recursive_get(@tree, key_array)
+    recursive_get(@tree, key_array)
   end
 
   def [](key)
-    self.get(key)
+    get(key)
   end
 end
 

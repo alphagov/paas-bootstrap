@@ -229,11 +229,11 @@ RSpec.describe SecretGenerator do
 
     it "keeps array passwords from the existing set" do
       generator.existing_secrets = {
-        "array" => ["something"],
+        "array" => %w[something],
       }
       results = generator.generate
 
-      expect(results["array"]).to eq(["something"])
+      expect(results["array"]).to eq(%w[something])
     end
 
     it "keeps crypted passwords from the existing set" do

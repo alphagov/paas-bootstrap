@@ -4,9 +4,9 @@ RSpec.describe "release versions" do
   matcher :match_version_from_url do |url|
     match do |version|
       if url =~ %r{\?v=(.+)\z}
-        url_version = $1
+        url_version = Regexp.last_match(1)
       elsif url =~ %r{-([\d.]+)(-[0-9a-z\-.]+)?\.tgz\z}
-        url_version = $1
+        url_version = Regexp.last_match(1)
       else
         raise "Failed to extract version from URL '#{url}'"
       end
