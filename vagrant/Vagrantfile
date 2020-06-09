@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision "shell" do |s|
       s.privileged = true
       s.env = ENV.select { |key|
-        %w(
+        %w[
           AWS_ACCOUNT
           CONCOURSE_DATABASE_NAME
           CONCOURSE_URL
@@ -78,7 +78,7 @@ Vagrant.configure(2) do |config|
           BOSH_FQDN
           BOSH_FQDN_EXTERNAL
           BOSH_LOGIN_HOST
-).include? key
+].include? key
       }
       s.name = post_deploy_file
       s.path = post_deploy_file

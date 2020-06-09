@@ -5,13 +5,13 @@ RSpec.describe "generic manifest validations" do
   let(:bosh_jobs) { bosh_instance["jobs"] }
 
   describe "name uniqueness" do
-    %w(
+    %w[
       disk_pools
       instance_groups
       networks
       releases
       resource_pools
-    ).each do |resource_type|
+    ].each do |resource_type|
       specify "all #{resource_type} have a unique name" do
         all_resource_names = manifest.fetch(resource_type, []).map { |r| r["name"] }
 
@@ -99,7 +99,7 @@ RSpec.describe "generic manifest validations" do
         expect(uaa_google_login_provider).to_not be_nil
         expect(uaa_google_login_provider["issuer"]).to eql "https://accounts.google.com"
         expect(uaa_google_login_provider["type"]).to eql "oidc1.0"
-        expect(uaa_google_login_provider["scopes"]).to eql %w(openid profile email)
+        expect(uaa_google_login_provider["scopes"]).to eql %w[openid profile email]
         expect(uaa_google_login_provider["relyingPartyId"]).to eql "some-google-client-id"
         expect(uaa_google_login_provider["relyingPartySecret"]).to eql "some-google-client-secret"
       end

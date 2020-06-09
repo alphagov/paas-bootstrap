@@ -94,7 +94,7 @@ class SecretGenerator
   # combined with
   # https://github.com/bensie/sshkey/blob/1.8.0/lib/sshkey.rb#L253
   def self.ssh_key_md5_fingerprint(public_key)
-    methods = %w(e n)
+    methods = %w[e n]
     public_key_str = methods.inject([7].pack("N") + "ssh-rsa") do |pubkeystr, m|
       # Given pubkey.class == OpenSSL::BN, pubkey.to_s(0) returns an MPI
       # formatted string (length prefixed bytes). This is not supported by

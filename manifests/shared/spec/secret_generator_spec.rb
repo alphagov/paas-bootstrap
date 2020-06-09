@@ -159,7 +159,7 @@ RSpec.describe SecretGenerator do
       results = SecretGenerator.new(required_secrets).generate
 
       expect(results["test_host_key"]).to be_a(Hash)
-      expect(results["test_host_key"].keys).to match_array(%w(private_key public_fingerprint))
+      expect(results["test_host_key"].keys).to match_array(%w[private_key public_fingerprint])
       expect(results["test_host_key"]["private_key"]).to include("-----BEGIN RSA PRIVATE KEY-----")
     end
 
@@ -203,7 +203,7 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-      expect(results.keys).to match_array(%w(simple1 simple2 simple3 array crypted crypted_orig host_key))
+      expect(results.keys).to match_array(%w[simple1 simple2 simple3 array crypted crypted_orig host_key])
     end
   end
 
@@ -286,7 +286,7 @@ RSpec.describe SecretGenerator do
       generator.existing_secrets = nil
       results = generator.generate
 
-      expect(results.keys).to match_array(%w(foo bar))
+      expect(results.keys).to match_array(%w[foo bar])
     end
   end
 end

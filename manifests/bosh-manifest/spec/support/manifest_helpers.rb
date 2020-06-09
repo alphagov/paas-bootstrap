@@ -71,7 +71,7 @@ private
     generate_uaa_users_fixture("#{workdir}/uaa-users-ops-file")
     generate_unix_users_fixture("#{workdir}/unix-users-ops-file")
     generate_bosh_ca_certs(workdir)
-    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh))
+    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w[vpc bosh])
 
     output, error, status = Open3.capture3(
       env,

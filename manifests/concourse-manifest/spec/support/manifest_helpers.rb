@@ -51,7 +51,7 @@ private
     env["PAAS_BOOTSTRAP_DIR"] = root.to_s
     env["WORKDIR"] = workdir.to_s
 
-    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh concourse))
+    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w[vpc bosh concourse])
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
 
     output, error, status = Open3.capture3(
