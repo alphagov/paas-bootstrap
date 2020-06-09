@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 
+require "English"
 require "openssl"
 require "yaml"
 
 filename = ARGV.first
-raise "#{$0} requires a vars store filename argument" if filename.nil?
+raise "#{$PROGRAM_NAME} requires a vars store filename argument" if filename.nil?
 
 puts "Loading file #{filename}"
 contents = YAML.load_file(filename)
