@@ -211,10 +211,10 @@ RSpec.describe SecretGenerator do
     let(:required_secrets) do
       {
         "simple1" => :simple,
-      "simple2" => :simple,
-      "array" => :simple_in_array,
-      "crypted" => :sha512_crypted,
-      "host_key" => :ssh_key,
+        "simple2" => :simple,
+        "array" => :simple_in_array,
+        "crypted" => :sha512_crypted,
+        "host_key" => :ssh_key,
       } end
     let(:generator) { SecretGenerator.new(required_secrets) }
 
