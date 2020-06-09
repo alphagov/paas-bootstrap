@@ -13,6 +13,8 @@ AllCops:
     - 'scripts/vendor/**/*'
     - 'concourse/spec/**/*'
 
+RSpec/DescribedClass:
+    Enabled: false
 Style/NumericPredicate:
   Enabled: false
 Style/HashEachMethods:
