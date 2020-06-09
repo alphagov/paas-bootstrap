@@ -13,8 +13,12 @@ AllCops:
     - 'scripts/vendor/**/*'
     - 'concourse/spec/**/*'
 
+Layout/MultilineArrayLineBreaks:
+  Enabled: false
+Layout/ArgumentAlignment:
+  Enabled: false
 RSpec/DescribedClass:
-    Enabled: false
+  Enabled: false
 Style/NumericPredicate:
   Enabled: false
 Style/HashEachMethods:
