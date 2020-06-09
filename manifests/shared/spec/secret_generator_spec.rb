@@ -44,10 +44,10 @@ RSpec.describe SecretGenerator do
   end
 
   describe "ssh key generation" do
-    let(:ssh_key_fixture) {
+    let(:ssh_key_fixture) do
       fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
+    end
     before(:each) do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
@@ -69,14 +69,14 @@ RSpec.describe SecretGenerator do
   end
 
   describe "BOSH SSH key generation" do
-    let(:ssh_key_fixture_public) {
+    let(:ssh_key_fixture_public) do
       fixture_file = File.expand_path("../fixtures/sample_key.pub", __FILE__)
       File.read(fixture_file)
-    }
-    let(:ssh_key_fixture) {
+    end
+    let(:ssh_key_fixture) do
       fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
+    end
     before(:each) do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
@@ -104,10 +104,10 @@ RSpec.describe SecretGenerator do
   end
 
   describe "BOSH RSA key generation" do
-    let(:rsa_key_fixture) {
+    let(:rsa_key_fixture) do
       fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
+    end
     before(:each) do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa_key_fixture)
     end
@@ -173,10 +173,10 @@ RSpec.describe SecretGenerator do
     end
 
     describe "generating sha_512 crypted passwords" do
-      let(:required_secrets) {
+      let(:required_secrets) do
         {
         "baz" => :sha512_crypted,
-      }}
+      } end
       let(:results) { SecretGenerator.new(required_secrets).generate }
 
       it "places the simple password in an _orig key" do
@@ -208,14 +208,14 @@ RSpec.describe SecretGenerator do
   end
 
   describe "merging with existing passwords" do
-    let(:required_secrets) {
+    let(:required_secrets) do
       {
       "simple1" => :simple,
       "simple2" => :simple,
       "array" => :simple_in_array,
       "crypted" => :sha512_crypted,
       "host_key" => :ssh_key,
-    }}
+    } end
     let(:generator) { SecretGenerator.new(required_secrets) }
 
     it "keeps simple passwords from the existing set" do

@@ -21,9 +21,9 @@ def parse_args
   parser.on("--delete", "Delete _old variables") { options[:delete] = true }
   parser.on("--manifest MANIFEST", "BOSH manifest") { |v| options[:manifest] = v }
   parser.on("--vars-store VARS", "BOSH variable store") { |v| options[:vars_store] = v }
-  parser.on("--preserve VAR", "variables to not rotate") { |v|
+  parser.on("--preserve VAR", "variables to not rotate") do |v|
     options[:vars_to_preserve] << v
-  }
+  end
   parser.parse!
 
   if options[:vars_store].nil? || options[:manifest].nil?

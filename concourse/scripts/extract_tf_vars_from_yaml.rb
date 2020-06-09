@@ -10,18 +10,18 @@ require "yaml"
 def process_yaml(yaml_tree, prefix_chain)
   case yaml_tree
   when Hash
-    yaml_tree.each { |k, v|
+    yaml_tree.each do |k, v|
       process_yaml(v, prefix_chain + [k])
-    }
+    end
   when Array
-    yaml_tree.each_with_index { |v, i|
+    yaml_tree.each_with_index do |v, i|
       name = if v.instance_of?(Hash) && v["name"]
                v["name"]
              else
                i
              end
       process_yaml(v, prefix_chain + [name])
-    }
+    end
   else
     puts "#{prefix_chain.join('_')}='#{yaml_tree}'"
   end
