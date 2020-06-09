@@ -175,8 +175,8 @@ RSpec.describe SecretGenerator do
     describe "generating sha_512 crypted passwords" do
       let(:required_secrets) do
         {
-        "baz" => :sha512_crypted,
-      } end
+          "baz" => :sha512_crypted,
+        } end
       let(:results) { SecretGenerator.new(required_secrets).generate }
 
       it "places the simple password in an _orig key" do
@@ -210,12 +210,12 @@ RSpec.describe SecretGenerator do
   describe "merging with existing passwords" do
     let(:required_secrets) do
       {
-      "simple1" => :simple,
+        "simple1" => :simple,
       "simple2" => :simple,
       "array" => :simple_in_array,
       "crypted" => :sha512_crypted,
       "host_key" => :ssh_key,
-    } end
+      } end
     let(:generator) { SecretGenerator.new(required_secrets) }
 
     it "keeps simple passwords from the existing set" do
