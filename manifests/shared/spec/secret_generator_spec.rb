@@ -1,7 +1,7 @@
 require "secret_generator"
 
 RSpec.describe SecretGenerator do
-  SIMPLE_PASSWORD_REGEX = /\A[a-zA-Z0-9]+\z/.freeze
+  let(:simple_password_regex) { /\A[a-zA-Z0-9]+\z/.freeze }
 
   describe "password generation" do
     it "prefixes the password with a fixed character" do
@@ -23,7 +23,7 @@ RSpec.describe SecretGenerator do
 
     it "only uses alphanumeric characters" do
       10.times do
-        expect(SecretGenerator.random_password).to match(SIMPLE_PASSWORD_REGEX)
+        expect(SecretGenerator.random_password).to match(simple_password_regex)
       end
     end
   end
@@ -134,8 +134,8 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-      expect(results["foo"]).to match(SIMPLE_PASSWORD_REGEX)
-      expect(results["bar"]).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["foo"]).to match(simple_password_regex)
+      expect(results["bar"]).to match(simple_password_regex)
       expect(results["foo"]).not_to eq(results["bar"])
     end
 
@@ -147,7 +147,7 @@ RSpec.describe SecretGenerator do
 
       expect(results["consul_encrypt_keys"]).to be_a(Array)
       expect(results["consul_encrypt_keys"].size).to eq(1)
-      expect(results["consul_encrypt_keys"].first).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["consul_encrypt_keys"].first).to match(simple_password_regex)
     end
 
     it "generates ssh keys when requested" do
@@ -180,7 +180,7 @@ RSpec.describe SecretGenerator do
 
       it "places the simple password in an _orig key" do
         expect(results).to have_key("baz_orig")
-        expect(results["baz_orig"]).to match(SIMPLE_PASSWORD_REGEX)
+        expect(results["baz_orig"]).to match(simple_password_regex)
       end
 
       it "places the sha_512 crypted version in the requested key" do
@@ -273,8 +273,8 @@ RSpec.describe SecretGenerator do
       }
       results = generator.generate
 
-      expect(results["simple1"]).to match(SIMPLE_PASSWORD_REGEX)
-      expect(results["simple2"]).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["simple1"]).to match(simple_password_regex)
+      expect(results["simple2"]).to match(simple_password_regex)
     end
 
     it "generates all the required secrets if existing_secrets is nil" do
