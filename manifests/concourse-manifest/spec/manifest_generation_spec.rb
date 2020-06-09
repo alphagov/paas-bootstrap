@@ -26,7 +26,7 @@ RSpec.describe "manifest generation" do
       "port" => terraform_fixture_value("concourse_db_port", "concourse"),
       "role" => {
         "name" => terraform_fixture_value("concourse_db_username", "concourse"),
-        "password" => terraform_fixture_value("concourse_db_password", "concourse")
+        "password" => terraform_fixture_value("concourse_db_password", "concourse"),
       },
     )
   end

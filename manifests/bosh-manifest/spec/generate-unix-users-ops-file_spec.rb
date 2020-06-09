@@ -34,7 +34,7 @@ RSpec.describe "Generating unix users ops file" do
           "name" => "user_add",
           "release" => "os-conf",
           "properties" => {
-            "users" => []
+            "users" => [],
           },
         },
       }])
@@ -105,7 +105,7 @@ RSpec.describe "Generating unix users ops file" do
             "users" => [{
               "name" => "someadmin",
               "public_key" => "ssh public key 1",
-            }]
+            }],
           },
         },
       }])

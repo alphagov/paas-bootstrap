@@ -34,7 +34,7 @@ def generate_unix_users_ops_file(config_file, aws_account)
         "name" => "user_add",
         "release" => "os-conf",
         "properties" => {
-          "users" => ssh_users
+          "users" => ssh_users,
         },
       },
     }].to_yaml

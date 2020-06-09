@@ -42,7 +42,7 @@ class SecretGenerator
     key = OpenSSL::PKey::RSA.new(2048)
     {
       "private_key" => key.to_pem,
-      "public_key" => key.public_key.to_pem
+      "public_key" => key.public_key.to_pem,
     }
   end
 

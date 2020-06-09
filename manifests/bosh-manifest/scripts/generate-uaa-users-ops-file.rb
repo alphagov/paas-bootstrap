@@ -9,13 +9,13 @@ def generate_uaa_users_ops_file(config_file, aws_account)
       "bosh.admin",
       "credhub.read", "credhub.write",
       "uaa.admin"
-    ]
+    ],
   }
 
   ops_file = [{
     "type" => "replace",
     "path" => "/instance_groups/name=bosh/jobs/name=uaa/properties/uaa/scim/users",
-    "value" => []
+    "value" => [],
   }]
 
   if File.file? config_file

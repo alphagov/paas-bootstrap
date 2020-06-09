@@ -36,13 +36,13 @@ def generate_unix_users_ops_file(config_file, aws_account)
           "stemcell" => [
             { "os" => "ubuntu-trusty" },
             { "os" => "ubuntu-xenial" },
-          ]
+          ],
         },
         "jobs" => [{
           "name" => "user_add",
           "release" => "os-conf",
           "properties" => {
-            "users" => ssh_users
+            "users" => ssh_users,
           },
         }],
       },
