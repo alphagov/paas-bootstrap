@@ -1,4 +1,3 @@
-
 require "secret_generator"
 
 RSpec.describe SecretGenerator do
@@ -49,10 +48,10 @@ RSpec.describe SecretGenerator do
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
     let(:generated_key) { SecretGenerator.generate_ssh_key }
+
     before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
-
 
     it "returns a PEM encoded private SSH key" do
       expect(generated_key).to include(
@@ -78,10 +77,10 @@ RSpec.describe SecretGenerator do
       fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
+
     before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
-
 
     it "returns the PEM encoded private SSH key" do
       expect(generated_key).to include(
@@ -109,10 +108,10 @@ RSpec.describe SecretGenerator do
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
     let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
+
     before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa_key_fixture)
     end
-
 
     it "returns a PEM encoded private RSA key" do
       expect(generated_key).to include(
@@ -175,7 +174,8 @@ RSpec.describe SecretGenerator do
       let(:required_secrets) do
         {
           "baz" => :sha512_crypted,
-        } end
+        }
+      end
       let(:results) { SecretGenerator.new(required_secrets).generate }
 
       it "places the simple password in an _orig key" do
@@ -214,7 +214,8 @@ RSpec.describe SecretGenerator do
         "array" => :simple_in_array,
         "crypted" => :sha512_crypted,
         "host_key" => :ssh_key,
-      } end
+      }
+    end
     let(:generator) { SecretGenerator.new(required_secrets) }
 
     it "keeps simple passwords from the existing set" do
