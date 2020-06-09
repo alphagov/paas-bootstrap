@@ -96,7 +96,7 @@ RSpec.describe "generic manifest validations" do
       let(:uaa_google_login_provider) { uaa_props.dig("login", "oauth", "providers", "admin-google") }
 
       it "is configured to use google" do
-        expect(uaa_google_login_provider).to_not be_nil
+        expect(uaa_google_login_provider).not_to be_nil
         expect(uaa_google_login_provider["issuer"]).to eql "https://accounts.google.com"
         expect(uaa_google_login_provider["type"]).to eql "oidc1.0"
         expect(uaa_google_login_provider["scopes"]).to eql %w[openid profile email]
