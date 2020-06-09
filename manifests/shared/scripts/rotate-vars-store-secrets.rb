@@ -69,6 +69,7 @@ def delete_old(vars, vars_store)
   vars_store
 end
 
+# rubocop:disable Naming/MethodParameterName
 def rotate(manifest, vars_store,
            ca: false,
            leaf: false,
@@ -92,6 +93,7 @@ def rotate(manifest, vars_store,
 
   vars_store
 end
+# rubocop:enable Naming/MethodParameterName
 
 if $PROGRAM_NAME == __FILE__
   options = parse_args
