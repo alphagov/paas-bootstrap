@@ -1,12 +1,19 @@
+inherit_gem:
+  rubocop-govuk:
+    - config/default.yml
+    - config/rspec.yml
+
+inherit_mode:
+  merge:
+    - Exclude
+
 AllCops:
   Exclude:
     - 'vendor/**/*'
     - 'scripts/vendor/**/*'
     - 'concourse/spec/**/*'
-  TargetRubyVersion: 2.5
-Performance/HashEachMethods:
-  Enabled: false
-Performance/RegexpMatch:
-  Enabled: false
+
 Style/NumericPredicate:
+  Enabled: false
+Style/HashEachMethods:
   Enabled: false

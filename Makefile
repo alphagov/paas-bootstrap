@@ -65,7 +65,7 @@ lint_concourse:
 	pipecleaner concourse/pipelines/* concourse/tasks/*
 
 lint_ruby:
-	bundle exec govuk-lint-ruby
+	bundle exec rubocop
 
 .PHONY: globals
 PASSWORD_STORE_DIR?=${HOME}/.paas-pass
