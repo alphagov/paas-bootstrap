@@ -45,7 +45,7 @@ RSpec.describe SecretGenerator do
 
   describe "ssh key generation" do
     let(:ssh_key_fixture) do
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
     before(:each) do
@@ -70,11 +70,11 @@ RSpec.describe SecretGenerator do
 
   describe "BOSH SSH key generation" do
     let(:ssh_key_fixture_public) do
-      fixture_file = File.expand_path("../fixtures/sample_key.pub", __FILE__)
+      fixture_file = File.expand_path("fixtures/sample_key.pub", __dir__)
       File.read(fixture_file)
     end
     let(:ssh_key_fixture) do
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
     before(:each) do
@@ -105,7 +105,7 @@ RSpec.describe SecretGenerator do
 
   describe "BOSH RSA key generation" do
     let(:rsa_key_fixture) do
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
     end
     before(:each) do

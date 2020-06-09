@@ -2,7 +2,7 @@
 
 require "optparse"
 require "yaml"
-require File.expand_path("../../../shared/lib/secret_generator", __FILE__)
+require File.expand_path("../../shared/lib/secret_generator", __dir__)
 
 generator = SecretGenerator.new(
   "bosh_postgres_password" => :simple,
