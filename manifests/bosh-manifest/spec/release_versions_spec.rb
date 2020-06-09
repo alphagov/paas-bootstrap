@@ -25,7 +25,8 @@ RSpec.describe "release versions" do
   end
 
   specify "manifest versions are not older than the ones in bosh-deployment" do
-    def normalise_version(v)
+    def normalise_version(version)
+      v = version
       Gem::Version.new(v.to_s.gsub(/^v/, "").gsub(/^([0-9]+)$/, '0.0.\1'))
     end
 
