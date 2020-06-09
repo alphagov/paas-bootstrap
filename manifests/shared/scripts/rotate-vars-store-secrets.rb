@@ -41,7 +41,7 @@ def rotate_secret(vars, vars_store, type, is_ca = false)
     next if name.end_with?("_old")
     next unless var["type"] == type
     next unless var.fetch("options", {}).fetch("is_ca", false) == is_ca
-    next unless vars_store.is_a?(Hash) && vars_store.has_key?(name)
+    next unless vars_store.is_a?(Hash) && vars_store.key?(name)
 
     if var_names.include? "#{name}_old"
       vars_store["#{name}_old"] = vars_store.delete(name)
