@@ -146,7 +146,6 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-
       expect(results["consul_encrypt_keys"]).to be_a(Array)
       expect(results["consul_encrypt_keys"].size).to eq(1)
       expect(results["consul_encrypt_keys"].first).to match(SIMPLE_PASSWORD_REGEX)

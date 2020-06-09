@@ -21,6 +21,7 @@ module FixtureHelpers
       unless status.success?
         raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"
       end
+
       file.write(output)
     end
   end

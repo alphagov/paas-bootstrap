@@ -4,7 +4,6 @@ require "yaml"
 require "tempfile"
 require "fileutils"
 
-
 module RuntimeConfigHelpers
   SYSTEM_DNS_ZONE_NAME = "example.com".freeze
 

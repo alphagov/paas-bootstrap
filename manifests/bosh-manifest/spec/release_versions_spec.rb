@@ -50,6 +50,7 @@ RSpec.describe "release versions" do
 
     unpinned_bosh_deployment_releases.each do |name, version|
       next unless manifest_releases.has_key? name
+
       expect(normalise_version(manifest_releases[name])).to be >= normalise_version(version),
         "expected #{name} release version #{manifest_releases[name]} to be older than #{version} as defined in bosh-deployment. Maybe you need to pin it?"
     end
