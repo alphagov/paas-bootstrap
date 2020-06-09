@@ -36,13 +36,13 @@ RSpec.describe "rds bundle manifest validations" do
 
       expect(ca_certs).to include(
         match(/BEGIN CERTIFICATE/),
-        match(/END CERTIFICATE/)
+        match(/END CERTIFICATE/),
       )
 
       expect(ca_certs).to include(
         satisfy do |bundle|
           OpenSSL::X509::Certificate.new(bundle).issuer.to_s.match?(/Amazon/)
-        end
+        end,
       )
     end
   end

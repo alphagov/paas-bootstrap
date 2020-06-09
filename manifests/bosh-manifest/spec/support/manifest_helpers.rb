@@ -91,7 +91,7 @@ private
     base_manifest_file = root.join("manifests/bosh-manifest/upstream/bosh.yml")
 
     output, error, status = Open3.capture3(
-      "bosh interpolate #{upstream_ops_file.join(' ')} #{base_manifest_file}"
+      "bosh interpolate #{upstream_ops_file.join(' ')} #{base_manifest_file}",
     )
     expect(status).to be_success, "generate bosh-deployment manifest with upstream opsfile failed with #{status.exitstatus}, stderr:\n#{error}"
 
@@ -108,7 +108,7 @@ private
         mkdir -p certs
         mv out/* certs
       ',
-      chdir: dir.to_s,
+      chdir: dir.to_s
     )
     unless status.success?
       raise "Error generating bosh-secrets, exit: #{status.exitstatus}, output:\n#{output}\n#{error}"

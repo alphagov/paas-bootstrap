@@ -186,7 +186,7 @@ RSpec.describe "rotate-cf-certs" do
                     leaf: true,
                     passwords: true,
                     rsa: true,
-                    ssh: true,)).to eq(empty_vars_store)
+                    ssh: true)).to eq(empty_vars_store)
     end
   end
 

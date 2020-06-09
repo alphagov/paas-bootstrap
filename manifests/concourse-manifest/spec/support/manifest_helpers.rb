@@ -22,7 +22,7 @@ module ManifestHelpers
         "ENABLE_GITHUB" => "true",
         "GITHUB_CLIENT_ID" => "dummy_github_client_id",
         "GITHUB_CLIENT_SECRET" => "dummy_github_client_secret",
-      }
+      },
     )
   end
 
