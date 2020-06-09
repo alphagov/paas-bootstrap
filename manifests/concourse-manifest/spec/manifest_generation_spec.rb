@@ -1,4 +1,4 @@
-require 'open3'
+require "open3"
 
 RSpec.describe "manifest generation" do
   let(:manifest) { manifest_with_defaults }
@@ -13,8 +13,8 @@ RSpec.describe "manifest generation" do
 
   it "gets values from secrets" do
     expect(
-      web_job.fetch("properties").fetch("add_local_users")[0].split(':', 2)[1]
-    ).to eq('((concourse_web_password))')
+      web_job.fetch("properties").fetch("add_local_users")[0].split(":", 2)[1]
+    ).to eq("((concourse_web_password))")
   end
 
   it "gets the postgres values from concourse terraform outputs" do

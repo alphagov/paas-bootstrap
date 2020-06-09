@@ -1,5 +1,5 @@
 
-require 'secret_generator'
+require "secret_generator"
 
 RSpec.describe SecretGenerator do
   SIMPLE_PASSWORD_REGEX = /\A[a-zA-Z0-9]+\z/

@@ -1,12 +1,12 @@
-require 'singleton'
-require 'open3'
-require 'yaml'
-require 'tempfile'
-require 'fileutils'
+require "singleton"
+require "open3"
+require "yaml"
+require "tempfile"
+require "fileutils"
 
 
 module ManifestHelpers
-  SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+  SYSTEM_DNS_ZONE_NAME = "example.com".freeze
 
   class Cache
     include Singleton
@@ -33,7 +33,7 @@ private
   end
 
   def vars_store_file
-    @vars_store_file ||= Tempfile.open(['vars-store', '.yml'])
+    @vars_store_file ||= Tempfile.open(["vars-store", ".yml"])
     Pathname(@vars_store_file)
   end
 
@@ -54,19 +54,19 @@ private
 
     env = fake_env_vars
 
-    env['VARS_STORE'] = vars_store_file.to_s
-    env['PAAS_BOOTSTRAP_DIR'] = root.to_s
-    env['WORKDIR'] = workdir.to_s
+    env["VARS_STORE"] = vars_store_file.to_s
+    env["PAAS_BOOTSTRAP_DIR"] = root.to_s
+    env["WORKDIR"] = workdir.to_s
 
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
     generate_google_oauth_secrets_fixture(
       "#{workdir}/bosh-uaa-google-oauth-secrets",
-      'some-google-client-id',
-      'some-google-client-secret',
+      "some-google-client-id",
+      "some-google-client-secret",
     )
     generate_cyber_secrets_fixture(
       "#{workdir}/bosh-cyber-secrets",
-      'aaaa-splunk-hec-token',
+      "aaaa-splunk-hec-token",
     )
     generate_uaa_users_fixture("#{workdir}/uaa-users-ops-file")
     generate_unix_users_fixture("#{workdir}/unix-users-ops-file")
@@ -87,8 +87,8 @@ private
   end
 
   def load_bosh_deployment_with_upstream_opsfiles
-    upstream_ops_file = Dir.glob(root.join('manifests/bosh-manifest/operations.d/*-UPSTREAM.yml')).sort.map { |x| "--ops-file=#{x}" }
-    base_manifest_file = root.join('manifests/bosh-manifest/upstream/bosh.yml')
+    upstream_ops_file = Dir.glob(root.join("manifests/bosh-manifest/operations.d/*-UPSTREAM.yml")).sort.map { |x| "--ops-file=#{x}" }
+    base_manifest_file = root.join("manifests/bosh-manifest/upstream/bosh.yml")
 
     output, error, status = Open3.capture3(
       "bosh interpolate #{upstream_ops_file.join(' ')} #{base_manifest_file}"

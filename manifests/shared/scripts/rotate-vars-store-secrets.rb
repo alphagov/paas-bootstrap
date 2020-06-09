@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
-require 'yaml'
+require "optparse"
+require "yaml"
 
 BLANK_CERT = {
   "ca" => "",

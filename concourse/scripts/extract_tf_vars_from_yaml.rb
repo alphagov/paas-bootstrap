@@ -5,7 +5,7 @@
 # - for lists, if the element is a hash and has a key 'name', uses that as
 #   a node name, if not, uses the index.
 
-require 'yaml'
+require "yaml"
 
 def process_yaml(yaml_tree, prefix_chain)
   case yaml_tree
@@ -15,8 +15,8 @@ def process_yaml(yaml_tree, prefix_chain)
     }
   when Array
     yaml_tree.each_with_index { |v, i|
-      name = if v.instance_of?(Hash) && v['name']
-               v['name']
+      name = if v.instance_of?(Hash) && v["name"]
+               v["name"]
              else
                i
              end
