@@ -9,7 +9,7 @@ env:
     - BOSH_CLI_VERSION="6.1.1"
     - CERTSTRAP_VERSION="1.2.0"
     - SHELLCHECK_VERSION="0.7.0"
-    - GO_VERSION="1.13"
+    - GO_VERSION="1.14"
 
 addons:
   apt:
