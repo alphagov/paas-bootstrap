@@ -1,6 +1,6 @@
-require 'cgi'
-require 'uri'
-require 'yaml'
+require "cgi"
+require "uri"
+require "yaml"
 
 RSpec.describe "versions" do
   describe "stemcell version" do

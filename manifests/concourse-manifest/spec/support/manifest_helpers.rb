@@ -1,10 +1,10 @@
-require 'singleton'
-require 'open3'
-require 'yaml'
-require 'tempfile'
+require "singleton"
+require "open3"
+require "yaml"
+require "tempfile"
 
 module ManifestHelpers
-  SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+  SYSTEM_DNS_ZONE_NAME = "example.com".freeze
 
   class Cache
     include Singleton
@@ -19,10 +19,10 @@ module ManifestHelpers
   def manifest_with_github_auth
     Cache.instance.manifest_with_github_auth ||= render_manifest(
       override_env: {
-        'ENABLE_GITHUB' => 'true',
-        'GITHUB_CLIENT_ID' => 'dummy_github_client_id',
-        'GITHUB_CLIENT_SECRET' => 'dummy_github_client_secret',
-      }
+        "ENABLE_GITHUB" => "true",
+        "GITHUB_CLIENT_ID" => "dummy_github_client_id",
+        "GITHUB_CLIENT_SECRET" => "dummy_github_client_secret",
+      },
     )
   end
 
@@ -45,13 +45,13 @@ private
   end
 
   def render_manifest(override_env: {})
-    workdir = Pathname(Dir.mktmpdir('paas-bootstrap-test'))
+    workdir = Pathname(Dir.mktmpdir("paas-bootstrap-test"))
 
     env = fake_env_vars.merge(override_env)
-    env['PAAS_BOOTSTRAP_DIR'] = root.to_s
-    env['WORKDIR'] = workdir.to_s
+    env["PAAS_BOOTSTRAP_DIR"] = root.to_s
+    env["WORKDIR"] = workdir.to_s
 
-    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w(vpc bosh concourse))
+    copy_terraform_fixtures("#{workdir}/terraform-outputs", %w[vpc bosh concourse])
     generate_bosh_secrets_fixture("#{workdir}/bosh-secrets")
 
     output, error, status = Open3.capture3(

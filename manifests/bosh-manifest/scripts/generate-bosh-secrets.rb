@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
-require 'yaml'
-require File.expand_path("../../../shared/lib/secret_generator", __FILE__)
+require "optparse"
+require "yaml"
+require File.expand_path("../../shared/lib/secret_generator", __dir__)
 
 generator = SecretGenerator.new(
   "bosh_postgres_password" => :simple,
@@ -11,7 +11,7 @@ generator = SecretGenerator.new(
 )
 
 option_parser = OptionParser.new do |opts|
-  opts.on('--existing-secrets FILE') do |file|
+  opts.on("--existing-secrets FILE") do |file|
     existing_secrets = YAML.load_file(file)
     # An empty file parses as false
     generator.existing_secrets = existing_secrets["secrets"] if existing_secrets

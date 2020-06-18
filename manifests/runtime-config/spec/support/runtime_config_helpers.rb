@@ -1,12 +1,11 @@
-require 'singleton'
-require 'open3'
-require 'yaml'
-require 'tempfile'
-require 'fileutils'
-
+require "singleton"
+require "open3"
+require "yaml"
+require "tempfile"
+require "fileutils"
 
 module RuntimeConfigHelpers
-  SYSTEM_DNS_ZONE_NAME = 'example.com'.freeze
+  SYSTEM_DNS_ZONE_NAME = "example.com".freeze
 
   class Cache
     include Singleton
@@ -40,8 +39,8 @@ private
 
     env = fake_env_vars
 
-    env['PAAS_BOOTSTRAP_DIR'] = root.to_s
-    env['WORKDIR'] = workdir.to_s
+    env["PAAS_BOOTSTRAP_DIR"] = root.to_s
+    env["WORKDIR"] = workdir.to_s
 
     generate_unix_users_fixture("#{workdir}/unix-users-ops-file")
 

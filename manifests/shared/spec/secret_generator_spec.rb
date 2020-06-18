@@ -1,8 +1,7 @@
-
-require 'secret_generator'
+require "secret_generator"
 
 RSpec.describe SecretGenerator do
-  SIMPLE_PASSWORD_REGEX = /\A[a-zA-Z0-9]+\z/
+  let(:simple_password_regex) { /\A[a-zA-Z0-9]+\z/.freeze }
 
   describe "password generation" do
     it "prefixes the password with a fixed character" do
@@ -24,7 +23,7 @@ RSpec.describe SecretGenerator do
 
     it "only uses alphanumeric characters" do
       10.times do
-        expect(SecretGenerator.random_password).to match(SIMPLE_PASSWORD_REGEX)
+        expect(SecretGenerator.random_password).to match(simple_password_regex)
       end
     end
   end
@@ -44,23 +43,23 @@ RSpec.describe SecretGenerator do
   end
 
   describe "ssh key generation" do
-    let(:ssh_key_fixture) {
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+    let(:ssh_key_fixture) do
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
-    before(:each) do
+    end
+    let(:generated_key) { SecretGenerator.generate_ssh_key }
+
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_ssh_key }
-
-    it "should return a PEM encoded private SSH key" do
+    it "returns a PEM encoded private SSH key" do
       expect(generated_key).to include(
         "private_key" => ssh_key_fixture.to_pem,
       )
     end
 
-    it "should return the fingerprint of the public key" do
+    it "returns the fingerprint of the public key" do
       # expected fingerprint generated with `ssh-keygen -lf fixtures/sample_key.pub`
       expect(generated_key).to include(
         "public_fingerprint" => "ce:f2:03:7f:22:3e:c5:ec:18:b8:c0:70:b5:42:91:e7",
@@ -69,33 +68,33 @@ RSpec.describe SecretGenerator do
   end
 
   describe "BOSH SSH key generation" do
-    let(:ssh_key_fixture_public) {
-      fixture_file = File.expand_path("../fixtures/sample_key.pub", __FILE__)
+    let(:ssh_key_fixture_public) do
+      fixture_file = File.expand_path("fixtures/sample_key.pub", __dir__)
       File.read(fixture_file)
-    }
-    let(:ssh_key_fixture) {
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+    end
+    let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
+    let(:ssh_key_fixture) do
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
-    before(:each) do
+    end
+
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(ssh_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_bosh_ssh_key }
-
-    it "should return the PEM encoded private SSH key" do
+    it "returns the PEM encoded private SSH key" do
       expect(generated_key).to include(
         "private_key" => ssh_key_fixture.to_pem,
       )
     end
 
-    it "should return the public SSH key" do
+    it "returns the public SSH key" do
       expect(generated_key).to include(
         "public_key" => ssh_key_fixture_public.rstrip,
       )
     end
 
-    it "should return the fingerprint of the public key" do
+    it "returns the fingerprint of the public key" do
       # expected fingerprint generated with `ssh-keygen -lf fixtures/sample_key.pub`
       expect(generated_key).to include(
         "public_key_fingerprint" => "ce:f2:03:7f:22:3e:c5:ec:18:b8:c0:70:b5:42:91:e7",
@@ -104,23 +103,23 @@ RSpec.describe SecretGenerator do
   end
 
   describe "BOSH RSA key generation" do
-    let(:rsa_key_fixture) {
-      fixture_file = File.expand_path("../fixtures/sample_key", __FILE__)
+    let(:rsa_key_fixture) do
+      fixture_file = File.expand_path("fixtures/sample_key", __dir__)
       OpenSSL::PKey::RSA.new(File.read(fixture_file))
-    }
-    before(:each) do
+    end
+    let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
+
+    before do
       allow(OpenSSL::PKey::RSA).to receive(:new).and_return(rsa_key_fixture)
     end
 
-    let(:generated_key) { SecretGenerator.generate_bosh_rsa_key }
-
-    it "should return a PEM encoded private RSA key" do
+    it "returns a PEM encoded private RSA key" do
       expect(generated_key).to include(
         "private_key" => rsa_key_fixture.to_pem,
       )
     end
 
-    it "should return a PEM encoded public RSA key" do
+    it "returns a PEM encoded public RSA key" do
       expect(generated_key).to include(
         "public_key" => rsa_key_fixture.public_key.to_pem,
       )
@@ -135,8 +134,8 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-      expect(results["foo"]).to match(SIMPLE_PASSWORD_REGEX)
-      expect(results["bar"]).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["foo"]).to match(simple_password_regex)
+      expect(results["bar"]).to match(simple_password_regex)
       expect(results["foo"]).not_to eq(results["bar"])
     end
 
@@ -146,10 +145,9 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-
       expect(results["consul_encrypt_keys"]).to be_a(Array)
       expect(results["consul_encrypt_keys"].size).to eq(1)
-      expect(results["consul_encrypt_keys"].first).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["consul_encrypt_keys"].first).to match(simple_password_regex)
     end
 
     it "generates ssh keys when requested" do
@@ -159,7 +157,7 @@ RSpec.describe SecretGenerator do
       results = SecretGenerator.new(required_secrets).generate
 
       expect(results["test_host_key"]).to be_a(Hash)
-      expect(results["test_host_key"].keys).to match_array(%w(private_key public_fingerprint))
+      expect(results["test_host_key"].keys).to match_array(%w[private_key public_fingerprint])
       expect(results["test_host_key"]["private_key"]).to include("-----BEGIN RSA PRIVATE KEY-----")
     end
 
@@ -173,15 +171,16 @@ RSpec.describe SecretGenerator do
     end
 
     describe "generating sha_512 crypted passwords" do
-      let(:required_secrets) {
+      let(:required_secrets) do
         {
-        "baz" => :sha512_crypted,
-      }}
+          "baz" => :sha512_crypted,
+        }
+      end
       let(:results) { SecretGenerator.new(required_secrets).generate }
 
       it "places the simple password in an _orig key" do
         expect(results).to have_key("baz_orig")
-        expect(results["baz_orig"]).to match(SIMPLE_PASSWORD_REGEX)
+        expect(results["baz_orig"]).to match(simple_password_regex)
       end
 
       it "places the sha_512 crypted version in the requested key" do
@@ -203,19 +202,20 @@ RSpec.describe SecretGenerator do
       }
       results = SecretGenerator.new(required_secrets).generate
 
-      expect(results.keys).to match_array(%w(simple1 simple2 simple3 array crypted crypted_orig host_key))
+      expect(results.keys).to match_array(%w[simple1 simple2 simple3 array crypted crypted_orig host_key])
     end
   end
 
   describe "merging with existing passwords" do
-    let(:required_secrets) {
+    let(:required_secrets) do
       {
-      "simple1" => :simple,
-      "simple2" => :simple,
-      "array" => :simple_in_array,
-      "crypted" => :sha512_crypted,
-      "host_key" => :ssh_key,
-    }}
+        "simple1" => :simple,
+        "simple2" => :simple,
+        "array" => :simple_in_array,
+        "crypted" => :sha512_crypted,
+        "host_key" => :ssh_key,
+      }
+    end
     let(:generator) { SecretGenerator.new(required_secrets) }
 
     it "keeps simple passwords from the existing set" do
@@ -229,11 +229,11 @@ RSpec.describe SecretGenerator do
 
     it "keeps array passwords from the existing set" do
       generator.existing_secrets = {
-        "array" => ["something"],
+        "array" => %w[something],
       }
       results = generator.generate
 
-      expect(results["array"]).to eq(["something"])
+      expect(results["array"]).to eq(%w[something])
     end
 
     it "keeps crypted passwords from the existing set" do
@@ -273,8 +273,8 @@ RSpec.describe SecretGenerator do
       }
       results = generator.generate
 
-      expect(results["simple1"]).to match(SIMPLE_PASSWORD_REGEX)
-      expect(results["simple2"]).to match(SIMPLE_PASSWORD_REGEX)
+      expect(results["simple1"]).to match(simple_password_regex)
+      expect(results["simple2"]).to match(simple_password_regex)
     end
 
     it "generates all the required secrets if existing_secrets is nil" do
@@ -286,7 +286,7 @@ RSpec.describe SecretGenerator do
       generator.existing_secrets = nil
       results = generator.generate
 
-      expect(results.keys).to match_array(%w(foo bar))
+      expect(results.keys).to match_array(%w[foo bar])
     end
   end
 end

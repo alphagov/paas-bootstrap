@@ -1,10 +1,10 @@
-require 'securerandom'
-require 'openssl'
-require 'digest/md5'
-require 'net/ssh'
+require "securerandom"
+require "openssl"
+require "digest/md5"
+require "net/ssh"
 
 class SecretGenerator
-  PASSWORD_PREFIX = 'p'.freeze
+  PASSWORD_PREFIX = "p".freeze
   PASSWORD_LENGTH = 18
 
   def self.random_password
@@ -30,7 +30,7 @@ class SecretGenerator
   def self.generate_bosh_ssh_key
     key = OpenSSL::PKey::RSA.new(2048)
     type = key.ssh_type
-    data = [key.to_blob].pack('m0')
+    data = [key.to_blob].pack("m0")
     {
       "private_key" => key.to_pem,
       "public_key" => "#{type} #{data}",
@@ -42,7 +42,7 @@ class SecretGenerator
     key = OpenSSL::PKey::RSA.new(2048)
     {
       "private_key" => key.to_pem,
-      "public_key" => key.public_key.to_pem
+      "public_key" => key.public_key.to_pem,
     }
   end
 
@@ -59,7 +59,7 @@ class SecretGenerator
       # generating a new one. This checks that existing_secrets is a hash
       # because if the secrets key in the yaml file exists but is empty we'll
       # get nil.
-      if existing_secrets.is_a?(Hash) && !([nil, ''].include? @existing_secrets.fetch(key, nil))
+      if existing_secrets.is_a?(Hash) && !([nil, ""].include? @existing_secrets.fetch(key, nil))
         # Special case for keeping the original uncrypted password
         if type == :sha512_crypted
           output["#{key}_orig"] = @existing_secrets["#{key}_orig"]
@@ -94,7 +94,7 @@ class SecretGenerator
   # combined with
   # https://github.com/bensie/sshkey/blob/1.8.0/lib/sshkey.rb#L253
   def self.ssh_key_md5_fingerprint(public_key)
-    methods = %w(e n)
+    methods = %w[e n]
     public_key_str = methods.inject([7].pack("N") + "ssh-rsa") do |pubkeystr, m|
       # Given pubkey.class == OpenSSL::BN, pubkey.to_s(0) returns an MPI
       # formatted string (length prefixed bytes). This is not supported by
@@ -104,7 +104,7 @@ class SecretGenerator
       # Get byte-representation of absolute value of val
       data = val.to_s(2)
 
-      first_byte = data[0, 1].unpack("c").first
+      first_byte = data[0, 1].unpack1("c")
       if val < 0
         # For negative values, highest bit must be set
         data[0] = [0x80 & first_byte].pack("c")

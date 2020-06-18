@@ -1,7 +1,7 @@
-require_relative '../../scripts/rotate-vars-store-secrets.rb'
+require_relative "../../scripts/rotate-vars-store-secrets.rb"
 
 RSpec.describe "rotate-cf-certs" do
-  let(:manifest) {
+  let(:manifest) do
     YAML.safe_load <<~FIXTURE
       variables:
       - name: ca_one
@@ -68,14 +68,14 @@ RSpec.describe "rotate-cf-certs" do
         type: rsa
       - name: rsa_to_keep
         type: rsa
-FIXTURE
-  }
+    FIXTURE
+  end
 
-  let(:empty_vars_store) {
+  let(:empty_vars_store) do
     {}
-  }
+  end
 
-  let(:vars_store) {
+  let(:vars_store) do
     YAML.safe_load <<~FIXTURE
       ca_one:
         ca: |
@@ -165,45 +165,44 @@ FIXTURE
         private_key: Private key keep
         public_key: Public key keep
         public_key_fingerprint: Public key's MD5 fingerprint keep
-FIXTURE
-  }
+    FIXTURE
+  end
 
-  let(:vars_to_preserve) {
-    %w{
+  let(:vars_to_preserve) do
+    %w[
       ca_to_keep
       leaf_to_keep
       passwords_to_keep
       rsa_to_keep
       ssh_to_keep
-    }
-  }
+    ]
+  end
 
   describe "no variables" do
-    it "should return no variables without raising exceptions" do
+    it "returns no variables without raising exceptions" do
       expect(rotate(manifest,
                     empty_vars_store,
                     ca: true,
                     leaf: true,
                     passwords: true,
                     rsa: true,
-                    ssh: true,)).to eq(empty_vars_store)
+                    ssh: true)).to eq(empty_vars_store)
     end
   end
 
-  %w{
+  %w[
     ca
     leaf
     passwords
     rsa
     ssh
-  }.each do |type|
-
+  ].each do |type|
     describe "#{type} type secrets" do
-      it "should not change if #{type}: false" do
+      it "does not change if #{type}: false" do
         expect(rotate(manifest, vars_store)).to eq(vars_store)
       end
 
-      it "should delete existing passwords so they can be regenerated" do
+      it "deletes existing passwords so they can be regenerated" do
         # Build a call like: rotate(manifest , ca: true, vars_to_preserve: vars_to_preserve)
         args = {
           type.to_sym => true,
@@ -211,8 +210,8 @@ FIXTURE
         }
         rotated_vars_store = rotate(manifest, vars_store, **args)
 
-        expect(rotated_vars_store).to_not include("#{type}_one")
-        expect(rotated_vars_store).to_not include("#{type}_two")
+        expect(rotated_vars_store).not_to include("#{type}_one")
+        expect(rotated_vars_store).not_to include("#{type}_two")
 
         remaining_secrets = vars_store.keys.reject { |k| (k == "#{type}_one") || (k == "#{type}_two") }
         expect(rotated_vars_store.keys).to include(*remaining_secrets)
@@ -223,28 +222,28 @@ FIXTURE
   end
 
   describe "delete true" do
-    it "should delete _old secrets that are not certs" do
+    it "deletes _old secrets that are not certs" do
       rotated_vars_store = rotate(manifest, vars_store, delete: true)
 
-      rotated_vars_store.each { |k, _v|
+      rotated_vars_store.each do |k, _v|
         unless (k.start_with? "ca_", "leaf_") && k.end_with?("_old")
-          expect(k).to_not end_with "_old"
+          expect(k).not_to end_with "_old"
         end
-      }
+      end
     end
 
-    it "should ablank existing _old certs so that they are not regenerated and kept empty" do
+    it "ablanks existing _old certs so that they are not regenerated and kept empty" do
       rotated_vars_store = rotate(manifest, vars_store, delete: true)
 
-      rotated_vars_store.each { |k, v|
-        if (k.start_with? "ca_", "leaf_") && k.end_with?("_old")
-          expect(v).to include(
-            "ca" => "",
-            "certificate" => "",
-            "private_key" => "",
-          )
-        end
-      }
+      rotated_vars_store.each do |k, v|
+        next unless (k.start_with? "ca_", "leaf_") && k.end_with?("_old")
+
+        expect(v).to include(
+          "ca" => "",
+          "certificate" => "",
+          "private_key" => "",
+        )
+      end
     end
   end
 end
