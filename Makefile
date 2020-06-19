@@ -261,7 +261,3 @@ upload-cyber-tfvars: check-env-vars ## Decrypt and upload cyber tfvars to S3
 .PHONY: upload-paas-trusted-people
 upload-paas-trusted-people: check-env-vars
 	@scripts/upload-secrets/upload-paas-trusted-people.sh
-
-merge_pr: ## Merge a PR. Must specify number in a PR=<number> form.
-	$(if ${PR},,$(error Must pass PR=<number>))
-	bundle exec github_merge_sign --pr ${PR}
