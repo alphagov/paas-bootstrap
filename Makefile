@@ -91,6 +91,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
+	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
 
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
@@ -165,7 +166,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-cf)
 	$(eval export CONCOURSE_TYPE=deployer-concourse)
 	$(eval export CONCOURSE_HOSTNAME=deployer)
-	$(eval export CONCOURSE_INSTANCE_TYPE=m5.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE ?= m5.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 1)
 	@true
