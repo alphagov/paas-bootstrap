@@ -5,9 +5,7 @@
 - path: /releases/name=bosh-aws-cpi
   type: replace
   value:
-    # github.com/cloudfoundry/bosh-aws-cpi-release
-    # commit d6a07a46e3a0d1f4df673547cd4bb6e817512e3f
     name: bosh-aws-cpi
-    version: 0.1.6
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/bosh-aws-cpi-0.1.6.tgz
-    sha1: 756cc1fea637d4401152b6c3df0ee912d0495b62
+    version: "83"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=83"
+    sha1: "cabcdf15846adabe2000fe892314a3a2f72c9177"
