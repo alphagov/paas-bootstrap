@@ -3,8 +3,8 @@ RSpec.describe "manifest properties validations" do
   let(:bosh_instance_group) { manifest.fetch("instance_groups").select { |x| x["name"] == "bosh" }.first }
   let(:bosh_properties) { bosh_instance_group.fetch("properties") }
 
-  it "disables the health manager resurrector" do
-    expect(bosh_properties["hm"]["resurrector_enabled"]).to eq(false)
+  it "enables the health manager resurrector" do
+    expect(bosh_properties["hm"]["resurrector_enabled"]).to eq(true)
   end
 
   it "sets the bosh director name to the value of DEPLOY_ENV" do

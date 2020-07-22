@@ -1,3 +1,11 @@
 - type: replace
   path: /instance_groups/name=bosh/properties/aws/max_retries?
   value: 16
+
+- path: /releases/name=bosh-aws-cpi
+  type: replace
+  value:
+    name: bosh-aws-cpi
+    version: "83"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=83"
+    sha1: "cabcdf15846adabe2000fe892314a3a2f72c9177"

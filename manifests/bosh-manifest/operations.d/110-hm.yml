@@ -1,8 +1,0 @@
----
-- type: remove
-  path: /instance_groups/name=bosh/properties/hm/director_account/password
-- type: remove
-  path: /instance_groups/name=bosh/properties/hm/director_account/user
-- type: replace
-  path: /instance_groups/name=bosh/properties/hm/resurrector_enabled
-  value: false
