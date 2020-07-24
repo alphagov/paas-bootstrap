@@ -87,6 +87,9 @@ unless uaa_ssl_cert.nil?
   end
 end
 
+contents.delete("blobstore_ca") if contents.key? "blobstore_ca"
+contents.delete("blobstore_server_tls") if contents.key? "blobstore_server_tls"
+
 puts "New variable names: #{contents.keys}"
 
 puts "Writing file #{filename}"

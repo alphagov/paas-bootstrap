@@ -11,3 +11,9 @@
 
 - type: remove
   path: /instance_groups/name=bosh/jobs/name=blobstore
+
+- type: remove
+  path: /variables/name=blobstore_ca
+
+- type: remove
+  path: /variables/name=blobstore_server_tls
