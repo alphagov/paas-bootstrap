@@ -66,6 +66,7 @@ private
     generate_cyber_secrets_fixture(
       "#{workdir}/bosh-cyber-secrets",
       "aaaa-splunk-hec-token",
+      "aaa-csls-kinesis-destination-arn",
     )
     generate_uaa_users_fixture("#{workdir}/uaa-users-ops-file")
     generate_unix_users_fixture("#{workdir}/unix-users-ops-file")

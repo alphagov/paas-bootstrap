@@ -36,11 +36,12 @@ module FixtureHelpers
     end
   end
 
-  def generate_cyber_secrets_fixture(target_dir, bosh_auditor_splunk_hec_token)
+  def generate_cyber_secrets_fixture(target_dir, bosh_auditor_splunk_hec_token, csls_kinesis_destination_arn)
     FileUtils.mkdir(target_dir) unless Dir.exist?(target_dir)
     File.open("#{target_dir}/bosh-cyber-secrets.yml", "w") do |file|
       file.write({
         "bosh_auditor_splunk_hec_token" => bosh_auditor_splunk_hec_token,
+        "csls_kinesis_destination_arn" => csls_kinesis_destination_arn,
       }.to_yaml)
     end
   end

@@ -103,6 +103,7 @@ admin_google_oauth_client_id: ((admin_google_oauth_client_id))
 admin_google_oauth_client_secret: ((admin_google_oauth_client_secret))
 
 bosh_auditor_splunk_hec_token: ((bosh_auditor_splunk_hec_token))
+csls_kinesis_destination_arn: ((csls_kinesis_destination_arn))
 EOF
 
 
