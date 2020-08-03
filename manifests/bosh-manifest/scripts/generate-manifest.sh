@@ -96,6 +96,11 @@ nats_ca:
   certificate: ((default_ca.certificate))
   private_key: ((default_ca.private_key))
 
+credhub_ca:
+  ca: ((default_ca.certificate))
+  certificate: ((default_ca.certificate))
+  private_key: ((default_ca.private_key))
+
 vcap_password: ((secrets.vcap_password))
 bosh_credhub_admin_client_password: ((secrets.bosh_credhub_admin_client_password))
 

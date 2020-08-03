@@ -1537,11 +1537,9 @@ jobs:
               export BOSH_CLIENT
               export BOSH_CLIENT_SECRET
 
-              $VAL_FROM_YAML credhub_ca.certificate bosh-vars-store/bosh-vars-store.yml > credhub-ca-cert.yml
-
               bosh deploy concourse-manifest/concourse-manifest.yml \
                    -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
-                   --var-file=credhub_ca_cert=credhub-ca-cert.yml
+                   --var-file=credhub_ca_cert=bosh-CA-crt/bosh-CA.crt
 
   - name: post-deploy
     serial: true
@@ -1599,7 +1597,7 @@ jobs:
                 CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
 
                 CREDHUB_CA_CERT="$(cat <<EOCERT
-                $($VAL_FROM_YAML credhub_ca.ca bosh-vars-store/bosh-vars-store.yml)
+                $($VAL_FROM_YAML credhub_tls.ca bosh-vars-store/bosh-vars-store.yml)
                 $($VAL_FROM_YAML uaa_ssl.ca bosh-vars-store/bosh-vars-store.yml)
                 EOCERT
                 )"
@@ -1693,7 +1691,7 @@ jobs:
               VCAP_PASSWORD=$($VAL_FROM_YAML secrets.vcap_password bosh-secrets/bosh-secrets.yml)
 
               CREDHUB_CA_CERT="$(cat <<EOCERT
-              $($VAL_FROM_YAML credhub_ca.ca bosh-vars-store/bosh-vars-store.yml)
+              $($VAL_FROM_YAML credhub_tls.ca bosh-vars-store/bosh-vars-store.yml)
               $($VAL_FROM_YAML uaa_ssl.ca bosh-vars-store/bosh-vars-store.yml)
               EOCERT
               )"
