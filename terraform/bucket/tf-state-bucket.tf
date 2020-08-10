@@ -3,11 +3,11 @@ variable "state_bucket" {
 }
 
 provider "aws" {
-  region = "${var.region}"
+  region = var.region
 }
 
 resource "aws_s3_bucket" "terraform-state-s3" {
-  bucket        = "${var.state_bucket}"
+  bucket        = var.state_bucket
   acl           = "private"
   force_destroy = "true"
 
@@ -15,3 +15,4 @@ resource "aws_s3_bucket" "terraform-state-s3" {
     enabled = true
   }
 }
+

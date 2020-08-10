@@ -1,11 +1,12 @@
 provider "aws" {
-  region = "${var.region}"
+  region = var.region
 }
 
 resource "aws_vpc" "paas" {
-  cidr_block = "${var.vpc_cidr}"
+  cidr_block = var.vpc_cidr
 
-  tags {
-    Name = "${var.env}"
+  tags = {
+    Name = var.env
   }
 }
+
