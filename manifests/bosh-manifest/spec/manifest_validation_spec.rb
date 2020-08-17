@@ -4,6 +4,18 @@ RSpec.describe "generic manifest validations" do
   let(:bosh_instance) { instance_groups.find { |ig| ig["name"] == "bosh" } }
   let(:bosh_jobs) { bosh_instance["jobs"] }
 
+  describe "instance" do
+    it "has a big disk" do
+      disk = bosh_instance["persistent_disk_pool"]
+
+      disk_pools = manifest["disk_pools"]
+      disk_pool = disk_pools.find { |p| p["name"] == disk }
+
+      disk_size = disk_pool["disk_size"]
+      expect(disk_size).to be >= 2.pow(17), "#{disk_pool} should be bigger"
+    end
+  end
+
   describe "name uniqueness" do
     %w[
       disk_pools
