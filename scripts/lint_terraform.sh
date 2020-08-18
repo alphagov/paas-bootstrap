@@ -9,6 +9,6 @@ export TF_DATA_DIR
 
 for dir in terraform/*/; do
   terraform init "${dir}" >/dev/null
-  terraform validate -check-variables=false "${dir}" >/dev/null
+  terraform validate "${dir}" >/dev/null
   terraform fmt -check -diff "${dir}"
 done
