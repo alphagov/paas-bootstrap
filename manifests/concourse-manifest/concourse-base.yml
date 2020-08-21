@@ -16,9 +16,9 @@ stemcells:
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
 releases:
   - name: "concourse"
-    version: "6.4.0"
-    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=6.4.0"
-    sha1: "98fa62d0ef61c9886b824f132189c838f278e7e6"
+    version: "6.5.1"
+    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=6.5.1"
+    sha1: "ffda854bcb84a3a36d83348bf4ab6d481e721ab5"
   - name: "bpm"
     version: "1.1.8"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.8"
