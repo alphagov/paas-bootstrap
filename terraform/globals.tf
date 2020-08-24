@@ -22,17 +22,17 @@ variable "vpc_id" {
 
 variable "zones" {
   description = "AWS availability zones"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "zone_index" {
   description = "AWS availability zone indices"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "zone_labels" {
   description = "AWS availability zone labels as used in BOSH manifests (z1-z3)"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "zone_count" {
@@ -61,7 +61,7 @@ variable "infra_gws" {
 
 variable "microbosh_ips" {
   description = "MicroBOSH IPs per zone"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "infra_subnet_ids" {
@@ -91,7 +91,7 @@ variable "admin_cidrs" {
     "213.86.153.235/32",
     "213.86.153.236/32",
     "213.86.153.237/32",
-    "82.71.58.244/32",   # LP remote
+    "82.71.58.244/32", # LP remote
   ]
 }
 
@@ -108,7 +108,7 @@ variable "assets_prefix" {
 
 variable "bosh_log_groups_to_ship_to_csls" {
   description = "The names of the Bosh log groups to ship to CSLS, without the _env suffix"
-  type        = "list"
+  type        = list(string)
 
   default = [
     "bosh_d_audit",
@@ -119,3 +119,4 @@ variable "bosh_log_groups_to_ship_to_csls" {
     "bosh_d_uaa_events",
   ]
 }
+

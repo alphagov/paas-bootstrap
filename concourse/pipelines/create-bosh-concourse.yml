@@ -40,7 +40,7 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: 34c0ca163291c796ed6936b1ed0697321a9548b8
+        tag: e1ffec0d1940706f157a8c1e0ab8131b7084fa1c
 
 groups:
   - name: all

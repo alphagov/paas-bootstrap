@@ -32,3 +32,4 @@ variable "concourse_db_skip_final_snapshot" {
   description = "Whether to skip final RDS snapshot (just before destroy). Differs per environment."
   default     = "true"
 }
+
