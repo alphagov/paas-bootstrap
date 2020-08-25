@@ -161,7 +161,11 @@ make dev \
 	upload-google-oauth \
 ```
 
-Then trigger the pipeline run again
+Then trigger the pipeline run again. When triggering the pipeline
+from the concourse UI, take care to use the "trigger job" button and
+not the "re-run with same inputs button", due to the way terraform
+state is managed in this pipeline, re-using old inputs can cause
+problems.
 
 When complete, you can access the new Concourse from your browser. The URL
 and credentials can be found from:
