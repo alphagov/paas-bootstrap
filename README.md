@@ -36,7 +36,7 @@ or by using [`virtualenv`](https://virtualenv.pypa.io/en/latest/) and pip `pip i
 * a recent version of [Vagrant installed][]. The exact version
 requirements are listed in the [`Vagrantfile`](vagrant/Vagrantfile).
 
-* a recent version of [jq](https://stedolan.github.io/jq/). 
+* a recent version of [jq](https://stedolan.github.io/jq/).
 
 [Vagrant installed]: https://docs.vagrantup.com/v2/installation/index.html
 
@@ -108,7 +108,7 @@ make dev deployer-concourse bootstrap
 The above command will deploy a Deployer Concourse which is used for deploying a PaaS.
 
 It is possible to deploy a Build Concourse instead. A Build Concourse is responsible for building and versioning releases, as well as deploying manuals, documentation, product pages, and more.
-  
+
 To start deploying a new build environment:
 
 ```
@@ -150,6 +150,18 @@ You will need to either configure a [Github oauth application](https://team-manu
 ### Deploy
 
 Run the `create-bosh-concourse` pipeline from your *Concourse Lite*. The pipeline will upload itself to the Concourse it has created, which means future runs of the pipeline can be done from there. In theory, we should only need the *Concourse Lite* for the initial bootstrapping.
+
+If the initial run of the pipeline fails, it is likely because you need to upload secrets, execute the following:
+
+```
+make dev \
+	upload-cyber-secrets \
+	upload-cyber-tfvars \
+	upload-paas-trusted-people \
+	upload-google-oauth \
+```
+
+Then trigger the pipeline run again
 
 When complete, you can access the new Concourse from your browser. The URL
 and credentials can be found from:
