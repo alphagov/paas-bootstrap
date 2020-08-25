@@ -355,61 +355,7 @@ jobs:
   - name: init-bucket
     serial: true
     plan:
-      - in_parallel:
-        - get: paas-bootstrap
-
-      - task: try-fetch-bucket-state
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          params:
-            AWS_DEFAULT_REGION: ((aws_region))
-          inputs:
-            - name: paas-bootstrap
-          outputs:
-            - name: bucket-state
-          run:
-            path: sh
-            args:
-            - -e
-            - -u
-            - -c
-            - |
-              cd bucket-state
-              aws s3 cp "s3://((state_bucket))/bucket.tfstate" . || true
-              ls -l
-
-      - task: create-init-bucket
-        config:
-          platform: linux
-          image_resource: *terraform-image-resource
-          params:
-            TF_VAR_env: ((deploy_env))
-            TF_VAR_state_bucket: ((state_bucket))
-            AWS_DEFAULT_REGION: ((aws_region))
-          inputs:
-            - name: paas-bootstrap
-            - name: bucket-state
-          outputs:
-            - name: updated-bucket-state
-          run:
-            path: sh
-            args:
-            - -c
-            - -e
-            - |
-              [ -f bucket-state/bucket.tfstate ] && cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
-              terraform init paas-bootstrap/terraform/bucket
-              terraform apply \
-                -auto-approve=true \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -state=updated-bucket-state/bucket.tfstate \
-                paas-bootstrap/terraform/bucket
-        on_success:
-          put: bucket-terraform-state
-          params:
-            file: updated-bucket-state/bucket.tfstate
+      - get: paas-bootstrap
 
       - try:
           on_error:
@@ -534,6 +480,59 @@ jobs:
 
                 echo 'self-update-pipeline failed'
                 exit 1
+
+      - task: try-fetch-bucket-state
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+          inputs:
+            - name: paas-bootstrap
+          outputs:
+            - name: bucket-state
+          run:
+            path: sh
+            args:
+            - -e
+            - -u
+            - -c
+            - |
+              cd bucket-state
+              aws s3 cp "s3://((state_bucket))/bucket.tfstate" . || true
+              ls -l
+
+      - task: create-init-bucket
+        config:
+          platform: linux
+          image_resource: *terraform-image-resource
+          params:
+            TF_VAR_env: ((deploy_env))
+            TF_VAR_state_bucket: ((state_bucket))
+            AWS_DEFAULT_REGION: ((aws_region))
+          inputs:
+            - name: paas-bootstrap
+            - name: bucket-state
+          outputs:
+            - name: updated-bucket-state
+          run:
+            path: sh
+            args:
+            - -c
+            - -e
+            - |
+              [ -f bucket-state/bucket.tfstate ] && cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
+              terraform init paas-bootstrap/terraform/bucket
+              terraform apply \
+                -auto-approve=true \
+                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=updated-bucket-state/bucket.tfstate \
+                paas-bootstrap/terraform/bucket
+        on_success:
+          put: bucket-terraform-state
+          params:
+            file: updated-bucket-state/bucket.tfstate
 
       - put: pipeline-trigger
         params: {bump: patch}
