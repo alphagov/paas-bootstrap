@@ -355,31 +355,131 @@ jobs:
   - name: init-bucket
     serial: true
     plan:
-      - in_parallel:
-        - get: paas-bootstrap
+      - get: paas-bootstrap
 
-      - task: self-update-pipelines
-        tags: [colocated-with-web]
+      - try:
+          on_error:
+            task: fail-try-block-if-not-bootstrap
+            config:
+              platform: linux
+              image_resource: *gov-paas-bosh-cli-v2-image-resource
+              params:
+                TARGET_CONCOURSE: ((target_concourse))
+                SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+              outputs:
+                - name: self-update-pipeline-status
+              run:
+                path: sh
+                args:
+                  - -e
+                  - -c
+                  - |
+                    echo "${TARGET_CONCOURSE}"
+
+                    # If we are bootstrap and we error, it is okay
+                    # If we are not bootstrap and we error, it is bad
+
+                    if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
+                      echo bootstrap > self-update-pipeline-status/state.txt
+                      exit 0
+                    fi
+
+                    if [ "$SELF_UPDATE_PIPELINE" = "false" ]; then
+                      echo skip > self-update-pipeline-status/state.txt
+                      exit 0
+                    fi
+
+                    echo fail > self-update-pipeline-status/state.txt
+
+          do:
+            - task: set-initial-self-update-pipeline-status
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                outputs:
+                  - name: self-update-pipeline-status
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      # If self-update-pipelines does not succeed then fail
+                      # We initially always mark as failed by default
+                      echo fail > self-update-pipeline-status/state.txt
+
+            - task: self-update-pipelines
+              tags: [colocated-with-web]
+              config:
+                platform: linux
+                image_resource: *self-update-pipelines-image-resource
+                inputs:
+                  - name: paas-bootstrap
+                params:
+                  DEPLOY_ENV: ((deploy_env))
+                  BRANCH: ((branch_name))
+                  MAKEFILE_ENV_TARGET: ((makefile_env_target))
+                  AWS_DEFAULT_REGION: ((aws_region))
+                  SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
+                  SELF_UPDATE_PIPELINE: ((self_update_pipeline))
+                  TARGET_CONCOURSE: ((target_concourse))
+                  CONCOURSE_TYPE: ((concourse_type))
+                  ENABLE_GITHUB: ((enable_github))
+
+                  CONCOURSE_WEB_USER: admin
+                  CONCOURSE_WEB_PASSWORD: ((concourse_web_password))
+                run:
+                  path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+
+            - task: mark-as-passed
+              config:
+                platform: linux
+                image_resource: *gov-paas-bosh-cli-v2-image-resource
+                outputs:
+                  - name: self-update-pipeline-status
+                run:
+                  path: sh
+                  args:
+                    - -e
+                    - -c
+                    - |
+                      # self-update-pipelines does has succeeded
+                      echo pass > self-update-pipeline-status/state.txt
+
+      - task: check-self-update-pipeline-status
         config:
           platform: linux
-          image_resource: *self-update-pipelines-image-resource
-          inputs:
-            - name: paas-bootstrap
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
           params:
-            DEPLOY_ENV: ((deploy_env))
-            BRANCH: ((branch_name))
-            MAKEFILE_ENV_TARGET: ((makefile_env_target))
-            AWS_DEFAULT_REGION: ((aws_region))
-            SKIP_COMMIT_VERIFICATION: ((skip_commit_verification))
-            SELF_UPDATE_PIPELINE: ((self_update_pipeline))
             TARGET_CONCOURSE: ((target_concourse))
-            CONCOURSE_TYPE: ((concourse_type))
-            ENABLE_GITHUB: ((enable_github))
-
-            CONCOURSE_WEB_USER: admin
-            CONCOURSE_WEB_PASSWORD: ((concourse_web_password))
+          inputs:
+            - name: self-update-pipeline-status
           run:
-            path: ./paas-bootstrap/concourse/scripts/self-update-pipeline.sh
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                echo "target-concourse:            ${TARGET_CONCOURSE}"
+                echo "self-update-pipeline-status: $(cat self-update-pipeline-status/state.txt)"
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "pass" ]; then
+                  echo 'self-update-pipeline passed'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "skip" ]; then
+                  echo 'self-update-pipeline skipped'
+                  exit 0
+                fi
+
+                if [ "$(cat self-update-pipeline-status/state.txt)" = "bootstrap" ]; then
+                  echo 'self-update-pipeline skipped because bootstrap'
+                  exit 0
+                fi
+
+                echo 'self-update-pipeline failed'
+                exit 1
 
       - task: try-fetch-bucket-state
         config:
@@ -433,107 +533,6 @@ jobs:
           put: bucket-terraform-state
           params:
             file: updated-bucket-state/bucket.tfstate
-
-      - try:
-          on_error:
-            task: fail-try-block-if-not-bootstrap
-            config:
-              platform: linux
-              image_resource: *gov-paas-bosh-cli-v2-image-resource
-              params:
-                TARGET_CONCOURSE: ((target_concourse))
-                SELF_UPDATE_PIPELINE: ((self_update_pipeline))
-              outputs:
-                - name: self-update-pipeline-status
-              run:
-                path: sh
-                args:
-                  - -e
-                  - -c
-                  - |
-                    echo "${TARGET_CONCOURSE}"
-
-                    # If we are bootstrap and we error, it is okay
-                    # If we are not bootstrap and we error, it is bad
-
-                    if [ "$TARGET_CONCOURSE" = "bootstrap" ]; then
-                      echo bootstrap > self-update-pipeline-status/state.txt
-                      exit 0
-                    fi
-
-                    if [ "$SELF_UPDATE_PIPELINE" = "false" ]; then
-                      echo skip > self-update-pipeline-status/state.txt
-                      exit 0
-                    fi
-
-                    echo fail > self-update-pipeline-status/state.txt
-
-          do:
-            - task: set-initial-self-update-pipeline-status
-              config:
-                platform: linux
-                image_resource: *gov-paas-bosh-cli-v2-image-resource
-                outputs:
-                  - name: self-update-pipeline-status
-                run:
-                  path: sh
-                  args:
-                    - -e
-                    - -c
-                    - |
-                      # If self-update-pipelines does not succeed then fail
-                      # We initially always mark as failed by default
-                      echo fail > self-update-pipeline-status/state.txt
-
-            - task: mark-as-passed
-              config:
-                platform: linux
-                image_resource: *gov-paas-bosh-cli-v2-image-resource
-                outputs:
-                  - name: self-update-pipeline-status
-                run:
-                  path: sh
-                  args:
-                    - -e
-                    - -c
-                    - |
-                      # self-update-pipelines does has succeeded
-                      echo pass > self-update-pipeline-status/state.txt
-
-      - task: check-self-update-pipeline-status
-        config:
-          platform: linux
-          image_resource: *gov-paas-bosh-cli-v2-image-resource
-          params:
-            TARGET_CONCOURSE: ((target_concourse))
-          inputs:
-            - name: self-update-pipeline-status
-          run:
-            path: sh
-            args:
-              - -e
-              - -c
-              - |
-                echo "target-concourse:            ${TARGET_CONCOURSE}"
-                echo "self-update-pipeline-status: $(cat self-update-pipeline-status/state.txt)"
-
-                if [ "$(cat self-update-pipeline-status/state.txt)" = "pass" ]; then
-                  echo 'self-update-pipeline passed'
-                  exit 0
-                fi
-
-                if [ "$(cat self-update-pipeline-status/state.txt)" = "skip" ]; then
-                  echo 'self-update-pipeline skipped'
-                  exit 0
-                fi
-
-                if [ "$(cat self-update-pipeline-status/state.txt)" = "bootstrap" ]; then
-                  echo 'self-update-pipeline skipped because bootstrap'
-                  exit 0
-                fi
-
-                echo 'self-update-pipeline failed'
-                exit 1
 
       - put: pipeline-trigger
         params: {bump: patch}
