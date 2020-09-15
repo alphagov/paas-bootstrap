@@ -5,22 +5,22 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/awscli
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: governmentpaas/bosh-cli-v2
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: governmentpaas/certstrap
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: governmentpaas/git-ssh
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
@@ -30,17 +30,17 @@ meta:
       type: docker-image
       source:
         repository: governmentpaas/self-update-pipelines
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: governmentpaas/spruce
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: governmentpaas/terraform
-        tag: f91084a42c34535e5b9ad61226314155b0854648
+        tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
 
 groups:
   - name: all
@@ -523,6 +523,9 @@ jobs:
             - |
               [ -f bucket-state/bucket.tfstate ] && cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
               terraform init paas-bootstrap/terraform/bucket
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bucket-state/bucket.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -608,6 +611,9 @@ jobs:
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -659,6 +665,8 @@ jobs:
                    updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
                 terraform init paas-bootstrap/terraform/cyber
+
+                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
                 terraform apply \
                   -auto-approve=true \
@@ -863,6 +871,9 @@ jobs:
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 terraform init paas-bootstrap/terraform/bosh
+
+                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
                 terraform apply \
                   -auto-approve=true \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -1188,6 +1199,9 @@ jobs:
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-concourse-tfstate/concourse.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -1955,6 +1969,9 @@ jobs:
             - |
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
@@ -1998,6 +2015,9 @@ jobs:
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               terraform init paas-bootstrap/terraform/bosh
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.bosh \
@@ -2040,6 +2060,9 @@ jobs:
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-concourse-tfstate/concourse.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
