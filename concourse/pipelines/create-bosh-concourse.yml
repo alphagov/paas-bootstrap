@@ -523,6 +523,9 @@ jobs:
             - |
               [ -f bucket-state/bucket.tfstate ] && cp bucket-state/bucket.tfstate updated-bucket-state/bucket.tfstate
               terraform init paas-bootstrap/terraform/bucket
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bucket-state/bucket.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -608,6 +611,9 @@ jobs:
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -659,6 +665,8 @@ jobs:
                    updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
                 terraform init paas-bootstrap/terraform/cyber
+
+                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
                 terraform apply \
                   -auto-approve=true \
@@ -863,6 +871,9 @@ jobs:
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 terraform init paas-bootstrap/terraform/bosh
+
+                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
                 terraform apply \
                   -auto-approve=true \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -1188,6 +1199,9 @@ jobs:
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-concourse-tfstate/concourse.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -1955,6 +1969,9 @@ jobs:
             - |
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
@@ -1998,6 +2015,9 @@ jobs:
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               terraform init paas-bootstrap/terraform/bosh
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.bosh \
@@ -2040,6 +2060,9 @@ jobs:
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               terraform init paas-bootstrap/terraform/concourse
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-concourse-tfstate/concourse.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
