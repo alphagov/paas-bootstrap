@@ -7,6 +7,26 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 state_bucket=gds-paas-${DEPLOY_ENV}-state
 
+case $AWS_ACCOUNT in
+prod-lon)
+  # Flag of Greater London
+  BACKGROUND_IMAGE_URL="https://upload.wikimedia.org/wikipedia/commons/2/25/Flag_of_Greater_London.svg"
+  ;;
+prod)
+  # Flag of the City of Dublin
+  BACKGROUND_IMAGE_URL="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/IRL_Dublin_flag.svg/1500px-IRL_Dublin_flag.svg.png"
+  ;;
+stg-lon)
+  # The Minack Theatre in Cornwall
+  BACKGROUND_IMAGE_URL="https://upload.wikimedia.org/wikipedia/commons/1/16/Minack_Theatre.jpg"
+  ;;
+*)
+  # A large inflatable duck
+  BACKGROUND_IMAGE_URL="https://si.wsj.net/public/resources/images/BN-EX226_duck_G_20141008024653.jpg"
+  ;;
+esac
+
+
 generate_vars_file() {
    cat <<EOF
 ---
@@ -38,6 +58,7 @@ enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
 github_client_secret: ${GITHUB_CLIENT_SECRET:-}
 concourse_auth_duration: ${CONCOURSE_AUTH_DURATION:-5m}
+background_image_url: ${BACKGROUND_IMAGE_URL}
 EOF
 }
 
