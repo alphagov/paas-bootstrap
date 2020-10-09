@@ -10,11 +10,17 @@ module ManifestHelpers
   class Cache
     include Singleton
     attr_accessor :manifest_with_defaults
+    attr_accessor :manifest_for_account
     attr_accessor :bosh_deployment_manifest
   end
 
   def manifest_with_defaults
     Cache.instance.manifest_with_defaults ||= load_default_manifest
+  end
+
+  def manifest_for_account(account)
+    Cache.instance.manifest_for_account ||= {}
+    Cache.instance.manifest_for_account[account] ||= load_manifest(account)
   end
 
   def bosh_deployment_manifest
@@ -36,11 +42,11 @@ private
     Pathname(@vars_store_file)
   end
 
-  def fake_env_vars
+  def fake_env_vars(account)
     env = {}
     env["BOSH_FQDN_EXTERNAL"] = "bosh-external.domain"
     env["BOSH_FQDN"] = "bosh.domain"
-    env["AWS_ACCOUNT"] = "dev"
+    env["AWS_ACCOUNT"] = account
     env["AWS_DEFAULT_REGION"] = "eu-west-1"
     env["BOSH_INSTANCE_PROFILE"] = "bosh-director-build"
     env["DEPLOY_ENV"] = ManifestHelpers.deploy_env
@@ -49,9 +55,13 @@ private
   end
 
   def load_default_manifest
+    load_manifest("dev")
+  end
+
+  def load_manifest(account)
     workdir = Pathname.new(Dir.mktmpdir("workdir"))
 
-    env = fake_env_vars
+    env = fake_env_vars(account)
 
     env["VARS_STORE"] = vars_store_file.to_s
     env["PAAS_BOOTSTRAP_DIR"] = root.to_s
