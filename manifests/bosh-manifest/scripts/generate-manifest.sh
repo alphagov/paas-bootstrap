@@ -11,6 +11,10 @@ for i in "${PAAS_BOOTSTRAP_DIR}"/manifests/bosh-manifest/operations.d/*.yml; do
   opsfile_args+="-o $i "
 done
 
+if [ "${AWS_ACCOUNT}" == "dev" ]; then
+  opsfile_args+="-o ${PAAS_BOOTSTRAP_DIR}/manifests/bosh-manifest/operations/scale-down-dev.yml "
+fi
+
 uaa_users_ops_file="${WORKDIR}/uaa-users-ops-file/uaa-users-ops-file.yml"
 if [ -f "$uaa_users_ops_file" ]; then
   opsfile_args+="-o $uaa_users_ops_file "
