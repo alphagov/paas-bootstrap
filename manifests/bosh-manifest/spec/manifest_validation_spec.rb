@@ -139,4 +139,25 @@ RSpec.describe "generic manifest validations" do
       end
     end
   end
+
+  describe "resource_pools" do
+    let(:resource_pools) { manifest["resource_pools"] }
+    let(:resource_pool) { resource_pools.first }
+
+    describe "instance type" do
+      let(:instance_type) { resource_pool.dig("cloud_properties", "instance_type") }
+
+      it "is t3.medium" do
+        expect(instance_type).to eq("t3.medium")
+      end
+
+      context "when not in development" do
+        let(:manifest) { manifest_for_account("prod") }
+
+        it "is m5.large" do
+          expect(instance_type).to eq("m5.large")
+        end
+      end
+    end
+  end
 end
