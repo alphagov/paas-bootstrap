@@ -142,7 +142,7 @@ resources:
       versioned_file: concourse.tfstate
       region_name: ((aws_region))
 
-  - name: bosh-CA-crt
+  - name: bosh-ca-crt
     type: s3-iam
     source:
       bucket: ((state_bucket))
@@ -271,7 +271,7 @@ jobs:
         - get: bosh-vars-store
         - get: vpc-tfstate
         - get: concourse-tfstate
-        - get: bosh-CA-crt
+        - get: bosh-ca-crt
         - get: ssh-private-key
 
       - task: destroy-concourse
@@ -281,11 +281,11 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: bosh-vars-store
-          - name: bosh-CA-crt
+          - name: bosh-ca-crt
           - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
-            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_CA_CERT: bosh-ca-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
             BOSH_NON_INTERACTIVE: true
 
@@ -388,7 +388,7 @@ jobs:
         - get: vpc-tfstate
         - get: bosh-tfstate
         - get: bootstrap-cyber-tfvars
-        - get: bosh-CA-crt
+        - get: bosh-ca-crt
         - get: ssh-private-key
 
       - task: check-existing-deployments
@@ -398,11 +398,11 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-vars-store
-            - name: bosh-CA-crt
+            - name: bosh-ca-crt
             - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
-            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_CA_CERT: bosh-ca-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
             BOSH_NON_INTERACTIVE: true
 
@@ -438,11 +438,11 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: bosh-vars-store
-            - name: bosh-CA-crt
+            - name: bosh-ca-crt
             - name: ssh-private-key
           params:
             BOSH_ENVIRONMENT: ((bosh_fqdn))
-            BOSH_CA_CERT: bosh-CA-crt/bosh-CA.crt
+            BOSH_CA_CERT: bosh-ca-crt/bosh-CA.crt
             BOSH_DEPLOYMENT: concourse
             BOSH_NON_INTERACTIVE: true
 
