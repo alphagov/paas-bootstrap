@@ -8,3 +8,6 @@
 - type: replace
   path: /instance_groups/name=bosh/properties/director/disks?/max_orphaned_age_in_days
   value: 0
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/tasks_cleanup_schedule?
+  value: 0 0 0 * * * UTC

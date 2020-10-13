@@ -3,6 +3,7 @@ RSpec.describe "generic manifest validations" do
   let(:instance_groups) { manifest["instance_groups"] }
   let(:bosh_instance) { instance_groups.find { |ig| ig["name"] == "bosh" } }
   let(:bosh_jobs) { bosh_instance["jobs"] }
+  let(:director) { bosh_instance.dig("properties", "director") }
 
   describe "instance" do
     it "has a big disk" do
@@ -157,6 +158,15 @@ RSpec.describe "generic manifest validations" do
         it "is m5.large" do
           expect(instance_type).to eq("m5.large")
         end
+      end
+    end
+  end
+
+  describe "director" do
+    describe "tasks" do
+      it "cleans up tasks every day" do
+        schedule = director.dig("tasks_cleanup_schedule")
+        expect(schedule).to eq("0 0 0 * * * UTC")
       end
     end
   end
