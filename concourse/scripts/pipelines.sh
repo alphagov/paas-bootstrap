@@ -7,7 +7,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 state_bucket=gds-paas-${DEPLOY_ENV}-state
 
-case $AWS_ACCOUNT in
+case $DEPLOY_ENV in
 prod-lon)
   # Flag of Greater London
   BACKGROUND_IMAGE_URL="https://upload.wikimedia.org/wikipedia/commons/2/25/Flag_of_Greater_London.svg"
