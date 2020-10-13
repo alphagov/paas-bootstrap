@@ -1881,6 +1881,7 @@ jobs:
             - name: paas-bootstrap
             - name: upload-pipeline-secrets
           params:
+            AWS_ACCOUNT: ((aws_account))
             DEPLOY_ENV: ((deploy_env))
             BRANCH: ((branch_name))
             MAKEFILE_ENV_TARGET: ((makefile_env_target))
