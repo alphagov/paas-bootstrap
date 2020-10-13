@@ -41,7 +41,7 @@ resource_types:
   type: docker-image
   source:
     repository: governmentpaas/semver-resource
-    tag: 90f9f534ed5a3887b9c5d55a20cca6561f7de6a4
+    tag: f2a80c95481056aa57d837e3b14f0012b542fdb3
 
 resources:
   - name: paas-bootstrap
