@@ -54,4 +54,4 @@ docker run  \
 	--env "BOSH_ENVIRONMENT=bosh.${SYSTEM_DNS_ZONE_NAME}" \
 	--env "BOSH_CA_CERT" \
 	--env "BOSH_DEPLOYMENT=${DEPLOY_ENV}" \
-	governmentpaas/bosh:71282be5cd658a67f944e2fd2d7b89e495fe6e53 "$@"
+	ghcr.io/alphagov/paas/bosh:71282be5cd658a67f944e2fd2d7b89e495fe6e53 "$@"
