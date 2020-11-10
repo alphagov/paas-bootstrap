@@ -12,6 +12,7 @@ AllCops:
     - 'vendor/**/*'
     - 'scripts/vendor/**/*'
     - 'concourse/spec/**/*'
+    - 'vagrant/spec/**/*'
 
 Layout/MultilineArrayLineBreaks:
   Enabled: false

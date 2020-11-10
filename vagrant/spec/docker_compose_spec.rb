@@ -34,3 +34,4 @@ RSpec.describe "docker-compose" do
     end
   end
 end
+# rubocop:enable Security/YAMLLoad
