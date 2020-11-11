@@ -47,7 +47,7 @@ timeout=180
 deadline=$(($(date +%s) + timeout))
 echo -n "Waiting for concourse to start for ${timeout}s..."
 
-while ! curl -f -qs http://localhost:8080/login -o /dev/null; do
+while ! curl -f -qs http://127.0.0.1:8080/login -o /dev/null; do
   sleep 5
   echo -n .
   if [ "$(date +%s)" -gt ${deadline} ] ; then

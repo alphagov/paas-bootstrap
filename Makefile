@@ -33,6 +33,8 @@ spec:
 		bundle exec rspec
 	cd manifests/concourse-manifest &&\
 		bundle exec rspec
+	cd vagrant &&\
+		bundle exec rspec
 
 lint_yaml:
 	find . -name '*.yml' -not -path '*/vendor/*' | xargs $(YAMLLINT) -c yamllint.yml
