@@ -46,7 +46,7 @@ resource "aws_db_instance" "concourse" {
   storage_type               = "gp2"
   engine                     = "postgres"
   engine_version             = "11.5"
-  instance_class             = "db.m5.large"
+  instance_class             = "db.m5.xlarge"
   username                   = "concourse"
   password                   = random_password.concourse_rds_password.result
   db_subnet_group_name       = aws_db_subnet_group.concourse_rds.name
