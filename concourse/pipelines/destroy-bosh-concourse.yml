@@ -657,6 +657,9 @@ jobs:
             - |
               cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
               terraform init paas-bootstrap/terraform/cyber
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
