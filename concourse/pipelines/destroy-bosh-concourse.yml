@@ -248,6 +248,9 @@ jobs:
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               terraform init paas-bootstrap/terraform/bosh
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
@@ -359,6 +362,8 @@ jobs:
               touch concourse.crt concourse.key
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-concourse-tfstate/concourse.tfstate
 
               if [ -z "$(terraform state list --state updated-concourse-tfstate/concourse.tfstate)" ]; then
                 echo "The Terraform resources were already destroyed, nothing to do"
@@ -559,6 +564,9 @@ jobs:
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 terraform init paas-bootstrap/terraform/bosh
+
+                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+
                 terraform destroy -force \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
@@ -603,6 +611,9 @@ jobs:
             - |
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               terraform init paas-bootstrap/terraform/vpc
+
+              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+              
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
