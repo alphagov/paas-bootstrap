@@ -13,7 +13,6 @@ instance_groups:
                   - (( append ))
                   - kr8n3r
                   - poveyd
-                  - barsutka
                   - szd55gds
                   - philandstuff
                   - Krenair
