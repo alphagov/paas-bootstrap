@@ -217,7 +217,7 @@ jobs:
               > vpc-terraform-outputs/tfvars.sh
               ls -l vpc-terraform-outputs/tfvars.sh
 
-      - task: add-concourse-IP-to-BOSH-SG
+      - task: add-concourse-ip-to-bosh-sg
         config:
           platform: linux
           image_resource: *terraform-image-resource
@@ -613,7 +613,7 @@ jobs:
               terraform init paas-bootstrap/terraform/vpc
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
-              
+
               terraform destroy -force \
                 -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
