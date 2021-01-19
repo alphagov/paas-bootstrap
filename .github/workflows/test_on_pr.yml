@@ -1,0 +1,71 @@
+---
+on: pull_request
+env:
+  TF_VERSION: "0.13.2"
+  SPRUCE_VERSION: "1.24.1"
+  BOSH_CLI_VERSION: "6.1.1"
+  CERTSTRAP_VERSION: "1.2.0"
+  SHELLCHECK_VERSION: "0.7.0"
+  GO_VERSION: "1.14"
+  RUBY_VERSION: "2.7"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      ## Setup
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install Shellcheck
+        run: |
+          wget -qO- "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | tar -xJv
+          sudo cp "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin
+
+      - name: "Install Terraform ${{env.TF_VERSION}}"
+        run: |
+          cd "${{runner.temp}}"
+          wget -q -O terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+          unzip terraform.zip
+          chmod +x ./terraform
+          sudo mv -f ./terraform /usr/local/bin
+
+      - name: "Install Spruce ${{env.SPRUCE_VERSION}}"
+        run: |
+          wget "https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64"
+          sudo mv spruce-linux-amd64 /usr/local/bin/spruce && chmod +x /usr/local/bin/spruce
+
+      - name: "Install certstrap ${{env.CERTSTRAP_VERSION}}"
+        run: |
+          wget "https://github.com/square/certstrap/releases/download/v${CERTSTRAP_VERSION}/certstrap-${CERTSTRAP_VERSION}-linux-amd64"
+          sudo mv "certstrap-${CERTSTRAP_VERSION}-linux-amd64" /usr/local/bin/certstrap && chmod +x /usr/local/bin/certstrap
+
+      - name: "Install Bosh CLI ${{env.BOSH_CLI_VERSION}}"
+        run: |
+          wget "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64"
+          sudo mv "bosh-cli-${BOSH_CLI_VERSION}-linux-amd64" /usr/local/bin/bosh && chmod +x /usr/local/bin/bosh
+
+      - name: "Install Go ${{env.GO_VERSION}}"
+        uses: actions/setup-go@v2
+        with:
+          go-version: "${{env.GO_VERSION}}"
+
+      - name: "Install Pipecleaner"
+        run: |
+          go get -u github.com/alphagov/paas-cf/tools/pipecleaner
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "${{env.RUBY_VERSION}}"
+
+      - name: Install bundle
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+
+      ## Test
+      - name: Test
+        run: |
+          make test
