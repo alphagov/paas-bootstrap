@@ -1,5 +1,5 @@
 variable "secrets_bosh_postgres_password" {
-  description = "Master password for bosh database"
+  description = "Super User password for bosh database"
 }
 
 variable "bosh_db_multi_az" {

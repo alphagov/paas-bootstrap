@@ -34,7 +34,7 @@ makefile_env_target: ${MAKEFILE_ENV_TARGET}
 aws_account: ${AWS_ACCOUNT}
 deploy_env: ${DEPLOY_ENV}
 state_bucket: ${state_bucket}
-branch_name: ${BRANCH:-master}
+branch_name: ${BRANCH:-main}
 aws_region: ${AWS_DEFAULT_REGION:-eu-west-1}
 log_level: ${LOG_LEVEL:-}
 concourse_hostname: ${CONCOURSE_HOSTNAME}
