@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
-    version: "621.94"
+    version: "621.95"
 
 name: concourse
 
@@ -63,7 +63,7 @@ instance_groups:
             auth:
               local:
                 users:
-                - admin
+                  - admin
           postgresql:
             database: (( grab terraform_outputs_concourse_db_name ))
             host: (( grab terraform_outputs_concourse_db_address ))
