@@ -1,0 +1,9 @@
+---
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/ephemeral_disk/type
+  value: gp3
+
+- type: replace
+  path: /disk_pools/name=disks/cloud_properties/type
+  value: gp3
+

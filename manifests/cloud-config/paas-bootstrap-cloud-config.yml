@@ -24,7 +24,7 @@ vm_types:
       auto_assign_public_ip: true
       ephemeral_disk:
         size: 20480
-        type: gp2
+        type: gp3
 
   - name: concourse
     cloud_properties:
@@ -32,7 +32,7 @@ vm_types:
       instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
       ephemeral_disk:
         size: 102400
-        type: gp2
+        type: gp3
 
   - name: concourse_worker
     cloud_properties:
@@ -41,7 +41,7 @@ vm_types:
       instance_type: (( grab $CONCOURSE_INSTANCE_TYPE ))
       ephemeral_disk:
         size: 102400
-        type: gp2
+        type: gp3
 
 
 vm_extensions:
