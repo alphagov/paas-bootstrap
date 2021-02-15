@@ -1,7 +1,22 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.require_version ">= 1.8.0"
+class Hash
+  unless Hash.method_defined?(:slice)
+    def slice(*keep_keys)
+      h = {}
+      keep_keys.each { |key| h[key] = fetch(key) if key?(key) }
+      h
+    end
+  end
+  unless Hash.method_defined?(:except)
+    def except(*less_keys)
+      slice(*keys - less_keys)
+    end
+  end
+end
+
+Vagrant.require_version ">= 2.2.14"
 
 # We use bootstrap concourse SG and a subnet in default VPC in each region
 AWS_ACCOUNT = ENV.fetch("AWS_ACCOUNT", "dev")
