@@ -5,7 +5,7 @@
 - path: /releases/name=bosh-aws-cpi
   type: replace
   value:
-    name: bosh-aws-cpi
-    version: "83"
-    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=83"
-    sha1: "cabcdf15846adabe2000fe892314a3a2f72c9177"
+    name: "bosh-aws-cpi"
+    version: "85"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=85"
+    sha1: "ab16bba3ae74b1a59f67d1579de22bc26ae95c53"
