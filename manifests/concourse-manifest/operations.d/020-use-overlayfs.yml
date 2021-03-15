@@ -1,0 +1,8 @@
+---
+instance_groups:
+  - name: concourse
+    jobs:
+      - name: worker
+        properties:
+          baggageclaim:
+            driver: overlay
