@@ -1,0 +1,7 @@
+---
+instance_groups:
+  - name: concourse
+    jobs:
+      - name: worker
+        properties:
+          runtime: containerd
