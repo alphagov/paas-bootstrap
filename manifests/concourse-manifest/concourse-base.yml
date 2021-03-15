@@ -96,6 +96,8 @@ instance_groups:
           tags: [colocated-with-web]
           garden:
             allow_host_access: true
+          baggageclaim:
+            driver: overlay
 
     networks:
       - name: public
@@ -134,6 +136,8 @@ instance_groups:
             host_public_key: ((concourse_tsa_host_key.public_key))
           garden:
             allow_host_access: true
+          baggageclaim:
+            driver: overlay
 
     networks:
       - name: concourse
