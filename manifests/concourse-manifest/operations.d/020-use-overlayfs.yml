@@ -6,3 +6,9 @@ instance_groups:
         properties:
           baggageclaim:
             driver: overlay
+  - name: concourse-worker
+    jobs:
+      - name: worker
+        properties:
+          baggageclaim:
+            driver: overlay

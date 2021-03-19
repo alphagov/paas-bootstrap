@@ -5,3 +5,8 @@ instance_groups:
       - name: worker
         properties:
           runtime: containerd
+  - name: concourse-worker
+    jobs:
+      - name: worker
+        properties:
+          runtime: containerd
