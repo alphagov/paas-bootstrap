@@ -16,9 +16,9 @@ stemcells:
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
 releases:
   - name: "concourse"
-    version: "6.6.0"
-    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=6.6.0"
-    sha1: "4cac2f29591ae88fbd97539e3020ecd06a6fe4c1"
+    version: "7.0.0"
+    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=7.0.0"
+    sha1: "90bc416cfd6c9bd03447b77accb3d9f185d69281"
   - name: "bpm"
     version: "1.1.9"
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.9"
@@ -96,6 +96,8 @@ instance_groups:
           tags: [colocated-with-web]
           garden:
             allow_host_access: true
+          baggageclaim:
+            driver: overlay
 
     networks:
       - name: public
@@ -134,6 +136,8 @@ instance_groups:
             host_public_key: ((concourse_tsa_host_key.public_key))
           garden:
             allow_host_access: true
+          baggageclaim:
+            driver: overlay
 
     networks:
       - name: concourse
