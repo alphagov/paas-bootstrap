@@ -12,7 +12,6 @@ instance_groups:
             auth:
               github:
                 users:
-                - 46bit
                 - AP-Hunt
                 - kr8n3r
                 - LeePorte
