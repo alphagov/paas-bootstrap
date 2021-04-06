@@ -11,6 +11,7 @@ instance_groups:
               github:
                 users:
                   - (( append ))
+                  - 0atman
                   - poveyd
                   - szd55gds
                   - philandstuff
