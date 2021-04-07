@@ -52,6 +52,10 @@ This is handled by the GDS CLI, for example:
 ```sh
 gds aws paas-dev-admin -- make dev magic
 ```
+But do set your region:
+```sh
+export AWS_DEFAULT_REGION=eu-west-1
+```
 
 
 The access keys are only required to spin up *Concourse Lite*. From
