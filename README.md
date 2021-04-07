@@ -67,7 +67,7 @@ these are defined in the repo [aws-account-wide-terraform][]
 [instance profiles]: http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
 [aws-account-wide-terraform]: https://github.com/alphagov/paas-aws-account-wide-terraform
 
-* Declare your environment name using the variable DEPLOY_ENV.
+* Declare your environment name using the variable DEPLOY_ENV (max length 8).
 
 ```
 $ export DEPLOY_ENV=environment-name
