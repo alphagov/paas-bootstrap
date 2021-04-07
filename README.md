@@ -46,18 +46,13 @@ Install the AWS plugin for Vagrant:
 vagrant plugin install vagrant-aws
 ```
 
-* provide AWS access keys as environment variables:
+* provide AWS access keys:
 
+This is handled by the GDS CLI, for example:
+```sh
+gds aws paas-dev-admin -- make dev magic
 ```
-export AWS_ACCESS_KEY_ID=XXXXXXXXXX
-export AWS_SECRET_ACCESS_KEY=YYYYYYYYYY
-export AWS_SESSION_TOKEN=ZZZZZZZZZZ # if using STS
-```
-And optionally:
 
-```
-export AWS_DEFAULT_REGION=eu-west-1
-```
 
 The access keys are only required to spin up *Concourse Lite*. From
 that point on they won't be required (except by manual actions) as all the
