@@ -315,6 +315,8 @@ jobs:
 
               bosh -n delete-deployment --force
 
+              bosh -d app-autoscaler delete-deployment --force
+
       - task: vpc-terraform-outputs-to-sh
         config:
           platform: linux
