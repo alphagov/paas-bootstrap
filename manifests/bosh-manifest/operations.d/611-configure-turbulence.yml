@@ -1,0 +1,8 @@
+---
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=turbulence_api/properties
+  value:
+    listen_address: ((bosh_fqdn_external))
+    listen_port: 12000
+    agent_listen_port: 12001
+    cert: ((turbulence_api_ssl.certificate))
