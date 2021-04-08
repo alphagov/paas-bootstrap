@@ -98,7 +98,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
 	$(eval export DEPLOY_ENV=ci)
-	$(eval export SYSTEM_DNS_ZONE_NAME=build.${DEPLOY_ENV}.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z2PF4LCV9VR1MV)
 	$(eval export AWS_ACCOUNT=ci)
 	$(eval export MAKEFILE_ENV_TARGET=ci)
