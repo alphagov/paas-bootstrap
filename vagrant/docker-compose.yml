@@ -10,7 +10,7 @@ services:
     - PGDATA=/database
 
   concourse-web:
-    image: concourse/concourse:6.6.0
+    image: concourse/concourse:7.1.0
     command: web
     privileged: true
     depends_on: [concourse-db]
@@ -32,7 +32,7 @@ services:
     - CONCOURSE_SESSION_SIGNING_KEY=/keys/session_signing_key
 
   concourse-worker-colocated:
-    image: concourse/concourse:6.6.0
+    image: concourse/concourse:7.1.0
     command: worker
     privileged: true
     depends_on: [concourse-db, concourse-web]
@@ -50,7 +50,7 @@ services:
     - CONCOURSE_GARDEN_DNS_SERVER=169.254.169.253
 
   concourse-worker-normal:
-    image: concourse/concourse:6.6.0
+    image: concourse/concourse:7.1.0
     command: worker
     privileged: true
     depends_on: [concourse-db, concourse-web]
