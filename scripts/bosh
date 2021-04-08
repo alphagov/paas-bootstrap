@@ -17,7 +17,7 @@ case "$AWS_ACCOUNT" in
 	SYSTEM_DNS_ZONE_NAME="${DEPLOY_ENV}.dev.cloudpipeline.digital"
   ;;
   ci)
-	SYSTEM_DNS_ZONE_NAME="${DEPLOY_ENV}.ci.cloudpipeline.digital"
+	SYSTEM_DNS_ZONE_NAME="build.${DEPLOY_ENV}.cloudpipeline.digital"
   ;;
   staging)
 	SYSTEM_DNS_ZONE_NAME="staging.london.cloudpipeline.digital"
