@@ -38,8 +38,8 @@ setup_env() {
 
 get_creds_from_env_or_pass() {
   setup_env
-  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${DEPLOY_ENV}/client_id")}"
-  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${DEPLOY_ENV}/client_secret")}"
+  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_id")}"
+  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_secret")}"
 }
 
 upload() {
