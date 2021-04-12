@@ -38,6 +38,7 @@ requirements are listed in the [`Vagrantfile`](vagrant/Vagrantfile).
 
 * a recent version of [jq](https://stedolan.github.io/jq/).
 
+* the `bsdtar` command (you may have it already), the ubuntu package is `libarchive-tools`
 [Vagrant installed]: https://docs.vagrantup.com/v2/installation/index.html
 
 Install the AWS plugin for Vagrant:
