@@ -95,6 +95,21 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
 
+.PHONY: dev01
+dev01: dev
+	$(eval export DEPLOY_ENV=dev01)
+	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
+	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
+	@true
+
+.PHONY: dev02
+dev02: dev
+	$(eval export DEPLOY_ENV=dev02)
+	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
+	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
+	@true
+
+
 .PHONY: ci
 ci: globals check-env-vars ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
