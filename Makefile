@@ -173,7 +173,7 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export CONCOURSE_HOSTNAME=concourse)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
-	$(eval export CONCOURSE_WORKER_INSTANCES ?= 2)
+	$(eval export CONCOURSE_WORKER_INSTANCES ?= 4)
 	@true
 
 .PHONY: deployer-concourse
