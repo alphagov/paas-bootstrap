@@ -11,7 +11,7 @@ RSpec.describe "versions" do
       bosh_version = CGI.parse(URI(bosh_ops_file[0]["value"]["url"]).query)["v"][0]
       concourse_version = concourse_manifest["meta"]["stemcell"]["version"]
 
-      expect(bosh_version).to eq(concourse_version), "bosh and concoruse should use the same version of the stemcell"
+      expect(bosh_version).to eq(concourse_version), "bosh and concourse should use the same version of the stemcell"
     end
   end
 end
