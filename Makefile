@@ -171,7 +171,7 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
 	$(eval export CONCOURSE_TYPE=build-concourse)
 	$(eval export CONCOURSE_HOSTNAME=concourse)
-	$(eval export CONCOURSE_INSTANCE_TYPE=c6g.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE=c5a.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 4)
 	@true
