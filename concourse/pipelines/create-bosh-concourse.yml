@@ -1526,6 +1526,7 @@ jobs:
             BOSH_GW_USER: vcap
             BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
 
+            CONCOURSE_WEB_INSTANCES: ((concourse_web_instances))
             CONCOURSE_WORKER_INSTANCES: ((concourse_worker_instances))
           run:
             path: bash
@@ -1544,6 +1545,7 @@ jobs:
               export BOSH_CLIENT_SECRET
 
               bosh deploy concourse-manifest/concourse-manifest.yml \
+                   -v "concourse_web_instances=$CONCOURSE_WEB_INSTANCES" \
                    -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
                    --var-file=credhub_ca_cert=bosh-ca-crt/bosh-CA.crt
 

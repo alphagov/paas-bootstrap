@@ -30,7 +30,7 @@ releases:
 
 instance_groups:
   - name: concourse
-    instances: 1
+    instances: ((concourse_web_instances))
     stemcell: default
 
     azs:
@@ -101,8 +101,7 @@ instance_groups:
 
     networks:
       - name: public
-        static_ips:
-          - (( grab terraform_outputs_concourse_elastic_ip ))
+        static_ips: (( grab terraform_outputs_concourse_elastic_ip ))
       - name: concourse
         default: [dns, gateway]
 

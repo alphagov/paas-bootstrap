@@ -90,6 +90,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export ENABLE_DESTROY=true)
 	$(eval export ENABLE_GITHUB ?= true)
 	$(eval export CONCOURSE_AUTH_DURATION=48h)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
@@ -98,6 +99,7 @@ dev: globals check-env-vars ## Set Environment to DEV
 .PHONY: dev01
 dev01: dev
 	$(eval export DEPLOY_ENV=dev01)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
 	@true
@@ -105,6 +107,7 @@ dev01: dev
 .PHONY: dev02
 dev02: dev
 	$(eval export DEPLOY_ENV=dev02)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
 	@true
@@ -119,6 +122,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 3)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 
 .PHONY: stg-lon
@@ -132,6 +136,7 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export MAKEFILE_ENV_TARGET=stg-lon)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 
@@ -146,6 +151,7 @@ prod: globals ## Set Environment to Prod
 	$(eval export MAKEFILE_ENV_TARGET=prod)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 
@@ -160,6 +166,7 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export MAKEFILE_ENV_TARGET=prod-lon)
 	$(eval export ENABLE_GITHUB=true)
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
+	$(eval export CONCOURSE_WEB_INSTANCES ?= 1)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
 

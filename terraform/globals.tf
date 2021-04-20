@@ -39,6 +39,11 @@ variable "zone_count" {
   description = "Number of zones to use"
 }
 
+variable "web_instances" {
+  description = "The number of concourse web workers"
+  default = 1
+}
+
 variable "infra_cidrs" {
   description = "CIDR for infrastructure subnet indexed by AZ"
 

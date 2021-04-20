@@ -1,5 +1,5 @@
 output "concourse_elastic_ip" {
-  value = aws_eip.concourse.public_ip
+  value = aws_eip.concourse[*].public_ip
 }
 
 output "concourse_security_group" {

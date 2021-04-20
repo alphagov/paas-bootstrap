@@ -53,6 +53,7 @@ resource "aws_security_group" "concourse-elb" {
   }
 
   ingress {
+    count = length(aws_eip.concourse)
     from_port = 443
     to_port   = 443
     protocol  = "tcp"
@@ -60,7 +61,7 @@ resource "aws_security_group" "concourse-elb" {
       distinct(
         concat(
           var.admin_cidrs,
-          ["${aws_eip.concourse.public_ip}/32"],
+          ["${aws_eip.concourse[count.index].public_ip}/32"],
           [var.concourse_egress_cidr],
         ),
       ),

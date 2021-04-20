@@ -53,6 +53,7 @@ target_concourse: ${TARGET_CONCOURSE}
 concourse_type: ${CONCOURSE_TYPE}
 concourse_instance_type: ${CONCOURSE_INSTANCE_TYPE}
 concourse_instance_profile: ${CONCOURSE_INSTANCE_PROFILE}
+concourse_web_instances: ${CONCOURSE_WEB_INSTANCES}
 concourse_worker_instances: ${CONCOURSE_WORKER_INSTANCES}
 enable_github: ${ENABLE_GITHUB}
 github_client_id: ${GITHUB_CLIENT_ID:-}
