@@ -11,10 +11,10 @@
 addons:
   - name: awslogs
     jobs:
-      - name: awslogs-xenial
+      - name: awslogs-bionic
         release: awslogs
         properties:
-          awslogs-xenial:
+          awslogs-bionic:
             region: ((aws_region))
             awslogs_files_config:
               - name: /var/log/auth.log
@@ -25,7 +25,7 @@ addons:
                 datetime_format: "%Y-%m-%dT%H:%M:%S"
     exclude:
       jobs:
-        - name: awslogs-xenial
+        - name: awslogs-bionic
           release: awslogs
     include:
       lifecycle: service
@@ -38,12 +38,13 @@ addons:
       stemcell:
         - os: ubuntu-trusty
         - os: ubuntu-xenial
+        - os: ubuntu-bionic
 
 releases:
   - name: awslogs
-    version: 0.1.1
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
-    sha1: dd307700e55c6c45376a5d76583243601e7559e6
+    version: 0.1.6
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.6.tgz
+    sha1: db6d8cf0b5da5c9ecabb6be08df0ad5442b4a401
     properties: {}
 
   - name: node-exporter
