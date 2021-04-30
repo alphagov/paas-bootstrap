@@ -37,6 +37,7 @@ RSpec.describe "Generating unix users ops file" do
             "stemcell" => [
               { "os" => "ubuntu-trusty" },
               { "os" => "ubuntu-xenial" },
+              { "os" => "ubuntu-bionic" },
             ],
           },
           "jobs" => [
@@ -114,6 +115,7 @@ RSpec.describe "Generating unix users ops file" do
             "stemcell" => [
               { "os" => "ubuntu-trusty" },
               { "os" => "ubuntu-xenial" },
+              { "os" => "ubuntu-bionic" },
             ],
           },
           "jobs" => [

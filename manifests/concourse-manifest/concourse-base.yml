@@ -1,15 +1,15 @@
 ---
 meta:
   stemcell:
-    name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
-    version: "621.117"
+    name: bosh-aws-xen-hvm-ubuntu-bionic-go_agent
+    version: "1.1"
 
 name: concourse
 
 stemcells:
   # Using spruce grab operation because of the upload step in pipeline
   - alias: default
-    os: ubuntu-xenial
+    os: ubuntu-bionic
     version: (( grab meta.stemcell.version ))
 
 # These versions and checksums are taken from the versions.yml file from the
