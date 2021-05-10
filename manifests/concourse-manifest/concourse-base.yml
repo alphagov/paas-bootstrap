@@ -1,15 +1,15 @@
 ---
 meta:
   stemcell:
-    name: bosh-aws-xen-hvm-ubuntu-xenial-go_agent
-    version: "621.117"
+    name: bosh-aws-xen-hvm-ubuntu-bionic-go_agent
+    version: "1.1"
 
 name: concourse
 
 stemcells:
   # Using spruce grab operation because of the upload step in pipeline
   - alias: default
-    os: ubuntu-xenial
+    os: ubuntu-bionic
     version: (( grab meta.stemcell.version ))
 
 # These versions and checksums are taken from the versions.yml file from the
@@ -24,9 +24,9 @@ releases:
     url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.9"
     sha1: "dcf0582d838a73de29da273552ae79ac3098ee8b"
   - name: awslogs
-    version: 0.1.1
-    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.1.tgz
-    sha1: dd307700e55c6c45376a5d76583243601e7559e6
+    version: 0.1.6
+    url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.6.tgz
+    sha1: db6d8cf0b5da5c9ecabb6be08df0ad5442b4a401
 
 instance_groups:
   - name: concourse
