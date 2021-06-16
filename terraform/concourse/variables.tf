@@ -33,3 +33,7 @@ variable "concourse_db_skip_final_snapshot" {
   default     = "true"
 }
 
+variable "concourse_db_instance_class" {
+  description = "instance class of concourse's db"
+  default     = "db.t3.large"
+}
