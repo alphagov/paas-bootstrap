@@ -20,6 +20,7 @@ spruce merge \
   --prune terraform_outputs \
   "${PAAS_BOOTSTRAP_DIR}/manifests/concourse-manifest/concourse-base.yml" \
   "${PAAS_BOOTSTRAP_DIR}/manifests/concourse-manifest/operations.d/010-x-frame-options.yml" \
+  "${PAAS_BOOTSTRAP_DIR}/manifests/concourse-manifest/operations.d/400-audit.yml" \
   "${WORKDIR}/bosh-secrets/bosh-secrets.yml" \
   "${WORKDIR}/terraform-outputs/concourse-terraform-outputs.yml" \
   "${WORKDIR}/terraform-outputs/vpc-terraform-outputs.yml" \
