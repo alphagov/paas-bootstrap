@@ -118,6 +118,7 @@ variable "bosh_log_groups_to_ship_to_csls" {
     "bosh_d_credhub_security_events",
     "bosh_d_kauditd",
     "bosh_d_uaa_events",
+    "concourse_d_web_events",
   ]
 }
 

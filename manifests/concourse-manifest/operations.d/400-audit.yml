@@ -1,0 +1,17 @@
+---
+instance_groups:
+  - name: concourse
+    jobs:
+      - name: awslogs-bionic
+        release: awslogs
+        properties:
+          awslogs-bionic:
+            region: ((region))
+            awslogs_files_config:
+
+              - name: /var/vcap/sys/log/web/web.stdout.log
+                file: /var/vcap/sys/log/web/web.stdout.log
+                log_group_name: concourse_d_web_events_((deploy_env))
+                log_stream_name: "{{instance_id}}"
+                initial_position: start_of_file
+                datetime_format: "%Y-%m-%dT%H:%M:%S"

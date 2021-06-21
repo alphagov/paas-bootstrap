@@ -1035,6 +1035,8 @@ jobs:
           passed: ['generate-bosh-config']
         - get: paas-bootstrap
           passed: ['generate-bosh-config']
+        - get: bosh-secrets
+          passed: [ 'generate-secrets' ]
         - get: bosh-vars-store
           passed: ['generate-bosh-config']
         - get: paas-trusted-people
@@ -1120,6 +1122,58 @@ jobs:
 
                 bosh runtime-config
 
+      - task: set-vars-in-credhub
+        config:
+          platform: linux
+          image_resource: *gov-paas-bosh-cli-v2-image-resource
+          inputs:
+            - name: bosh-secrets
+            - name: paas-bootstrap
+            - name: bosh-vars-store
+            - name: bosh-ca-crt
+            - name: ssh-private-key
+          params:
+            BOSH_ENVIRONMENT: ((bosh_fqdn))
+            BOSH_GW_HOST: ((bosh_login_host))
+            BOSH_GW_USER: vcap
+            BOSH_GW_PRIVATE_KEY: ./ssh-private-key/id_rsa
+            TARGET_CONCOURSE: ((target_concourse))
+            DEPLOY_ENV: ((deploy_env))
+            AWS_REGION: ((aws_region))
+          run:
+            path: bash
+            args:
+              - -e
+              - -c
+              - |
+
+                if [ "${TARGET_CONCOURSE}" = "bootstrap" ]; then
+                  # shellcheck disable=SC2240
+                  . ./paas-bootstrap/concourse/scripts/bosh-tunnel.sh start
+                  export HTTPS_PROXY="$BOSH_ALL_PROXY"
+                fi
+
+                VAL_FROM_YAML=$(pwd)/paas-bootstrap/concourse/scripts/val_from_yaml.rb
+                CREDHUB_CLIENT=credhub-admin
+                CREDHUB_CLIENT_SECRET=$($VAL_FROM_YAML secrets.bosh_credhub_admin_client_password bosh-secrets/bosh-secrets.yml)
+
+                CREDHUB_CA_CERT="$(cat <<EOCERT
+                $($VAL_FROM_YAML credhub_tls.ca bosh-vars-store/bosh-vars-store.yml)
+                $($VAL_FROM_YAML uaa_ssl.ca bosh-vars-store/bosh-vars-store.yml)
+                EOCERT
+                )"
+                export CREDHUB_CA_CERT
+
+                credhub api -s "$BOSH_ENVIRONMENT:8844/api"
+
+                credhub login --client-name="${CREDHUB_CLIENT}" --client-secret="${CREDHUB_CLIENT_SECRET}"
+
+                credhub find --path=/
+
+                credhub set --name=/"${DEPLOY_ENV}"/concourse/deploy_env --type value --value "${DEPLOY_ENV}"
+                credhub set --name=/"${DEPLOY_ENV}"/concourse/region --type value --value "${AWS_REGION}"
+
+                credhub find --path=/
   - name: concourse-terraform
     serial: true
     plan:
