@@ -8,10 +8,20 @@ instance_groups:
         properties:
           main_team:
             auth:
-              github:
-                users:
-                  - (( append ))
-                  - 0atman
-                  - poveyd
-                  - Krenair
-                  - risicle
+              config: |+
+                roles:
+                - name: owner
+                  github:
+                    users:
+                    - AP-Hunt
+                    - kr8n3r
+                    - LeePorte
+                    - mogds
+                    - paroxp
+                    - schmie
+                    - whi-tw
+
+                    - 0atman
+                    - poveyd
+                    - Krenair
+                    - risicle

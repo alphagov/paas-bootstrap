@@ -10,12 +10,22 @@ instance_groups:
             client_secret: (( grab $GITHUB_CLIENT_SECRET ))
           main_team:
             auth:
-              github:
-                users:
-                - AP-Hunt
-                - kr8n3r
-                - LeePorte
-                - mogds
-                - paroxp
-                - schmie
-                - whi-tw
+              config: |+
+                roles:
+                - name: owner
+                  github:
+                    users:
+                    - AP-Hunt
+                    - kr8n3r
+                    - LeePorte
+                    - mogds
+                    - paroxp
+                    - schmie
+                    - whi-tw
+                - name: pipeline-operator
+                  github:
+                    users:
+                    - 0atman
+                    - poveyd
+                    - Krenair
+                    - risicle
