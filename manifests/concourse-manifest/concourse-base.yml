@@ -59,11 +59,6 @@ instance_groups:
           add_local_users:
             - admin:((concourse_web_password))
           auth_duration: (( grab $CONCOURSE_AUTH_DURATION ))
-          main_team:
-            auth:
-              local:
-                users:
-                  - admin
           postgresql:
             database: (( grab terraform_outputs_concourse_db_name ))
             host: (( grab terraform_outputs_concourse_db_address ))

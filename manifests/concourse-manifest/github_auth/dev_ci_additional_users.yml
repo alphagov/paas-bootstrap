@@ -11,6 +11,9 @@ instance_groups:
               config: |+
                 roles:
                 - name: owner
+                  local:
+                    users:
+                    - admin
                   github:
                     users:
                     - AP-Hunt
