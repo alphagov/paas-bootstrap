@@ -45,7 +45,7 @@ RSpec.describe "manifest generation" do
 
     it "sets up the main team users" do
       expect(
-        web_job.dig("properties", "main_team", "auth", "github", "users"),
+        web_job.dig("properties", "main_team", "auth", "config"),
       ).not_to be_empty
     end
   end
