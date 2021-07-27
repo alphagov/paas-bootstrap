@@ -122,3 +122,10 @@ variable "bosh_log_groups_to_ship_to_csls" {
   ]
 }
 
+variable "concourse_db_maintenance_window" {
+  description = "Maintenance windown for concourse db"
+}
+
+variable "bosh_db_maintenance_window" {
+  description = "Maintenance windown for bosh db"
+}
