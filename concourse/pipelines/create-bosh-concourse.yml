@@ -27,8 +27,8 @@ meta:
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
-        repository: ruby
-        tag: 2.7-slim
+        repository: ghcr.io/alphagov/paas/ruby
+        tag: 8d6c556abd2d54f27c0fda934d00df8beafac1f8
     self-update-pipelines: &self-update-pipelines-image-resource
       type: docker-image
       source:
