@@ -25,5 +25,6 @@ instance_groups:
                     - whi-tw
 
                     - 0atman
+                    - cadmiumcat
                     - poveyd
                     - risicle

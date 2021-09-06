@@ -29,5 +29,6 @@ instance_groups:
                   github:
                     users:
                     - 0atman
+                    - cadmiumcat
                     - poveyd
                     - risicle
