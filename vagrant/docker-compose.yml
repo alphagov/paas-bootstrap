@@ -2,7 +2,7 @@ version: '3'
 
 services:
   concourse-db:
-    image: postgres:11.5
+    image: postgres:13.4
     environment:
     - POSTGRES_DB=${CONCOURSE_POSTGRES_DATABASE:-concourse}
     - POSTGRES_PASSWORD=${CONCOURSE_POSTGRES_PASSWORD:-concourse_pass}
