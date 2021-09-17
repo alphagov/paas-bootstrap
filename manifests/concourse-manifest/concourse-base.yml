@@ -20,9 +20,9 @@ releases:
     url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=7.5.0"
     sha1: "af1af947e61a50a9828e0120fb4366c4ef56b01a"
   - name: "bpm"
-    version: "1.1.9"
-    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.9"
-    sha1: "dcf0582d838a73de29da273552ae79ac3098ee8b"
+    version: "1.1.13"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.13"
+    sha1: "82322898b2393951108617caac43752e498632a2"
   - name: awslogs
     version: 0.1.6
     url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.6.tgz
