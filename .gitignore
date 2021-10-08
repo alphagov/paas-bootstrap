@@ -3,4 +3,6 @@ vagrant/.vagrant/
 bin/fly*
 *vagrant-bootstrap-concourse
 *.swp
+terraform/.terraform/
+terraform/*/.terraform/
 
