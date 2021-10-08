@@ -22,23 +22,26 @@ resource "aws_acm_certificate" "bosh" {
 }
 
 resource "aws_route53_record" "bosh_cert_validation" {
-  count   = length(local.bosh_lb_domains)
-  zone_id = var.system_dns_zone_id
-  ttl     = 60
+  for_each = {
+    for dvo in aws_acm_certificate.bosh.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
 
-  name = aws_acm_certificate.bosh.domain_validation_options[count.index]["resource_record_name"]
-
-  type = aws_acm_certificate.bosh.domain_validation_options[count.index]["resource_record_type"]
-
-  records = [
-    aws_acm_certificate.bosh.domain_validation_options[count.index]["resource_record_value"],
-  ]
-
-  depends_on = [aws_acm_certificate.bosh]
+  allow_overwrite = true
+  name            = each.value.name
+  type            = each.value.type
+  zone_id         = var.system_dns_zone_id
+  records         = [each.value.record]
+  ttl             = 60
 }
 
 resource "aws_acm_certificate_validation" "bosh" {
-  certificate_arn         = aws_acm_certificate.bosh.arn
-  validation_record_fqdns = aws_route53_record.bosh_cert_validation.*.fqdn
-}
+  certificate_arn = aws_acm_certificate.bosh.arn
 
+  validation_record_fqdns = [
+    for record in aws_route53_record.bosh_cert_validation : record.fqdn
+  ]
+}
