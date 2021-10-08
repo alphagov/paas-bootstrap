@@ -255,7 +255,8 @@ jobs:
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
-              terraform init paas-bootstrap/terraform/bosh
+              cd paas-bootstrap/terraform/bosh || exit
+              terraform init
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
 
@@ -263,11 +264,10 @@ jobs:
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -target=aws_security_group.bosh \
-                -state=updated-bosh-tfstate/bosh.tfstate \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
-                paas-bootstrap/terraform/bosh
+                -state=../../../updated-bosh-tfstate/bosh.tfstate \
+                -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
         ensure:
           put: bosh-tfstate
           params:
@@ -380,12 +380,12 @@ jobs:
                 exit 0
               fi
 
-              terraform init paas-bootstrap/terraform/concourse
+              cd paas-bootstrap/terraform/concourse || exit
+              terraform init
               terraform destroy -force \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -state=updated-concourse-tfstate/concourse.tfstate \
-                paas-bootstrap/terraform/concourse
+                -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../updated-concourse-tfstate/concourse.tfstate
         ensure:
           put: concourse-tfstate
           params:
@@ -573,18 +573,18 @@ jobs:
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
-                terraform init paas-bootstrap/terraform/bosh
+                cd paas-bootstrap/terraform/bosh || exit
+                terraform init
 
                 sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
 
                 terraform destroy -force \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
-                  -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                  -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                  -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
-                  -state=updated-bosh-tfstate/bosh.tfstate \
-                  paas-bootstrap/terraform/bosh
+                  -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                  -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                  -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                  -state=../../../updated-bosh-tfstate/bosh.tfstate
         ensure:
           put: bosh-tfstate
           params:
@@ -620,15 +620,15 @@ jobs:
             - -c
             - |
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
-              terraform init paas-bootstrap/terraform/vpc
+              cd paas-bootstrap/terraform/vpc || exit
+              terraform init
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
 
               terraform destroy -force \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -state=updated-vpc-tfstate/vpc.tfstate \
-                paas-bootstrap/terraform/vpc
+                -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../updated-vpc-tfstate/vpc.tfstate
         ensure:
           put: vpc-tfstate
           params:
@@ -666,16 +666,16 @@ jobs:
             - -c
             - |
               cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
-              terraform init paas-bootstrap/terraform/cyber
+              cd paas-bootstrap/terraform/cyber || exit
+              terraform init
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
               terraform destroy -force \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -var-file="bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
-                -state=updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
-                paas-bootstrap/terraform/cyber
+                -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                -state=../../../updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
         ensure:
           put: bootstrap-cyber-tfstate
           params:
@@ -710,9 +710,9 @@ jobs:
             - -e
             - -c
             - |
-              terraform init paas-bootstrap/terraform/bucket
+              cd paas-bootstrap/terraform/bucket || exit
+              terraform init
               terraform destroy -force \
-                -var-file="paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -state=bucket-terraform-state/bucket.tfstate \
-                paas-bootstrap/terraform/bucket
+                -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../bucket-terraform-state/bucket.tfstate
