@@ -52,7 +52,8 @@ output "concourse_db_username" {
 }
 
 output "concourse_db_password" {
-  value = random_password.concourse_rds_password.result
+  value     = random_password.concourse_rds_password.result
+  sensitive = true
 }
 
 output "concourse_db_address" {
