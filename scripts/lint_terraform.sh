@@ -7,8 +7,12 @@ trap 'rm -r "${TF_DATA_DIR}"' EXIT
 
 export TF_DATA_DIR
 
+CWD=$(pwd)
+
 for dir in terraform/*/; do
-  terraform init "${dir}" >/dev/null
-  terraform validate "${dir}" >/dev/null
-  terraform fmt -check -diff "${dir}"
+  cd "${dir}"
+  terraform init >/dev/null
+  terraform validate >/dev/null
+  terraform fmt -check -diff
+  cd "${CWD}"
 done
