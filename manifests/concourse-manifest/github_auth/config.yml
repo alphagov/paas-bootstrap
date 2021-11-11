@@ -19,17 +19,17 @@ instance_groups:
                   github:
                     users:
                     - AP-Hunt
+                    - cadmiumcat
                     - kr8n3r
                     - LeePorte
                     - mogds
                     - paroxp
+                    - risicle
                     - schmie
                     - whi-tw
+                    - whpearson
                 - name: pipeline-operator
                   github:
                     users:
-                    - 0atman
-                    - cadmiumcat
                     - poveyd
-                    - risicle
                     - tomrosier
