@@ -81,9 +81,9 @@ globals:
 
 .PHONY: dev
 dev: globals check-env-vars ## Set Environment to DEV
-	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
+	$(eval export SYSTEM_DNS_ZONE_NAME=$${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z1QGLFML8EG6G7)
-	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
+	$(eval export APPS_DNS_ZONE_NAME=$${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
 	$(eval export APPS_DNS_ZONE_ID=Z3R6XFWUT4YZHB)
 	$(eval export AWS_ACCOUNT=dev)
 	$(eval export MAKEFILE_ENV_TARGET=dev)
@@ -95,16 +95,9 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
 	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
 
-.PHONY: dev01
-dev01: dev
-	$(eval export DEPLOY_ENV=dev01)
-	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
-	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
-	@true
-
-.PHONY: dev02
-dev02: dev
-	$(eval export DEPLOY_ENV=dev02)
+.PHONY: $(filter-out dev%,$(MAKECMDGOALS))
+dev%: dev
+	$(eval export DEPLOY_ENV=$@)
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export APPS_DNS_ZONE_NAME=${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
 	@true

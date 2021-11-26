@@ -16,13 +16,29 @@ or paas-pass.
 You should run it via the Makefile target to set up the necessary environment.
 However, if you want to run it directly:
 
-  MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
+  MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=dev01
     ./scripts/upload-secrets/manage-github-secrets.sh upload
 
   eval \$(
-    MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=leeporte
+    MAKEFILE_ENV_TARGET=dev GITHUB_PASSWORD_STORE_DIR=~/.paas-pass DEPLOY_ENV=dev01
     ./scripts/upload-secrets/manage-github-secrets.sh retrieve
   )
+
+There are special conditions surrounding the setting of secrets for dev envs:
+1. If the MAKEFILE_ENV_TARGET environment variable is 'dev', the path in the
+   password store will be 'github.com/concourse/${DEPLOY_ENV}/...'
+
+2. If the MAKEFILE_ENV_TARGET environment variable is 'dev' AND the
+   GITHUB_PASSWORD_STORE_DIR environment variable is NOT '${HOME}/.paas-pass',
+   then the path in the secret store will be 'github.com/concourse{$MAKEFILE_ENV_TARGET}/...'
+
+This is done to account for the fact we have two types of development environments:
+* Persistent, shared environments like 'dev01'
+* Short-lived, personal environments, such as those used for penetration testing.
+
+These two types of dev environments store their Github OAuth credentials in different places.
+The former keeps them in the shared 'paas-credentials' repository, and the latter are kept in
+an engineers personal store for the lifetime of the environment.
 
 EOF
 }
@@ -38,8 +54,23 @@ setup_env() {
 
 get_creds_from_env_or_pass() {
   setup_env
-  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_id")}"
-  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${MAKEFILE_ENV_TARGET}/client_secret")}"
+
+  PASS_ENV_TARGET="${MAKEFILE_ENV_TARGET}"
+
+  if [ "${MAKEFILE_ENV_TARGET}" = "dev" ] &&  [ "${PASSWORD_STORE_DIR}" = "${HOME}/.paas-pass" ]; then
+    echo "Detected that you're probably setting the Github secrets for a shared dev env"
+    PASS_ENV_TARGET=${DEPLOY_ENV}
+  fi
+
+  if [ -z "${GITHUB_CLIENT_ID+x}" ]; then
+    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_id' in '${PASSWORD_STORE_DIR}'"
+  fi
+  GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${PASS_ENV_TARGET}/client_id")}"
+
+  if [ -z "${GITHUB_CLIENT_SECRET+x}" ]; then
+    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_secret' in '${PASSWORD_STORE_DIR}'"
+  fi
+  GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${PASS_ENV_TARGET}/client_secret")}"
 }
 
 upload() {
