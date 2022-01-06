@@ -31,3 +31,4 @@ instance_groups:
                 - name: pipeline-operator
                   github:
                     users:
+                    - nimalank7
