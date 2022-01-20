@@ -1608,6 +1608,7 @@ jobs:
               bosh deploy concourse-manifest/concourse-manifest.yml \
                    -v "concourse_worker_instances=$CONCOURSE_WORKER_INSTANCES" \
                    --var-file=credhub_ca_cert=bosh-ca-crt/bosh-CA.crt
+        attempts: 2
 
   - name: post-deploy
     serial: true
