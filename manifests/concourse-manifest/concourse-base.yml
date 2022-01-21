@@ -143,6 +143,7 @@ update:
   max_in_flight: 1
   canary_watch_time: 30000-600000
   update_watch_time: 5000-600000
+  vm_strategy: create-swap-delete
 
 tags:
   deploy_env: (( grab terraform_outputs_environment ))
