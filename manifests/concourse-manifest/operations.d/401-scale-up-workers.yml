@@ -1,0 +1,9 @@
+---
+instance_groups:
+  - name: concourse-worker
+    instances: 3
+    azs:
+      - b1
+      - b2
+      - b3
+    
