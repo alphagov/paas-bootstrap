@@ -74,16 +74,24 @@ networks:
   - name: concourse
     type: dynamic
     subnets:
-      - az:
-        - b1
-        - b2
-        - b3
-
+      - az: b1
         dns:
           - 10.0.0.2
-
         cloud_properties:
           subnet: (( grab terraform_outputs_subnet0_id ))
+
+      - az: b2
+        dns:
+          - 10.0.0.2
+        cloud_properties:
+          subnet: (( grab terraform_outputs_subnet1_id ))
+
+      - az: b3
+        dns:
+          - 10.0.0.2
+        cloud_properties:
+          subnet: (( grab terraform_outputs_subnet2_id ))
+
 
   - name: compilation
     type: dynamic
