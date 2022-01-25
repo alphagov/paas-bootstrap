@@ -74,7 +74,10 @@ networks:
   - name: concourse
     type: dynamic
     subnets:
-      - az: b1
+      - az:
+        - b1
+        - b2
+        - b3
 
         dns:
           - 10.0.0.2
