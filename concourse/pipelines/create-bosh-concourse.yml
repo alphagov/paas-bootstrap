@@ -974,63 +974,104 @@ jobs:
                   paas-trusted-people/users.yml "((aws_account))" > unix-users-ops-file/unix-users-ops-file.yml
                 cat unix-users-ops-file/unix-users-ops-file.yml
 
-      - task: render-bosh-manifest
+      - task: clean-bosh-vars-store
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
-            - name: paas-bootstrap
-            - name: terraform-outputs
-            - name: bosh-secrets
-            - name: bosh-ca
             - name: bosh-vars-store
-            - name: bosh-uaa-google-oauth-secrets
-            - name: bosh-cyber-secrets
-            - name: unix-users-ops-file
-            - name: uaa-users-ops-file
+            - name: paas-bootstrap
           outputs:
-            - name: bosh-manifest
+            - name: bosh-vars-store-cleaned
+          run:
+            path: sh
+            args:
+            - -c
+            - -e
+            - |
+              cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-cleaned/bosh-vars-store.yml
+
+              paas-bootstrap/manifests/bosh-manifest/scripts/cleanup-bosh-vars-store.rb \
+                bosh-vars-store-cleaned/bosh-vars-store.yml
+
+      - task: render-bosh-manifest-pre-vars
+        # i.e. a copy of the manifest before variable interpolation has
+        # taken place, with a `variables:` section still present
+        file: paas-bootstrap/concourse/tasks/render-bosh-manifest.yml
+        params:
+          USE_VARS_STORE: false
+          DEPLOY_ENV: ((deploy_env))
+          AWS_ACCOUNT: ((aws_account))
+          AWS_DEFAULT_REGION: ((aws_region))
+          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+          BOSH_FQDN: ((bosh_fqdn))
+          BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+          BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+        output_mapping:
+          bosh-manifest: bosh-manifest-pre-vars
+
+      - task: check-and-rotate-bosh-leaf-certs
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+            - name: paas-bootstrap
             - name: bosh-manifest-pre-vars
-            - name: bosh-vars-store-updated
-          params:
-            DEPLOY_ENV: ((deploy_env))
-            AWS_ACCOUNT: ((aws_account))
-            AWS_DEFAULT_REGION: ((aws_region))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            BOSH_FQDN: ((bosh_fqdn))
-            BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
-            BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+            - name: bosh-vars-store-cleaned
+          outputs:
+            - name: bosh-vars-store-rotated
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                mkdir -p certs
-                tar -xvzf bosh-ca/bosh-CA.tar.gz -C certs
+                if ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb \
+                  --skip-ca-certs \
+                  bosh-vars-store-cleaned/bosh-vars-store.yml ; then
 
-                paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
-                  > bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
+                  # certs are ok - perform a no-op "rotation"
+                  cp bosh-vars-store-cleaned/bosh-vars-store.yml bosh-vars-store-rotated/bosh-vars-store.yml
 
-                cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
+                else
 
-                paas-bootstrap/manifests/bosh-manifest/scripts/cleanup-bosh-vars-store.rb \
-                  bosh-vars-store-updated/bosh-vars-store.yml
+                  # certificates due for rotation were detected.
+                  # this isn't particularly sophisticated - *any* leaf certificate
+                  # being due for rotation will cause them *all* to be regenerated.
+                  echo "Rotating bosh leaf certs..."
+                  ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb \
+                    --leaf \
+                    --manifest bosh-manifest-pre-vars/bosh-manifest.yml \
+                    --vars-store bosh-vars-store-cleaned/bosh-vars-store.yml \
+                    > bosh-vars-store-rotated/bosh-vars-store.yml
 
-                VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml \
-                  paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
-                    > bosh-manifest/bosh-manifest.yml
-        on_success:
-          in_parallel:
-          - put: bosh-manifest
-            params:
-              file: bosh-manifest/bosh-manifest.yml
-          - put: bosh-manifest-pre-vars
-            params:
-              file: bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
-          - put: bosh-vars-store
-            params:
-              file: bosh-vars-store-updated/bosh-vars-store.yml
+                fi
+
+      - task: render-bosh-manifest
+        file: paas-bootstrap/concourse/tasks/render-bosh-manifest.yml
+        params:
+          DEPLOY_ENV: ((deploy_env))
+          AWS_ACCOUNT: ((aws_account))
+          AWS_DEFAULT_REGION: ((aws_region))
+          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+          BOSH_FQDN: ((bosh_fqdn))
+          BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+          BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+        input_mapping:
+          bosh-vars-store: bosh-vars-store-rotated
+        output_mapping:
+          bosh-manifest: bosh-manifest
+
+      - in_parallel:
+        - put: bosh-manifest
+          params:
+            file: bosh-manifest/bosh-manifest.yml
+        - put: bosh-manifest-pre-vars
+          params:
+            file: bosh-manifest-pre-vars/bosh-manifest.yml
+        - put: bosh-vars-store
+          params:
+            file: bosh-vars-store-updated/bosh-vars-store.yml
 
   - name: bosh-deploy
     serial: true
