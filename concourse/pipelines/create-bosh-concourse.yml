@@ -64,8 +64,8 @@ groups:
   - name: credentials
     jobs:
       - clear-concourse-credentials
-      - rotate-bosh-credentials
-      - rotate-bosh-leaf-certs
+      - drop-bosh-credentials-for-rotation
+      - drop-bosh-leaf-certs-for-rotation
       - delete-old-bosh-certs
       - check-certificates
 
@@ -1010,7 +1010,7 @@ jobs:
         output_mapping:
           bosh-manifest: bosh-manifest-pre-vars
 
-      - task: check-and-rotate-bosh-leaf-certs
+      - task: check-and-drop-bosh-leaf-certs-for-rotation
         config:
           platform: linux
           image_resource: *ruby-slim-image-resource
@@ -1019,7 +1019,7 @@ jobs:
             - name: bosh-manifest-pre-vars
             - name: bosh-vars-store-cleaned
           outputs:
-            - name: bosh-vars-store-rotated
+            - name: bosh-vars-store-dropped-for-rotation
           run:
             path: sh
             args:
@@ -1031,19 +1031,19 @@ jobs:
                   bosh-vars-store-cleaned/bosh-vars-store.yml ; then
 
                   # certs are ok - perform a no-op "rotation"
-                  cp bosh-vars-store-cleaned/bosh-vars-store.yml bosh-vars-store-rotated/bosh-vars-store.yml
+                  cp bosh-vars-store-cleaned/bosh-vars-store.yml bosh-vars-store-dropped-for-rotation/bosh-vars-store.yml
 
                 else
 
                   # certificates due for rotation were detected.
                   # this isn't particularly sophisticated - *any* leaf certificate
                   # being due for rotation will cause them *all* to be regenerated.
-                  echo "Rotating bosh leaf certs..."
-                  ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb \
+                  echo "Dropping bosh leaf certs for rotation..."
+                  ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
                     --leaf \
                     --manifest bosh-manifest-pre-vars/bosh-manifest.yml \
                     --vars-store bosh-vars-store-cleaned/bosh-vars-store.yml \
-                    > bosh-vars-store-rotated/bosh-vars-store.yml
+                    > bosh-vars-store-dropped-for-rotation/bosh-vars-store.yml
 
                 fi
 
@@ -1058,7 +1058,7 @@ jobs:
           BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
           BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
         input_mapping:
-          bosh-vars-store: bosh-vars-store-rotated
+          bosh-vars-store: bosh-vars-store-dropped-for-rotation
         output_mapping:
           bosh-manifest: bosh-manifest
 
@@ -2177,13 +2177,14 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: concourse_
 
-  - name: rotate-bosh-credentials
+  - name: drop-bosh-credentials-for-rotation
+    old_name: rotate-bosh-credentials
     plan:
       - in_parallel:
         - get: bosh-vars-store
         - get: bosh-manifest-pre-vars
         - get: paas-bootstrap
-      - task: rotate-bosh-secrets
+      - task: drop-vars-store-secrets-for-rotation
         config:
           platform: linux
           image_resource: *ruby-slim-image-resource
@@ -2203,7 +2204,7 @@ jobs:
                 # Wipe all the file
                 echo {} > modified-secrets/bosh-secrets.yml
 
-                ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb \
+                ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
                   --vars-store bosh-vars-store/bosh-vars-store.yml \
                   --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                   --passwords \
@@ -2225,14 +2226,15 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: bosh_
 
-  - name: rotate-bosh-leaf-certs
+  - name: drop-bosh-leaf-certs-for-rotation
+    old_name: rotate-bosh-leaf-certs
     serial: true
     plan:
     - in_parallel:
       - get: paas-bootstrap
       - get: bosh-vars-store
       - get: bosh-manifest-pre-vars
-    - task: rotate-bosh-leaf-certs
+    - task: drop-vars-store-secrets-for-rotation
       config:
         platform: linux
         image_resource: *ruby-slim-image-resource
@@ -2248,7 +2250,8 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --leaf \
+              ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
+                --leaf \
                 --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                 --vars-store bosh-vars-store/bosh-vars-store.yml \
                 > updated-bosh-vars-store/bosh-vars-store.yml
@@ -2278,7 +2281,8 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --delete \
+              ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
+                --delete \
                 --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                 --vars-store bosh-vars-store/bosh-vars-store.yml \
                 > updated-bosh-certs/bosh-vars-store.yml

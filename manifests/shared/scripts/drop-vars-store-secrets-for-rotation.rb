@@ -12,16 +12,16 @@ BLANK_CERT = {
 def parse_args
   options = { vars_to_preserve: [] }
   parser = OptionParser.new
-  parser.banner = "Usage: rotate-vars-store-secrets.rb [options]"
-  parser.on("--ca", "Rotate CA certs") { options[:ca] = true }
-  parser.on("--leaf", "Rotate leaf certs") { options[:leaf] = true }
-  parser.on("--passwords", "Rotate passwords") { options[:passwords] = true }
-  parser.on("--rsa", "Rotate rsa keys") { options[:rsa] = true }
-  parser.on("--ssh", "Rotate ssh keys") { options[:ssh] = true }
-  parser.on("--delete", "Delete _old variables") { options[:delete] = true }
+  parser.banner = "Usage: drop-vars-store-secrets-for-rotation.rb [options]"
+  parser.on("--ca", "Drop CA certs") { options[:ca] = true }
+  parser.on("--leaf", "Drop leaf certs") { options[:leaf] = true }
+  parser.on("--passwords", "Drop passwords") { options[:passwords] = true }
+  parser.on("--rsa", "Drop rsa keys") { options[:rsa] = true }
+  parser.on("--ssh", "Drop ssh keys") { options[:ssh] = true }
+  parser.on("--delete-old", "Delete _old variables") { options[:delete] = true }
   parser.on("--manifest MANIFEST", "BOSH manifest") { |v| options[:manifest] = v }
   parser.on("--vars-store VARS", "BOSH variable store") { |v| options[:vars_store] = v }
-  parser.on("--preserve VAR", "variables to not rotate") do |v|
+  parser.on("--preserve VAR", "variables to not drop") do |v|
     options[:vars_to_preserve] << v
   end
   parser.parse!
