@@ -1,4 +1,4 @@
-require_relative "../../scripts/rotate-vars-store-secrets.rb"
+require_relative "../../scripts/drop-vars-store-secrets-for-rotation.rb"
 
 RSpec.describe "rotate-cf-certs" do
   let(:manifest) do

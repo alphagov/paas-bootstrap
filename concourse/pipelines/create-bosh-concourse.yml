@@ -64,8 +64,8 @@ groups:
   - name: credentials
     jobs:
       - clear-concourse-credentials
-      - rotate-bosh-credentials
-      - rotate-bosh-leaf-certs
+      - drop-bosh-credentials-for-rotation
+      - drop-bosh-leaf-certs-for-rotation
       - delete-old-bosh-certs
       - check-certificates
 
@@ -974,63 +974,104 @@ jobs:
                   paas-trusted-people/users.yml "((aws_account))" > unix-users-ops-file/unix-users-ops-file.yml
                 cat unix-users-ops-file/unix-users-ops-file.yml
 
-      - task: render-bosh-manifest
+      - task: clean-bosh-vars-store
         config:
           platform: linux
           image_resource: *gov-paas-bosh-cli-v2-image-resource
           inputs:
-            - name: paas-bootstrap
-            - name: terraform-outputs
-            - name: bosh-secrets
-            - name: bosh-ca
             - name: bosh-vars-store
-            - name: bosh-uaa-google-oauth-secrets
-            - name: bosh-cyber-secrets
-            - name: unix-users-ops-file
-            - name: uaa-users-ops-file
+            - name: paas-bootstrap
           outputs:
-            - name: bosh-manifest
+            - name: bosh-vars-store-cleaned
+          run:
+            path: sh
+            args:
+            - -c
+            - -e
+            - |
+              cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-cleaned/bosh-vars-store.yml
+
+              paas-bootstrap/manifests/bosh-manifest/scripts/cleanup-bosh-vars-store.rb \
+                bosh-vars-store-cleaned/bosh-vars-store.yml
+
+      - task: render-bosh-manifest-pre-vars
+        # i.e. a copy of the manifest before variable interpolation has
+        # taken place, with a `variables:` section still present
+        file: paas-bootstrap/concourse/tasks/render-bosh-manifest.yml
+        params:
+          USE_VARS_STORE: false
+          DEPLOY_ENV: ((deploy_env))
+          AWS_ACCOUNT: ((aws_account))
+          AWS_DEFAULT_REGION: ((aws_region))
+          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+          BOSH_FQDN: ((bosh_fqdn))
+          BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+          BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+        output_mapping:
+          bosh-manifest: bosh-manifest-pre-vars
+
+      - task: check-and-drop-bosh-leaf-certs-for-rotation
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+            - name: paas-bootstrap
             - name: bosh-manifest-pre-vars
-            - name: bosh-vars-store-updated
-          params:
-            DEPLOY_ENV: ((deploy_env))
-            AWS_ACCOUNT: ((aws_account))
-            AWS_DEFAULT_REGION: ((aws_region))
-            SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
-            BOSH_FQDN: ((bosh_fqdn))
-            BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
-            BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+            - name: bosh-vars-store-cleaned
+          outputs:
+            - name: bosh-vars-store-dropped-for-rotation
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                mkdir -p certs
-                tar -xvzf bosh-ca/bosh-CA.tar.gz -C certs
+                if ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb \
+                  --skip-ca-certs \
+                  bosh-vars-store-cleaned/bosh-vars-store.yml ; then
 
-                paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
-                  > bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
+                  # certs are ok - perform a no-op "rotation"
+                  cp bosh-vars-store-cleaned/bosh-vars-store.yml bosh-vars-store-dropped-for-rotation/bosh-vars-store.yml
 
-                cp bosh-vars-store/bosh-vars-store.yml bosh-vars-store-updated/bosh-vars-store.yml
+                else
 
-                paas-bootstrap/manifests/bosh-manifest/scripts/cleanup-bosh-vars-store.rb \
-                  bosh-vars-store-updated/bosh-vars-store.yml
+                  # certificates due for rotation were detected.
+                  # this isn't particularly sophisticated - *any* leaf certificate
+                  # being due for rotation will cause them *all* to be regenerated.
+                  echo "Dropping bosh leaf certs for rotation..."
+                  ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
+                    --leaf \
+                    --manifest bosh-manifest-pre-vars/bosh-manifest.yml \
+                    --vars-store bosh-vars-store-cleaned/bosh-vars-store.yml \
+                    > bosh-vars-store-dropped-for-rotation/bosh-vars-store.yml
 
-                VARS_STORE=bosh-vars-store-updated/bosh-vars-store.yml \
-                  paas-bootstrap/manifests/bosh-manifest/scripts/generate-manifest.sh \
-                    > bosh-manifest/bosh-manifest.yml
-        on_success:
-          in_parallel:
-          - put: bosh-manifest
-            params:
-              file: bosh-manifest/bosh-manifest.yml
-          - put: bosh-manifest-pre-vars
-            params:
-              file: bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml
-          - put: bosh-vars-store
-            params:
-              file: bosh-vars-store-updated/bosh-vars-store.yml
+                fi
+
+      - task: render-bosh-manifest
+        file: paas-bootstrap/concourse/tasks/render-bosh-manifest.yml
+        params:
+          DEPLOY_ENV: ((deploy_env))
+          AWS_ACCOUNT: ((aws_account))
+          AWS_DEFAULT_REGION: ((aws_region))
+          SYSTEM_DNS_ZONE_NAME: ((system_dns_zone_name))
+          BOSH_FQDN: ((bosh_fqdn))
+          BOSH_FQDN_EXTERNAL: ((bosh_fqdn_external))
+          BOSH_INSTANCE_PROFILE: ((bosh_instance_profile))
+        input_mapping:
+          bosh-vars-store: bosh-vars-store-dropped-for-rotation
+        output_mapping:
+          bosh-manifest: bosh-manifest
+
+      - in_parallel:
+        - put: bosh-manifest
+          params:
+            file: bosh-manifest/bosh-manifest.yml
+        - put: bosh-manifest-pre-vars
+          params:
+            file: bosh-manifest-pre-vars/bosh-manifest.yml
+        - put: bosh-vars-store
+          params:
+            file: bosh-vars-store-updated/bosh-vars-store.yml
 
   - name: bosh-deploy
     serial: true
@@ -2136,13 +2177,14 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: concourse_
 
-  - name: rotate-bosh-credentials
+  - name: drop-bosh-credentials-for-rotation
+    old_name: rotate-bosh-credentials
     plan:
       - in_parallel:
         - get: bosh-vars-store
         - get: bosh-manifest-pre-vars
         - get: paas-bootstrap
-      - task: rotate-bosh-secrets
+      - task: drop-vars-store-secrets-for-rotation
         config:
           platform: linux
           image_resource: *ruby-slim-image-resource
@@ -2162,7 +2204,7 @@ jobs:
                 # Wipe all the file
                 echo {} > modified-secrets/bosh-secrets.yml
 
-                ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb \
+                ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
                   --vars-store bosh-vars-store/bosh-vars-store.yml \
                   --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                   --passwords \
@@ -2184,14 +2226,15 @@ jobs:
           BUCKET: ((state_bucket))
           SSH_KEY_PREFIX: bosh_
 
-  - name: rotate-bosh-leaf-certs
+  - name: drop-bosh-leaf-certs-for-rotation
+    old_name: rotate-bosh-leaf-certs
     serial: true
     plan:
     - in_parallel:
       - get: paas-bootstrap
       - get: bosh-vars-store
       - get: bosh-manifest-pre-vars
-    - task: rotate-bosh-leaf-certs
+    - task: drop-vars-store-secrets-for-rotation
       config:
         platform: linux
         image_resource: *ruby-slim-image-resource
@@ -2207,7 +2250,8 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --leaf \
+              ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
+                --leaf \
                 --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                 --vars-store bosh-vars-store/bosh-vars-store.yml \
                 > updated-bosh-vars-store/bosh-vars-store.yml
@@ -2237,7 +2281,8 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/manifests/shared/scripts/rotate-vars-store-secrets.rb --delete \
+              ./paas-bootstrap/manifests/shared/scripts/drop-vars-store-secrets-for-rotation.rb \
+                --delete \
                 --manifest bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                 --vars-store bosh-vars-store/bosh-vars-store.yml \
                 > updated-bosh-certs/bosh-vars-store.yml
@@ -2251,6 +2296,7 @@ jobs:
     plan:
 
     - in_parallel:
+      - get: paas-bootstrap
       - get: bosh-manifest-pre-vars
       - get: bosh-vars-store
 
@@ -2259,116 +2305,15 @@ jobs:
         platform: linux
         image_resource: *ruby-slim-image-resource
         inputs:
+          - name: paas-bootstrap
           - name: bosh-manifest-pre-vars
           - name: bosh-vars-store
         run:
-          path: ruby
+          path: sh
           args:
             - -e
+            - -c
             - |
-              # rubocop:disable Layout/MultilineMethodCallIndentation
-              # rubocop:disable Metrics/MethodLength
-              # rubocop:disable Metrics/CyclomaticComplexity
-              # rubocop:disable Metrics/AbcSize
-              #
-              # frozen_string_literal: true
-
-              require 'openssl'
-              require 'yaml'
-
-              CERT_REGEX = /[-]{5}\s*BEGIN CERTIFICATE\s*[-]{5}[^-]*[-]{5}\s*END CERTIFICATE\s*[-]{5}/m.freeze
-
-              ManifestCert = Struct.new(:filepath, :path, :cert, keyword_init: true)
-
-              def find_certificates(yaml, path)
-                return [] if yaml.is_a? Numeric
-                return [] if yaml.is_a? TrueClass
-                return [] if yaml.is_a? FalseClass
-
-                if yaml.is_a? String
-                  return yaml.scan(CERT_REGEX).map do |cert_str|
-                    ManifestCert.new(
-                      path: path,
-                      cert: OpenSSL::X509::Certificate.new(cert_str)
-                    )
-                  end
-                end
-
-                if yaml.is_a? Array
-                  return yaml.each_with_index.map do |v, k|
-                    find_certificates(v, "#{path}/#{k}")
-                  end
-                end
-
-                if yaml.is_a? Hash
-                  return yaml.map do |k, v|
-                    find_certificates(v, "#{path}/#{k}")
-                  end
-                end
-
-                raise "Unknown class #{yaml.class}"
-              end
-
-              manifest_certs = []
-
-              Dir
-                .glob('**/*.y*ml')
-                .each do |filepath|
-                  puts "Finding certificates in #{filepath}"
-                  yaml = YAML.safe_load(File.read(filepath))
-
-                  initial_path = ''
-                  certs = find_certificates(yaml, initial_path).flatten
-                  certs.each { |cert| cert.filepath = filepath }
-
-                  puts "Found #{certs.length} certs"
-
-                  manifest_certs += certs
-                end
-
-              expd_manifest_certs = manifest_certs.select do |cert|
-                cert.cert.not_after <= Time.now
-              end
-
-              thirty_days_time = Time.now + (30 * 86_400)
-              exp_manifest_certs = manifest_certs
-                .select { |cert| cert.cert.not_after <= thirty_days_time }
-                .select { |cert| cert.cert.not_after >= Time.now }
-
-              puts
-              puts "Found #{manifest_certs.length} certs"
-
-              puts
-              puts "Found #{expd_manifest_certs.length} expired certs:"
-              expd_manifest_certs.group_by(&:filepath).each do |filepath, certs|
-                puts "  filepath: #{filepath}"
-                puts '  certs:'
-                certs.each do |cert|
-                  puts "    - path:    #{cert.path}"
-                  puts "      expired: #{cert.cert.not_after}"
-                  puts "      subject: #{cert.cert.subject}"
-                  puts "      issuer:  #{cert.cert.issuer}"
-                end
-              end
-
-              puts
-              puts "Found #{exp_manifest_certs.length} certs close to expiry:"
-              exp_manifest_certs.group_by(&:filepath).each do |filepath, certs|
-                puts "  filepath: #{filepath}"
-                puts '  certs:'
-                certs.each do |cert|
-                  expiry_days = ((cert.cert.not_after - Time.now) / 86_400).to_i
-                  puts "    - path:       #{cert.path}:"
-                  puts "      expires:    #{cert.cert.not_after}"
-                  puts "      subject:    #{cert.cert.subject}"
-                  puts "      issuer:     #{cert.cert.issuer}"
-                  puts "      expires in: #{expiry_days} days"
-                end
-              end
-
-              exit 1 unless expd_manifest_certs.empty?
-              exit 1 unless exp_manifest_certs.empty?
-              # rubocop:enable Layout/MultilineMethodCallIndentation
-              # rubocop:enable Metrics/MethodLength
-              # rubocop:enable Metrics/CyclomaticComplexity
-              # rubocop:enable Metrics/AbcSize
+              ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb \
+                  bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
+                  bosh-vars-store/bosh-vars-store.yml
