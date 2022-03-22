@@ -30,13 +30,13 @@ resource "aws_elb" "concourse" {
 }
 
 resource "aws_lb_ssl_negotiation_policy" "concourse" {
-  name          = "paas-${var.default_elb_security_policy}"
+  name          = "paas-${var.default_classic_load_balancer_security_policy}"
   load_balancer = aws_elb.concourse.id
   lb_port       = 443
 
   attribute {
     name  = "Reference-Security-Policy"
-    value = var.default_elb_security_policy
+    value = var.default_classic_load_balancer_security_policy
   }
 }
 
