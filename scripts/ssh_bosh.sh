@@ -11,7 +11,8 @@ echo
 
 # shellcheck disable=SC2029
 ssh \
+    -o Hostname="${BOSH_IP}" \
     -o ServerAliveInterval=60 \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
-    "$USER"@"$BOSH_IP"
+    paas_bosh_ssh
