@@ -34,9 +34,21 @@ resource "aws_security_group" "concourse_rds" {
 }
 
 resource "aws_db_parameter_group" "concourse_pg_11" {
-  name        = "${var.env}-pg11-concourse"
+  name_prefix = "${var.env}-pg11-concourse"
   family      = "postgres11"
   description = "RDS Postgres 11 default parameter group"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_db_parameter_group" "concourse_pg" {
+  name_prefix = "${var.env}-pg-concourse"
+  family      = "postgres11"
+  description = "RDS Postgres concourse parameter group"
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_db_instance" "concourse" {
@@ -50,7 +62,7 @@ resource "aws_db_instance" "concourse" {
   username                   = "concourse"
   password                   = random_password.concourse_rds_password.result
   db_subnet_group_name       = aws_db_subnet_group.concourse_rds.name
-  parameter_group_name       = aws_db_parameter_group.concourse_pg_11.id
+  parameter_group_name       = aws_db_parameter_group.concourse_pg.name
   backup_window              = "01:00-02:00"
   maintenance_window         = var.concourse_db_maintenance_window
   multi_az                   = var.concourse_db_multi_az
