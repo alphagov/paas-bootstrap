@@ -16,13 +16,13 @@ stemcells:
 # relevant tag of https://github.com/concourse/concourse-bosh-deployment
 releases:
   - name: "concourse"
-    version: "7.5.0"
-    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=7.5.0"
-    sha1: "af1af947e61a50a9828e0120fb4366c4ef56b01a"
+    version: "7.7.1"
+    url: "https://bosh.io/d/github.com/concourse/concourse-bosh-release?v=7.7.1"
+    sha1: "1e242ed38f73de72ba1bb48f85ea7fbf7eb634a1"
   - name: "bpm"
-    version: "1.1.13"
-    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.13"
-    sha1: "82322898b2393951108617caac43752e498632a2"
+    version: "1.1.16"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.16"
+    sha1: "492f181f4efa08c5f0b45d22cbe54f0a20edf99e"
   - name: awslogs
     version: 0.1.6
     url: https://s3-eu-west-1.amazonaws.com/gds-paas-build-releases/awslogs-0.1.6.tgz
