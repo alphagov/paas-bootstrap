@@ -72,15 +72,15 @@ resource "aws_db_instance" "concourse" {
     deploy_env = var.env
   }
 
-#  lifecycle {
-#    ignore_changes = [
-#      # When you want to change a major version, then please remove this
-#      # lifecycle rule
-#      #
-#      # This lifecycle rule is here to allow RDS to manage
-#      # auto_minor_version_upgrades
-#      engine_version,
-#    ]
-#  }
+  #  lifecycle {
+  #    ignore_changes = [
+  #      # When you want to change a major version, then please remove this
+  #      # lifecycle rule
+  #      #
+  #      # This lifecycle rule is here to allow RDS to manage
+  #      # auto_minor_version_upgrades
+  #      engine_version,
+  #    ]
+  #  }
 }
 

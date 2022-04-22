@@ -1,4 +1,4 @@
-aws_account = "staging"
+aws_account                     = "staging"
 bosh_db_multi_az                = "true"
 bosh_db_backup_retention_period = "35"
 bosh_db_skip_final_snapshot     = "false"
