@@ -21,6 +21,11 @@ variable "bosh_db_maintenance_window" {
   description = "The window during which updates to the Bosh database instance can occur."
 }
 
+variable "bosh_db_instance_class" {
+  description = "Instance class for the BOSH RDS database."
+  default     = "db.t3.small"
+}
+
 variable "bosh_az" {
   description = "A zone used to provision bosh"
 }
