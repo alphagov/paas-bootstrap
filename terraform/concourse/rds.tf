@@ -33,18 +33,9 @@ resource "aws_security_group" "concourse_rds" {
   }
 }
 
-resource "aws_db_parameter_group" "concourse_pg_11" {
-  name_prefix = "${var.env}-pg11-concourse"
-  family      = "postgres11"
-  description = "RDS Postgres 11 default parameter group"
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_db_parameter_group" "concourse_pg" {
   name_prefix = "${var.env}-pg-concourse"
-  family      = "postgres11"
+  family      = "postgres13"
   description = "RDS Postgres concourse parameter group"
   lifecycle {
     create_before_destroy = true
@@ -57,7 +48,7 @@ resource "aws_db_instance" "concourse" {
   allocated_storage          = 100
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "11.5"
+  engine_version             = "13.4"
   instance_class             = var.concourse_db_instance_class
   username                   = "concourse"
   password                   = random_password.concourse_rds_password.result
@@ -81,15 +72,15 @@ resource "aws_db_instance" "concourse" {
     deploy_env = var.env
   }
 
-  lifecycle {
-    ignore_changes = [
-      # When you want to change a major version, then please remove this
-      # lifecycle rule
-      #
-      # This lifecycle rule is here to allow RDS to manage
-      # auto_minor_version_upgrades
-      engine_version,
-    ]
-  }
+  #  lifecycle {
+  #    ignore_changes = [
+  #      # When you want to change a major version, then please remove this
+  #      # lifecycle rule
+  #      #
+  #      # This lifecycle rule is here to allow RDS to manage
+  #      # auto_minor_version_upgrades
+  #      engine_version,
+  #    ]
+  #  }
 }
 
