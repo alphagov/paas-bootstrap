@@ -3,12 +3,19 @@ variable "state_bucket" {
 }
 
 resource "aws_s3_bucket" "terraform-state-s3" {
-  bucket        = var.state_bucket
-  acl           = "private"
-  force_destroy = "true"
+  bucket = var.state_bucket
+}
 
-  versioning {
-    enabled = true
+resource "aws_s3_bucket_acl" "terraform-state-s3" {
+  bucket = var.state_bucket
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "terraform-state-s3" {
+  bucket = var.state_bucket
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
