@@ -8,42 +8,42 @@ meta:
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/bosh-cli-v2
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     certstrap: &certstrap-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/certstrap
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     git-ssh: &git-ssh-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/git-ssh
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     ruby-slim: &ruby-slim-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/ruby
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     self-update-pipelines: &self-update-pipelines-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/self-update-pipelines
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     spruce: &spruce-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/spruce
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
     terraform: &terraform-image-resource
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/terraform
-        tag: 168a6c8b43fdec99607fd8bc01c5986a46a72dc0
+        tag: 7191ee87b98642e5d03a80f24585fddc02fc8d88
 
 groups:
   - name: all
