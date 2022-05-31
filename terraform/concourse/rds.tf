@@ -44,7 +44,7 @@ resource "aws_db_parameter_group" "concourse_pg" {
 
 resource "aws_db_instance" "concourse" {
   identifier                 = "${var.env}-concourse"
-  name                       = "concourse"
+  db_name                    = "concourse"
   allocated_storage          = 100
   storage_type               = "gp2"
   engine                     = "postgres"

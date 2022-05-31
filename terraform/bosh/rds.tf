@@ -36,7 +36,7 @@ resource "aws_db_parameter_group" "bosh_pg_11" {
 
 resource "aws_db_instance" "bosh" {
   identifier                 = "${var.env}-bosh"
-  name                       = "bosh"
+  db_name                    = "bosh"
   allocated_storage          = 100
   storage_type               = "gp2"
   engine                     = "postgres"
