@@ -6,7 +6,7 @@ env:
   BOSH_CLI_VERSION: "6.1.1"
   CERTSTRAP_VERSION: "1.2.0"
   SHELLCHECK_VERSION: "0.7.0"
-  GO_VERSION: "1.17"
+  GO_VERSION: "1.18"
   RUBY_VERSION: "2.7"
 jobs:
   test:
@@ -54,6 +54,7 @@ jobs:
       - name: "Install Pipecleaner"
         run: |
           go get -u github.com/alphagov/paas-cf/tools/pipecleaner
+          go install github.com/alphagov/paas-cf/tools/pipecleaner
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
