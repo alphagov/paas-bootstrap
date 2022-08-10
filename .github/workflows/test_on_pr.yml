@@ -53,8 +53,7 @@ jobs:
 
       - name: "Install Pipecleaner"
         run: |
-          go get -u github.com/alphagov/paas-cf/tools/pipecleaner
-          go install github.com/alphagov/paas-cf/tools/pipecleaner
+          go install github.com/alphagov/paas-cf/tools/pipecleaner@main
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
