@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-bionic-go_agent
-    version: "1.91"
+    version: "1.97"
 
 name: concourse
 
