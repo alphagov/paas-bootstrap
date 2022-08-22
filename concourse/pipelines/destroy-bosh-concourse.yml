@@ -258,7 +258,7 @@ jobs:
               cd paas-bootstrap/terraform/bosh || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+              sh ../update-terraform-providers.sh ../../../updated-bosh-tfstate/bosh.tfstate
 
               terraform apply \
                 -auto-approve=true \
