@@ -49,6 +49,7 @@ groups:
   - name: all
     jobs:
       - init-bucket
+      - check-for-secrets
       - vpc
       - generate-secrets
       - bosh-terraform
@@ -550,16 +551,37 @@ jobs:
       - put: pipeline-trigger
         params: {bump: patch}
 
+  - name: check-for-secrets
+    serial: true
+    plan:
+      - get: pipeline-trigger
+        passed: ['init-bucket']
+        trigger: true
+      - get: paas-bootstrap
+        trigger: true
+        passed: ['init-bucket']
+      - task: check-secrets-have-been-uploaded-and-maybe-wait
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          inputs:
+          - name: paas-bootstrap
+          run:
+            path: ./paas-bootstrap/concourse/scripts/wait_for_secrets.sh
+            args:
+              - "((state_bucket))"
+              - "3600"
+
   - name: vpc
     serial: true
     plan:
       - in_parallel:
         - get: paas-bootstrap
           trigger: true
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
         - get: pipeline-trigger
           trigger: true
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
         - get: vpc-tfstate
         - get: git-ssh-public-key
         - get: git-ssh-private-key
@@ -642,9 +664,9 @@ jobs:
       - in_parallel:
         - get: pipeline-trigger
           trigger: true
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
         - get: paas-bootstrap
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
         - get: bootstrap-cyber-tfvars
         - get: bootstrap-cyber-tfstate
 
@@ -692,9 +714,9 @@ jobs:
     plan:
       - in_parallel:
         - get: paas-bootstrap
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
         - get: pipeline-trigger
-          passed: ['init-bucket']
+          passed: ['check-for-secrets']
           trigger: true
         - get: bosh-ca
         - get: bosh-ca-crt
