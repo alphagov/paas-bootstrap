@@ -258,7 +258,7 @@ jobs:
               cd paas-bootstrap/terraform/bosh || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+              sh ../../../paas-bootstrap/terraform/update-terraform-providers.sh ../../../updated-bosh-tfstate/bosh.tfstate
 
               terraform apply \
                 -auto-approve=true \
@@ -382,7 +382,7 @@ jobs:
 
               cd paas-bootstrap/terraform/concourse || exit
               terraform init
-              terraform destroy -force \
+              terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate
@@ -578,7 +578,7 @@ jobs:
 
                 sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
 
-                terraform destroy -force \
+                terraform destroy -auto-approve \
                   -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -625,7 +625,7 @@ jobs:
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
 
-              terraform destroy -force \
+              terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-vpc-tfstate/vpc.tfstate
@@ -671,7 +671,7 @@ jobs:
 
               sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
-              terraform destroy -force \
+              terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
@@ -712,7 +712,7 @@ jobs:
             - |
               cd paas-bootstrap/terraform/bucket || exit
               terraform init
-              terraform destroy -force \
+              terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../bucket-terraform-state/bucket.tfstate
