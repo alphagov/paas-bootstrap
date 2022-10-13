@@ -22,6 +22,7 @@ instance_groups:
                     - cadmiumcat
                     - kr8n3r
                     - LeePorte
+                    - nimalank7
                     - risicle
                     - schmie
                     - whi-tw
@@ -29,4 +30,3 @@ instance_groups:
                 - name: pipeline-operator
                   github:
                     users:
-                    - nimalank7
