@@ -8,7 +8,7 @@ meta:
       type: docker-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: 2be6cfc9a387a6b818b522304858b54273c28138
+        tag: 364e267f048a07d8b41f25369a99ab0991a1fecc
 
 resources:
   - name: delete-timer
