@@ -12,7 +12,7 @@ resource "aws_cloudwatch_log_group" "bosh_director_vm" {
 resource "aws_cloudwatch_log_subscription_filter" "ship_bosh_logs_to_cyber" {
   count           = length(local.log_groups)
   name            = element(local.log_groups, count.index)
-  log_group_name  = element(local.log_groups, count.index)
+  log_group_name  = aws_cloudwatch_log_group.bosh_director_vm[count.index].name
   destination_arn = local.destination_arn
   filter_pattern  = "" # Matches all events
   distribution    = "Random"
