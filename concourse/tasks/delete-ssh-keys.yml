@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: ghcr.io/alphagov/paas/awscli
-    tag: 21d3babf48e7fb6818367f8b37542b178ffabbda
+    tag: 2be6cfc9a387a6b818b522304858b54273c28138
 inputs:
   - name: paas-bootstrap
 run:
