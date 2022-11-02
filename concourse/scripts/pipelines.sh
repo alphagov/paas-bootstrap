@@ -63,7 +63,8 @@ EOF
 }
 
 if [ "${ENABLE_GITHUB}" = "true" ] ; then
-  eval "$("${SCRIPT_DIR}"/../../scripts/upload-secrets/manage-github-secrets.sh retrieve)"
+  SECRETS=$("${SCRIPT_DIR}"/../../scripts/upload-secrets/manage-github-secrets.sh retrieve)
+  eval "${SECRETS}"
 fi
 
 generate_vars_file > /dev/null # Check for missing vars

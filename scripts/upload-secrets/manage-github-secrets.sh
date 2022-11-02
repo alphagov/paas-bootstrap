@@ -58,17 +58,17 @@ get_creds_from_env_or_pass() {
   PASS_ENV_TARGET="${MAKEFILE_ENV_TARGET}"
 
   if [ "${MAKEFILE_ENV_TARGET}" = "dev" ] &&  [ "${PASSWORD_STORE_DIR}" = "${HOME}/.paas-pass" ]; then
-    echo "Detected that you're probably setting the Github secrets for a shared dev env"
+    echo "Detected that you're probably setting the Github secrets for a shared dev env" >> /dev/stderr
     PASS_ENV_TARGET=${DEPLOY_ENV}
   fi
 
   if [ -z "${GITHUB_CLIENT_ID+x}" ]; then
-    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_id' in '${PASSWORD_STORE_DIR}'"
+    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_id' in '${PASSWORD_STORE_DIR}'" >> /dev/stderr
   fi
   GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(pass "github.com/concourse/${PASS_ENV_TARGET}/client_id")}"
-
+  
   if [ -z "${GITHUB_CLIENT_SECRET+x}" ]; then
-    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_secret' in '${PASSWORD_STORE_DIR}'"
+    echo "Fetching secret from path 'github.com/concourse/${PASS_ENV_TARGET}/client_secret' in '${PASSWORD_STORE_DIR}'" >> /dev/stderr
   fi
   GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(pass "github.com/concourse/${PASS_ENV_TARGET}/client_secret")}"
 }
@@ -98,12 +98,12 @@ retrieve() {
     GITHUB_CLIENT_ID="${GITHUB_CLIENT_ID:-$(val_from_yaml github_client_id "${secrets_file}")}"
     GITHUB_CLIENT_SECRET="${GITHUB_CLIENT_SECRET:-$(val_from_yaml github_client_secret "${secrets_file}")}"
   else
-    echo "Warning: Cannot retrieve github secrets from S3. Retriving from environment or from pass." 1>&2
+    echo "Warning: Cannot retrieve github secrets from S3. Retriving from environment or from pass." >> /dev/stderr
     get_creds_from_env_or_pass
   fi
 
   if [ -z "${GITHUB_CLIENT_ID}" ] || [ -z "${GITHUB_CLIENT_SECRET}" ] ; then
-    echo "\$GITHUB_CLIENT_ID or \$GITHUB_CLIENT_SECRET not set, failing" 1>&2
+    echo "\$GITHUB_CLIENT_ID or \$GITHUB_CLIENT_SECRET not set, failing" >> /dev/stderr
   else
     echo "export GITHUB_CLIENT_ID=\"${GITHUB_CLIENT_ID}\""
     echo "export GITHUB_CLIENT_SECRET=\"${GITHUB_CLIENT_SECRET}\""
