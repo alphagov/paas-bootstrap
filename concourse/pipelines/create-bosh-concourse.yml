@@ -48,6 +48,7 @@ meta:
 groups:
   - name: all
     jobs:
+      - update-pipeline
       - init-bucket
       - check-for-secrets
       - vpc
@@ -365,7 +366,7 @@ resources:
       versioned_file: paas-bootstrap-cloud-config.yml
 
 jobs:
-  - name: init-bucket
+  - name: update-pipeline
     serial: true
     plan:
       - get: paas-bootstrap
@@ -494,6 +495,19 @@ jobs:
                 echo 'self-update-pipeline failed'
                 exit 1
 
+      - put: pipeline-trigger
+        params: {bump: patch}
+
+  - name: init-bucket
+    serial: true
+    plan:
+      - get: pipeline-trigger
+        passed: ['update-pipeline']
+        trigger: true
+      - get: paas-bootstrap
+        trigger: true
+        passed: ['update-pipeline']
+
       - task: try-fetch-bucket-state
         config:
           platform: linux
@@ -547,9 +561,6 @@ jobs:
           put: bucket-terraform-state
           params:
             file: updated-bucket-state/bucket.tfstate
-
-      - put: pipeline-trigger
-        params: {bump: patch}
 
   - name: check-for-secrets
     serial: true
