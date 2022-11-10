@@ -8,7 +8,7 @@ filename = ARGV.first
 raise "#{$PROGRAM_NAME} requires a vars store filename argument" if filename.nil?
 
 puts "Loading file #{filename}"
-contents = YAML.load_file(filename)
+contents = YAML.safe_load_file(filename, aliases: true)
 puts "Loaded file #{filename}"
 
 raise "Could not parse vars file #{filename}" unless contents.is_a?(Hash)

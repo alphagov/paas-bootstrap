@@ -1,6 +1,6 @@
 module FixtureHelpers
   def terraform_fixture_value(key, fixture)
-    YAML.load_file(fixtures_dir.join("#{fixture}-terraform-outputs.yml")).fetch("terraform_outputs_#{key}")
+    YAML.safe_load_file(fixtures_dir.join("#{fixture}-terraform-outputs.yml"), aliases: true).fetch("terraform_outputs_#{key}")
   end
 
   def copy_terraform_fixtures(target_dir, fixtures)

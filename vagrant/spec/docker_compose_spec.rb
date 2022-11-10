@@ -6,7 +6,7 @@ require "yaml"
 RSpec.describe "docker-compose" do
   let(:docker_compose_yaml) do
     vagrant_dir = File.expand_path(File.join(__dir__, ".."))
-    YAML.load(File.read("#{vagrant_dir}/docker-compose.yml"))
+    YAML.safe_load(File.read("#{vagrant_dir}/docker-compose.yml"), aliases: true)
   end
 
   let(:services) { docker_compose_yaml["services"] }

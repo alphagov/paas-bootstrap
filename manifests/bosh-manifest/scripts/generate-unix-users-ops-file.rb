@@ -5,7 +5,7 @@ require "yaml"
 
 def generate_unix_users_ops_file(config_file, aws_account)
   if File.file? config_file
-    users_config = YAML.load_file config_file
+    users_config = YAML.safe_load_file(config_file, aliases: true)
 
     unix_users = users_config.fetch("users").select do |u|
       u.dig("roles", aws_account)&.any? { |r| r["role"] == "ssh-access" }

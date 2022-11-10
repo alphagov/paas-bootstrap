@@ -45,7 +45,7 @@ download_key() {
 ssh_concourse() {
   echo
   aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-secrets.yml" - | \
-    ruby -ryaml -e 'puts "Sudo password is " + YAML.load(STDIN)["secrets"]["vcap_password_orig"]'
+  ruby -ryaml -e 'puts "Sudo password is " + YAML.safe_load(STDIN, aliases: true)["secrets"]["vcap_password_orig"]'
   echo
 
   # shellcheck disable=SC2029
