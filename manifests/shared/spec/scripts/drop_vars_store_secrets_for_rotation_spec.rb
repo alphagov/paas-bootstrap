@@ -1,4 +1,4 @@
-require_relative "../../scripts/drop-vars-store-secrets-for-rotation.rb"
+require_relative "../../scripts/drop-vars-store-secrets-for-rotation"
 
 RSpec.describe "rotate-cf-certs" do
   let(:manifest) do
@@ -206,7 +206,7 @@ RSpec.describe "rotate-cf-certs" do
         # Build a call like: rotate(manifest , ca: true, vars_to_preserve: vars_to_preserve)
         args = {
           type.to_sym => true,
-          vars_to_preserve: vars_to_preserve,
+          vars_to_preserve:,
         }
         rotated_vars_store = rotate(manifest, vars_store, **args)
 

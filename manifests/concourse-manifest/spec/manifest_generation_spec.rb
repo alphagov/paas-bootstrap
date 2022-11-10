@@ -8,7 +8,7 @@ RSpec.describe "manifest generation" do
   it "gets the dns values from concourse terraform outputs" do
     expect(
       web_job.fetch("properties").fetch("external_url"),
-    ).to eq("https://" + terraform_fixture_value("concourse_dns_name", "concourse"))
+    ).to eq("https://#{terraform_fixture_value('concourse_dns_name', 'concourse')}")
   end
 
   it "gets values from secrets" do
@@ -19,7 +19,7 @@ RSpec.describe "manifest generation" do
 
   it "gets the postgres values from concourse terraform outputs" do
     expect(
-      web_job.dig("properties").fetch("postgresql"),
+      web_job["properties"].fetch("postgresql"),
     ).to eq(
       "database" => terraform_fixture_value("concourse_db_name", "concourse"),
       "host" => terraform_fixture_value("concourse_db_address", "concourse"),

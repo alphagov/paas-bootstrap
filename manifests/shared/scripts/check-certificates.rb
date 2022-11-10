@@ -4,7 +4,7 @@ require "openssl"
 require "yaml"
 require "optparse"
 
-CERT_REGEX = /[-]{5}\s*BEGIN CERTIFICATE\s*[-]{5}[^-]*[-]{5}\s*END CERTIFICATE\s*[-]{5}/m.freeze
+CERT_REGEX = /-{5}\s*BEGIN CERTIFICATE\s*-{5}[^-]*-{5}\s*END CERTIFICATE\s*-{5}/m
 
 options = {
   min_remaining_days: 180,
@@ -42,8 +42,8 @@ def find_certificates(yaml, path, skip_ca_certs)
       return [] if skip_ca_certs && is_ca(cert)
 
       ManifestCert.new(
-        path: path,
-        cert: cert,
+        path:,
+        cert:,
       )
     end
   end

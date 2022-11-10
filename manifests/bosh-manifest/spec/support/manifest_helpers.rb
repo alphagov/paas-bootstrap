@@ -9,9 +9,7 @@ module ManifestHelpers
 
   class Cache
     include Singleton
-    attr_accessor :manifest_with_defaults
-    attr_accessor :manifest_for_account
-    attr_accessor :bosh_deployment_manifest
+    attr_accessor :manifest_with_defaults, :manifest_for_account, :bosh_deployment_manifest
   end
 
   def manifest_with_defaults

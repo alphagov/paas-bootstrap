@@ -8,8 +8,7 @@ module ManifestHelpers
 
   class Cache
     include Singleton
-    attr_accessor :manifest_with_defaults
-    attr_accessor :manifest_with_github_auth
+    attr_accessor :manifest_with_defaults, :manifest_with_github_auth
   end
 
   def manifest_with_defaults

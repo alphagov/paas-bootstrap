@@ -165,7 +165,7 @@ RSpec.describe "generic manifest validations" do
   describe "director" do
     describe "tasks" do
       it "cleans up tasks every day" do
-        schedule = director.dig("tasks_cleanup_schedule")
+        schedule = director["tasks_cleanup_schedule"]
         expect(schedule).to eq("0 0 0 * * * UTC")
       end
     end

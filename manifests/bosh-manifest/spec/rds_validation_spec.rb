@@ -5,19 +5,17 @@ RSpec.describe "rds bundle manifest validations" do
 
   describe "credhub" do
     it "is configured to require tls and ca certs are specificed" do
-      data_storage = manifest
-        .dig("instance_groups")
-        .find { |g| g.dig("name") == "bosh" }
-        .dig("jobs")
-        .find { |j| j.dig("name") == "credhub" }
+      data_storage = manifest["instance_groups"]
+        .find { |g| g["name"] == "bosh" }["jobs"]
+        .find { |j| j["name"] == "credhub" }
         .dig("properties", "credhub", "data_storage")
 
-      expect(data_storage.dig("require_tls")).to eq(true)
+      expect(data_storage["require_tls"]).to eq(true)
 
-      expect(data_storage.dig("tls_ca")).to match(/BEGIN CERTIFICATE/)
-      expect(data_storage.dig("tls_ca")).to match(/END CERTIFICATE/)
+      expect(data_storage["tls_ca"]).to match(/BEGIN CERTIFICATE/)
+      expect(data_storage["tls_ca"]).to match(/END CERTIFICATE/)
 
-      certs = OpenSSL::X509::Certificate.new data_storage.dig("tls_ca")
+      certs = OpenSSL::X509::Certificate.new data_storage["tls_ca"]
 
       expect(certs.issuer.to_s).to match(/Amazon/)
     end
@@ -25,11 +23,9 @@ RSpec.describe "rds bundle manifest validations" do
 
   describe "uaa" do
     it "is configured with the correct ca_certs" do
-      ca_certs = manifest
-        .dig("instance_groups")
-        .find { |g| g.dig("name") == "bosh" }
-        .dig("jobs")
-        .find { |j| j.dig("name") == "uaa" }
+      ca_certs = manifest["instance_groups"]
+        .find { |g| g["name"] == "bosh" }["jobs"]
+        .find { |j| j["name"] == "uaa" }
         .dig("properties", "uaa", "ca_certs")
 
       expect(ca_certs.length).to be > 0
