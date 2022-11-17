@@ -3,7 +3,7 @@ set -euo pipefail
 
 tunnel_mux='/tmp/bosh-ssh-tunnel.mux'
 
-function cleanup () {
+function cleanup() {
   echo 'Closing SSH tunnel'
   ssh -S "$tunnel_mux" -O exit a-destination &>/dev/null || true
 
@@ -20,13 +20,14 @@ BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
 
 echo 'Opening SSH tunnel'
 ssh -qfNC -4 -D 25555 \
+  -o Hostname="bosh-external.${SYSTEM_DNS_ZONE_NAME}" \
   -o ExitOnForwardFailure=yes \
   -o StrictHostKeyChecking=no \
   -o UserKnownHostsFile=/dev/null \
   -o ServerAliveInterval=30 \
   -M \
   -S "$tunnel_mux" \
-  "bosh-external.${SYSTEM_DNS_ZONE_NAME}" \
+  paas_bosh_ssh
 
 export BOSH_CA_CERT
 export BOSH_ALL_PROXY="socks5://localhost:25555"
