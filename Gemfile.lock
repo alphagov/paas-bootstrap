@@ -6,29 +6,21 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
-    addressable (2.8.1)
-      public_suffix (>= 2.0.2, < 6.0)
     ast (2.4.2)
     concurrent-ruby (1.1.10)
-    crack (0.4.5)
-      rexml
     diff-lcs (1.5.0)
-    hashdiff (1.0.1)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     json (2.6.2)
-    json-minify (0.0.3)
-      json (> 0)
     minitest (5.16.3)
     net-ssh (7.0.1)
     parallel (1.22.1)
     parser (3.1.2.1)
       ast (~> 2.4.1)
-    public_suffix (5.0.0)
-    rack (3.0.0)
+    rack (3.0.1)
     rainbow (3.1.1)
     rake (13.0.6)
-    regexp_parser (2.6.0)
+    regexp_parser (2.6.1)
     rexml (3.2.5)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
@@ -73,21 +65,15 @@ GEM
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.3.0)
-    webmock (3.18.1)
-      addressable (>= 2.8.0)
-      crack (>= 0.3.2)
-      hashdiff (>= 0.4.0, < 2.0.0)
 
 PLATFORMS
   x86_64-darwin-21
 
 DEPENDENCIES
-  json-minify (~> 0.0.3)
   net-ssh (>= 7)
   rake (~> 13.0)
   rspec (~> 3)
   rubocop-govuk (~> 4)
-  webmock (~> 3)
 
 BUNDLED WITH
    2.3.3
