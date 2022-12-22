@@ -93,7 +93,7 @@ dev: globals ## Set Environment to DEV
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
-	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
+	$(eval export CONCOURSE_INSTANCE_TYPE=c5a.xlarge
 	@true
 
 .PHONY: $(filter-out dev%,$(MAKECMDGOALS))
