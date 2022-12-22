@@ -20,7 +20,6 @@ instance_groups:
                     users:
                     - AP-Hunt
                     - cadmiumcat
-                    - dark5un
                     - kr8n3r
                     - jackjoy-gds
                     - LeePorte
