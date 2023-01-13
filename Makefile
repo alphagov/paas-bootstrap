@@ -80,7 +80,7 @@ globals:
 ## Environments
 
 .PHONY: dev
-dev: globals check-env-vars ## Set Environment to DEV
+dev: globals ## Set Environment to DEV
 	$(eval export SYSTEM_DNS_ZONE_NAME=$${DEPLOY_ENV}.dev.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z1QGLFML8EG6G7)
 	$(eval export APPS_DNS_ZONE_NAME=$${DEPLOY_ENV}.dev.cloudpipelineapps.digital)
@@ -93,7 +93,8 @@ dev: globals check-env-vars ## Set Environment to DEV
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
-	$(eval export CONCOURSE_INSTANCE_TYPE=m5.large)
+	$(eval export CONCOURSE_INSTANCE_TYPE=c5a.xlarge)
+	@true
 
 .PHONY: $(filter-out dev%,$(MAKECMDGOALS))
 dev%: dev
@@ -104,7 +105,7 @@ dev%: dev
 
 
 .PHONY: ci
-ci: globals check-env-vars ## Set Environment to CI
+ci: globals ## Set Environment to CI
 	$(eval export SYSTEM_DNS_ZONE_NAME=${DEPLOY_ENV}.ci.cloudpipeline.digital)
 	$(eval export SYSTEM_DNS_ZONE_ID=Z2PF4LCV9VR1MV)
 	$(eval export AWS_ACCOUNT=ci)
@@ -113,6 +114,7 @@ ci: globals check-env-vars ## Set Environment to CI
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
+	@true
 
 .PHONY: stg-lon
 stg-lon: globals ## Set Environment to stg-lon
@@ -127,6 +129,7 @@ stg-lon: globals ## Set Environment to stg-lon
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
+	@true
 
 .PHONY: prod
 prod: globals ## Set Environment to Prod
@@ -141,6 +144,7 @@ prod: globals ## Set Environment to Prod
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
+	@true
 
 .PHONY: prod-lon
 prod-lon: globals ## Set Environment to prod-lon
@@ -155,6 +159,7 @@ prod-lon: globals ## Set Environment to prod-lon
 	$(eval export CONCOURSE_AUTH_DURATION=18h)
 	$(eval export AWS_DEFAULT_REGION=eu-west-2)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass-high)
+	@true
 
 ## Concourse profiles
 
@@ -182,6 +187,11 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	@true
 
 ## Actions
+
+.PHONY: current-branch
+current-branch: ## Deploy current checked out branch
+	$(eval export BRANCH=$(shell sh -c "git rev-parse --abbrev-ref HEAD"))
+	@true
 
 .PHONY: pipelines
 pipelines: check-env-vars
