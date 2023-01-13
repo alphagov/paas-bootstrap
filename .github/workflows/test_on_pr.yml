@@ -7,7 +7,7 @@ env:
   CERTSTRAP_VERSION: "1.2.0"
   SHELLCHECK_VERSION: "0.7.0"
   GO_VERSION: "1.18"
-  RUBY_VERSION: "2.7"
+  RUBY_VERSION: "3.1.0"
 jobs:
   test:
     runs-on: ubuntu-latest

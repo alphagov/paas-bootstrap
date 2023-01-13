@@ -33,7 +33,7 @@ def parse_args
   options
 end
 
-def rotate_secret(vars, vars_store, type, is_ca = false)
+def rotate_secret(vars, vars_store, type, is_ca: false)
   vars_store = vars_store.clone
   var_names = vars.map { |v| v["name"] }
   vars.each do |var|
@@ -85,8 +85,8 @@ def rotate(manifest, vars_store,
     return delete_old(vars, vars_store)
   end
 
-  vars_store = rotate_secret(vars, vars_store, "certificate", true) if ca
-  vars_store = rotate_secret(vars, vars_store, "certificate", false) if leaf
+  vars_store = rotate_secret(vars, vars_store, "certificate", is_ca: true) if ca
+  vars_store = rotate_secret(vars, vars_store, "certificate", is_ca: false) if leaf
   vars_store = rotate_secret(vars, vars_store, "password") if passwords
   vars_store = rotate_secret(vars, vars_store, "rsa") if rsa
   vars_store = rotate_secret(vars, vars_store, "ssh") if ssh
@@ -97,8 +97,8 @@ end
 
 if $PROGRAM_NAME == __FILE__
   options = parse_args
-  manifest = YAML.load_file(options.delete(:manifest))
-  vars_store = YAML.load_file(options.delete(:vars_store))
+  manifest = YAML.safe_load_file(options.delete(:manifest), aliases: true)
+  vars_store = YAML.safe_load_file(options.delete(:vars_store), aliases: true)
 
   certs = rotate(manifest, vars_store, **options)
   puts certs.to_yaml

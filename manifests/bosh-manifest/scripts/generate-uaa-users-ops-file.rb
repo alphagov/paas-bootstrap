@@ -19,7 +19,7 @@ def generate_uaa_users_ops_file(config_file, aws_account)
   }]
 
   if File.file? config_file
-    users_config = YAML.load_file config_file
+    users_config = YAML.safe_load_file(config_file, aliases: true)
     users_and_groups = users_config
       .fetch("users")
       .map do |user|

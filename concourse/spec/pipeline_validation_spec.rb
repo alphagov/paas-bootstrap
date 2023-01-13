@@ -9,7 +9,7 @@ RSpec.describe 'pipeline validations' do
     .concat(
       Dir
         .glob(File.join(__dir__, '../vars-files/*.yml'))
-        .map { |f| YAML.load(File.read(f)).keys }
+        .map { |f| YAML.safe_load(File.read(f), aliases: true).keys }
         .flatten
         .uniq
     )
@@ -26,7 +26,7 @@ RSpec.describe 'pipeline validations' do
       describe "pipeline #{filename}" do
 
         it 'should be valid yaml' do
-          expect { YAML.load(contents) }.not_to raise_error
+          expect { YAML.safe_load(contents, aliases: true) }.not_to raise_error
         end
 
         it 'should not contain any free variables' do

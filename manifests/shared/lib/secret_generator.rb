@@ -95,7 +95,7 @@ class SecretGenerator
   # https://github.com/bensie/sshkey/blob/1.8.0/lib/sshkey.rb#L253
   def self.ssh_key_md5_fingerprint(public_key)
     methods = %w[e n]
-    public_key_str = methods.inject([7].pack("N") + "ssh-rsa") do |pubkeystr, m|
+    public_key_str = methods.inject("#{[7].pack('N')}ssh-rsa") do |pubkeystr, m|
       # Given pubkey.class == OpenSSL::BN, pubkey.to_s(0) returns an MPI
       # formatted string (length prefixed bytes). This is not supported by
       # JRuby, so we still have to deal with length and data separately.
@@ -110,7 +110,7 @@ class SecretGenerator
         data[0] = [0x80 & first_byte].pack("c")
       elsif first_byte < 0
         # For positive values where highest bit would be set, prefix with \0
-        data = "\0" + data
+        data = "\u0000#{data}"
       end
       pubkeystr + [data.length].pack("N") + data
     end

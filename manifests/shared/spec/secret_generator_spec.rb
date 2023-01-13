@@ -1,7 +1,7 @@
 require "secret_generator"
 
 RSpec.describe SecretGenerator do
-  let(:simple_password_regex) { /\A[a-zA-Z0-9]+\z/.freeze }
+  let(:simple_password_regex) { /\A[a-zA-Z0-9]+\z/ }
 
   describe "password generation" do
     it "prefixes the password with a fixed character" do

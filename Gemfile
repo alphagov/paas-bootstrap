@@ -1,12 +1,9 @@
 source "https://rubygems.org"
 
-gem "json-minify", "~> 0.0.2"
-gem "rake", "~>12.3.3"
-gem "rspec", "~> 3.3"
-gem "webmock", "~> 1.24"
+gem "rake", "~>13.0"
+gem "rspec", "~> 3"
+gem "rubocop-govuk", "~> 4"
 
 group :secret_generator do
-  gem "net-ssh", ">= 2.9.2"
+  gem "net-ssh", ">= 7"
 end
-
-gem "rubocop-govuk", "~> 3.15"

@@ -12,7 +12,7 @@ generator = SecretGenerator.new(
 
 option_parser = OptionParser.new do |opts|
   opts.on("--existing-secrets FILE") do |file|
-    existing_secrets = YAML.load_file(file)
+    existing_secrets = YAML.safe_load_file(file, aliases: true)
     # An empty file parses as false
     generator.existing_secrets = existing_secrets["secrets"] if existing_secrets
   end
