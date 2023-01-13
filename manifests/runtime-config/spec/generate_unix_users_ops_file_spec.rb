@@ -38,6 +38,7 @@ RSpec.describe "Generating unix users ops file" do
               { "os" => "ubuntu-trusty" },
               { "os" => "ubuntu-xenial" },
               { "os" => "ubuntu-bionic" },
+              { "os" => "ubuntu-jammy" },
             ],
           },
           "jobs" => [
@@ -116,6 +117,7 @@ RSpec.describe "Generating unix users ops file" do
               { "os" => "ubuntu-trusty" },
               { "os" => "ubuntu-xenial" },
               { "os" => "ubuntu-bionic" },
+              { "os" => "ubuntu-jammy" },
             ],
           },
           "jobs" => [

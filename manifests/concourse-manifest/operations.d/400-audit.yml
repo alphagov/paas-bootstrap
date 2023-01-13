@@ -2,10 +2,10 @@
 instance_groups:
   - name: concourse
     jobs:
-      - name: awslogs-bionic
+      - name: awslogs-jammy
         release: awslogs
         properties:
-          awslogs-bionic:
+          awslogs-jammy:
             region: ((region))
             awslogs_files_config:
 
