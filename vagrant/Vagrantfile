@@ -65,10 +65,16 @@ AWS_ACCOUNT_DATA = {
 }.freeze
 AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT).fetch(AWS_REGION)
 
-# ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20180912
+# eu-west-1:
+# Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-12-06
+# ami-026e72e4e468afa7b
+# eu-west-2:
+# Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-12-06
+# ami-01b8d743224353ffe
+
 AWS_AMI = {
-  "eu-west-1" => "ami-00035f41c82244dab",
-  "eu-west-2" => "ami-0b0a60c0a2bd40612",
+  "eu-west-1" => "ami-026e72e4e468afa7b",
+  "eu-west-2" => "ami-01b8d743224353ffe",
 }.freeze
 Vagrant.configure(2) do |config|
   config.vm.box = ENV["VAGRANT_BOX_NAME"] || "aws_vagrant_box"
