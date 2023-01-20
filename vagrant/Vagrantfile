@@ -66,15 +66,17 @@ AWS_ACCOUNT_DATA = {
 AWS_ACCOUNT_VARIABLES = AWS_ACCOUNT_DATA.fetch(AWS_ACCOUNT).fetch(AWS_REGION)
 
 # eu-west-1:
-# Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-12-06
-# ami-026e72e4e468afa7b
+# Canonical, Ubuntu, 20.04 LTS, amd64 focal image build on 2023-01-12
+# ami-0c68b55d1c875067e
 # eu-west-2:
-# Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-12-06
-# ami-01b8d743224353ffe
-
+# Canonical, Ubuntu, 20.04 LTS, amd64 focal image build on 2023-01-12
+# ami-00de6c6491fdd3ef5
+# WARNING: As of 2021-01-13, the latest Ubuntu 22.04 AMI is causing an issue
+#          with the concourse workers not being able to start. This is looks
+#          related to a docker-in-docker issue.
 AWS_AMI = {
-  "eu-west-1" => "ami-026e72e4e468afa7b",
-  "eu-west-2" => "ami-01b8d743224353ffe",
+  "eu-west-1" => "ami-0c68b55d1c875067e",
+  "eu-west-2" => "ami-00de6c6491fdd3ef5",
 }.freeze
 Vagrant.configure(2) do |config|
   config.vm.box = ENV["VAGRANT_BOX_NAME"] || "aws_vagrant_box"
