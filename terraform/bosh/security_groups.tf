@@ -1,3 +1,15 @@
+data "aws_instances" "concourse_workers" {
+  filter {
+    name   = "tag:instance_group"
+    values = ["concourse-worker", "concourse-lite"]
+  }
+
+  filter {
+    name   = "tag:deploy_env"
+    values = [var.env]
+  }
+}
+
 resource "aws_security_group" "bosh" {
   name        = "${var.env}-bosh"
   description = "Bosh security group"
@@ -14,7 +26,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = compact([var.concourse_egress_cidr])
+    cidr_blocks = formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
   }
 
   ingress {
@@ -31,7 +43,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 6868
     to_port     = 6868
     protocol    = "tcp"
-    cidr_blocks = compact([var.concourse_egress_cidr])
+    cidr_blocks = formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
   }
 
   ingress {
