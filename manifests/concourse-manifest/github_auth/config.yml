@@ -26,7 +26,6 @@ instance_groups:
                     - LeePorte
                     - nimalank7
                     - risicle
-                    - schmie
                     - whi-tw
                     - whpearson
                 - name: pipeline-operator
