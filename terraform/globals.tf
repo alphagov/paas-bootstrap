@@ -125,3 +125,12 @@ variable "bosh_log_groups_to_ship_to_csls" {
   ]
 }
 
+variable "aws_vpc_endpoint_cidrs_per_zone" {
+  description = "CIDR for AWS VPC endpoint subnets indexed by AZ"
+
+  default = {
+    zone0 = "10.0.79.0/28"
+    zone1 = "10.0.79.16/28"
+    zone2 = "10.0.79.32/28"
+  }
+}
