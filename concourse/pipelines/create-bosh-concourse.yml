@@ -495,15 +495,9 @@ jobs:
                 echo 'self-update-pipeline failed'
                 exit 1
 
-      - put: pipeline-trigger
-        params: {bump: patch}
-
   - name: init-bucket
     serial: true
     plan:
-      - get: pipeline-trigger
-        passed: ['update-pipeline']
-        trigger: true
       - get: paas-bootstrap
         trigger: true
         passed: ['update-pipeline']
@@ -561,6 +555,9 @@ jobs:
           put: bucket-terraform-state
           params:
             file: updated-bucket-state/bucket.tfstate
+
+      - put: pipeline-trigger
+        params: {bump: patch}
 
   - name: check-for-secrets
     serial: true
