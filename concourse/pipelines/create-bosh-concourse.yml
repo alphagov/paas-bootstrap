@@ -630,6 +630,25 @@ jobs:
               params:
                 file: generated-git-ssh-keys/git_id_rsa
 
+      - task: get-concourse-egress-ips
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          outputs:
+          - name: concourse_egress
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              aws ec2 describe-instances --filters "Name=tag:instance_group,Values=concourse-worker,concourse-lite" "Name=tag:deploy_env,Values=${DEPLOY_ENV}" \
+                                                     --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region ${AWS_DEFAULT_REGION} \
+              > ./concourse_egress/concourse_egress_cidrs.txt
+
       - task: deploy-vpc
         config:
           platform: linux
@@ -637,6 +656,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          - name: concourse_egress
           outputs:
           - name: updated-vpc-tfstate
           params:
@@ -648,14 +668,24 @@ jobs:
             - -e
             - -c
             - |
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              unset CIDRS
+              while read -r p
+              do
+                if [ -z "$CIDRS" ]
+                then
+                  CIDRS=$(printf '"%s"' "${p}/32")
+                else
+                  CIDRS=$(printf '%s, "%s"' "$CIDRS" "${p}/32")
+                fi
+              done <concourse_egress/concourse_egress_cidrs.txt
+              
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               cd paas-bootstrap/terraform/vpc || exit
               terraform init
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var concourse_egress_cidrs="[${CIDRS}]" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-vpc-tfstate/vpc.tfstate
@@ -872,6 +902,25 @@ jobs:
                 ruby paas-bootstrap/concourse/scripts/extract_tf_vars_from_yaml.rb \
                 < bosh-secrets/bosh-secrets.yml > terraform-variables/bosh-secrets.tfvars.sh
 
+      - task: get-concourse-egress-ips
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          outputs:
+          - name: concourse_egress
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              aws ec2 describe-instances --filters "Name=tag:instance_group,Values=concourse-worker,concourse-lite" "Name=tag:deploy_env,Values=${DEPLOY_ENV}" \
+                                                     --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region ${AWS_DEFAULT_REGION} \
+              > ./concourse_egress/concourse_egress_cidrs.txt
+
       - task: terraform-apply
         config:
           platform: linux
@@ -882,6 +931,7 @@ jobs:
             - name: bosh-tfstate
             - name: ssh-public-key
             - name: bootstrap-cyber-tfvars
+            - name: concourse_egress
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -898,19 +948,28 @@ jobs:
               - -e
               - -c
               - |
+                unset CIDRS
+                while read -r p
+                do
+                  if [ -z "$CIDRS" ]
+                  then
+                    CIDRS=$(printf '"%s"' "${p}/32")
+                  else
+                    CIDRS=$(printf '%s, "%s"' "$CIDRS" "${p}/32")
+                  fi
+                done <concourse_egress/concourse_egress_cidrs.txt
+                
                 . terraform-variables/vpc.tfvars.sh
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
-                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 cd paas-bootstrap/terraform/bosh || exit
                 terraform init
 
                 terraform apply \
                   -auto-approve=true \
-                  -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                  -var concourse_egress_cidrs="[${CIDRS}]" \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
@@ -1295,6 +1354,25 @@ jobs:
               > bosh-terraform-outputs/tfvars.sh
               ls -l bosh-terraform-outputs/tfvars.sh
 
+      - task: get-concourse-egress-ips
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          outputs:
+          - name: concourse_egress
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              aws ec2 describe-instances --filters "Name=tag:instance_group,Values=concourse-worker,concourse-lite" "Name=tag:deploy_env,Values=${DEPLOY_ENV}" \
+                                                     --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region ${AWS_DEFAULT_REGION} \
+              > ./concourse_egress/concourse_egress_cidrs.txt
+
       - task: terraform-apply
         config:
           platform: linux
@@ -1305,6 +1383,7 @@ jobs:
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
           - name: git-ssh-public-key
+          - name: concourse_egress
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -1319,11 +1398,21 @@ jobs:
             - -e
             - -c
             - |
+              unset CIDRS
+              while read -r p
+              do
+                if [ -z "$CIDRS" ]
+                then
+                  CIDRS=$(printf '"%s"' "${p}/32")
+                else
+                  CIDRS=$(printf '%s, "%s"' "$CIDRS" "${p}/32")
+                fi
+              done <concourse_egress/concourse_egress_cidrs.txt
+              
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               cd paas-bootstrap/terraform/concourse || exit
@@ -1331,7 +1420,7 @@ jobs:
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var concourse_egress_cidrs="[${CIDRS}]" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate

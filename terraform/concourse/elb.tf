@@ -61,7 +61,7 @@ resource "aws_security_group" "concourse-elb" {
         concat(
           var.admin_cidrs,
           ["${aws_eip.concourse.public_ip}/32"],
-          [var.concourse_egress_cidr],
+          var.concourse_egress_cidrs,
         ),
       ),
     )

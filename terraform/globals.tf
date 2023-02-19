@@ -69,9 +69,10 @@ variable "infra_subnet_ids" {
   default     = ""
 }
 
-variable "concourse_egress_cidr" {
-  description = "Public egress IP address of concourse running the pipeline"
-  default     = ""
+variable "concourse_egress_cidrs" {
+  description = "Public egress IP addresses of concourse workers running the pipeline"
+  type        = list(string)
+  default     = []
 }
 
 variable "microbosh_static_private_ip" {

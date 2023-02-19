@@ -225,6 +225,25 @@ jobs:
               > vpc-terraform-outputs/tfvars.sh
               ls -l vpc-terraform-outputs/tfvars.sh
 
+      - task: get-concourse-egress-cdrs
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          outputs:
+          - name: concourse_egress
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              aws ec2 describe-instances --filters "Name=tag:instance_group,Values=concourse-worker,concourse-lite" "Name=tag:deploy_env,Values=${DEPLOY_ENV}" \
+                                                     --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region ${AWS_DEFAULT_REGION} \
+              > ./concourse_egress/concourse_egress_cidrs.txt
+
       - task: add-concourse-ip-to-bosh-sg
         config:
           platform: linux
@@ -234,6 +253,7 @@ jobs:
             - name: vpc-terraform-outputs
             - name: bosh-tfstate
             - name: bootstrap-cyber-tfvars
+            - name: concourse_egress
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -249,10 +269,20 @@ jobs:
             - -e
             - -c
             - |
+              unset CIDRS
+              while read -r p
+              do
+                if [ -z "$CIDRS" ]
+                then
+                  CIDRS=$(printf '"%s"' "${p}/32")
+                else
+                  CIDRS=$(printf '%s, "%s"' "$CIDRS" "${p}/32")
+                fi
+              done <concourse_egress/concourse_egress_cidrs.txt
+              
               . vpc-terraform-outputs/tfvars.sh
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               cd paas-bootstrap/terraform/bosh || exit
@@ -262,7 +292,7 @@ jobs:
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var concourse_egress_cidrs="[${CIDRS}]" \
                 -target=aws_security_group.bosh \
                 -state=../../../updated-bosh-tfstate/bosh.tfstate \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -541,6 +571,25 @@ jobs:
                 ruby paas-bootstrap/concourse/scripts/extract_tf_vars_from_yaml.rb \
                 < bosh-secrets/bosh-secrets.yml > terraform-variables/bosh-secrets.tfvars.sh
 
+      - task: get-concourse-egress-cdrs
+        config:
+          platform: linux
+          image_resource: *awscli-image-resource
+          outputs:
+          - name: concourse_egress
+          params:
+            AWS_DEFAULT_REGION: ((aws_region))
+            DEPLOY_ENV: ((deploy_env))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              aws ec2 describe-instances --filters "Name=tag:instance_group,Values=concourse-worker,concourse-lite" "Name=tag:deploy_env,Values=${DEPLOY_ENV}" \
+                                                     --query "Reservations[*].Instances[*].PublicIpAddress" --output text --region ${AWS_DEFAULT_REGION} \
+              > ./concourse_egress/concourse_egress_cidrs.txt
+
       - task: destroy-terraform
         config:
           platform: linux
@@ -550,6 +599,7 @@ jobs:
             - name: terraform-variables
             - name: bosh-tfstate
             - name: bootstrap-cyber-tfvars
+            - name: concourse_egress
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -566,20 +616,30 @@ jobs:
               - -e
               - -c
               - |
+                unset CIDRS
+                while read -r p
+                do
+                  if [ -z "$CIDRS" ]
+                  then
+                    CIDRS=$(printf '"%s"' "${p}/32")
+                  else
+                    CIDRS=$(printf '%s, "%s"' "$CIDRS" "${p}/32")
+                  fi
+                done <concourse_egress/concourse_egress_cidrs.txt
+                
                 . terraform-variables/vpc.tfvars.sh
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 touch paas-bootstrap/terraform/bosh/id_rsa.pub
-                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-
+                
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 cd paas-bootstrap/terraform/bosh || exit
                 terraform init
 
-                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+                sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-bosh-tfstate/bosh.tfstate
 
                 terraform destroy -auto-approve \
-                  -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                  -var concourse_egress_cidrs="[${CIDRS}]" \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
@@ -623,7 +683,7 @@ jobs:
               cd paas-bootstrap/terraform/vpc || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+              sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-vpc-tfstate/vpc.tfstate
 
               terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -669,7 +729,7 @@ jobs:
               cd paas-bootstrap/terraform/cyber || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+              sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
               terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
