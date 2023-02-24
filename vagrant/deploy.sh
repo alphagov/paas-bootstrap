@@ -27,7 +27,7 @@ if aws ec2 describe-key-pairs --key-name "${VAGRANT_SSH_KEY_NAME}" >/dev/null 2>
   # Remove the aws key pair
   aws ec2 delete-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}"
 fi
-
+ 
 # Create the key pair online.
 aws ec2 create-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}" | jq -r ".KeyMaterial" > "${VAGRANT_SSH_KEY}"
 

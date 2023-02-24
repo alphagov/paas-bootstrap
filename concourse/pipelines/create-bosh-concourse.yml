@@ -648,14 +648,13 @@ jobs:
             - -e
             - -c
             - |
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
               cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               cd paas-bootstrap/terraform/vpc || exit
               terraform init
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var="set_concourse_egress_cidrs=true" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-vpc-tfstate/vpc.tfstate
@@ -711,7 +710,6 @@ jobs:
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                   -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
                   -state=../../../updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
-
         ensure:
           put: bootstrap-cyber-tfstate
           params:
@@ -902,15 +900,13 @@ jobs:
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
-                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 cd paas-bootstrap/terraform/bosh || exit
                 terraform init
 
                 terraform apply \
                   -auto-approve=true \
-                  -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                  -var="set_concourse_egress_cidrs=true" \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
@@ -1253,6 +1249,7 @@ jobs:
                 credhub set --name=/"${DEPLOY_ENV}"/concourse/region --type value --value "${AWS_REGION}"
 
                 credhub find --path=/
+
   - name: concourse-terraform
     serial: true
     plan:
@@ -1323,15 +1320,14 @@ jobs:
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
-
+              
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               cd paas-bootstrap/terraform/concourse || exit
               terraform init
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var="set_concourse_egress_cidrs=true" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate
@@ -2101,6 +2097,7 @@ jobs:
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
+                -var="set_concourse_egress_cidrs=false" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -target=aws_subnet.infra \
@@ -2146,6 +2143,7 @@ jobs:
                 -auto-approve=true \
                 -target=aws_security_group.bosh \
                 -state=../../../updated-bosh-tfstate/bosh.tfstate \
+                -var="set_concourse_egress_cidrs=false" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
@@ -2188,6 +2186,7 @@ jobs:
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
+                -var="set_concourse_egress_cidrs=false" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate

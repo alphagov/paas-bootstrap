@@ -53,7 +53,8 @@ These instructions contain placeholders where the exact command may vary. This t
 - [ ] `AWS_DEFAULT_REGION` environment set to the desired region for the environment
 - [ ] [Github OAuth application credentials](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app).
   If you're deploying a production/staging/shared dev environment (for example, dev01, dev02), the app should belong to the alphagov organisation, and the credentials should be added to `paas-credentials` <br />
-  If you're deploying a short-lived environment (for example, for penetration testing), the credentials can be associated with your GitHub account. You can put them in your personal password store, and set the path to it using the `GITHUB_PASSWORD_STORE_DIR` environment variable
+  If you're deploying a short-lived environment (for example, for penetration testing) the credentials can be associated with your GitHub account. You can put them in your personal password store, and set the path to it using the `GITHUB_PASSWORD_STORE_DIR` environment variable.
+  If you are setting up Github OAuth for your dev pipeline the callback url to use is https://deployer.${DEPLOY_ENV}.dev.cloudpipeline.digital/sky/issuer/callback
 
 ## Deploying the bootstrap for Cloud Foundry
 
