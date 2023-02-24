@@ -1,3 +1,15 @@
+data "aws_instances" "concourse_workers" {
+  filter {
+    name   = "tag:instance_group"
+    values = ["concourse-worker", "concourse-lite"]
+  }
+
+  filter {
+    name   = "tag:deploy_env"
+    values = [var.env]
+  }
+}
+
 resource "aws_elb" "concourse" {
   name         = "${var.env}-concourse"
   subnets      = split(",", var.infra_subnet_ids)
@@ -61,7 +73,7 @@ resource "aws_security_group" "concourse-elb" {
         concat(
           var.admin_cidrs,
           ["${aws_eip.concourse.public_ip}/32"],
-          [var.concourse_egress_cidr],
+          var.concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips),
         ),
       ),
     )

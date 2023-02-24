@@ -26,7 +26,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
+    cidr_blocks = var.concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
   }
 
   ingress {
@@ -43,7 +43,7 @@ resource "aws_security_group" "bosh" {
     from_port   = 6868
     to_port     = 6868
     protocol    = "tcp"
-    cidr_blocks = formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
+    cidr_blocks = var.concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)
   }
 
   ingress {

@@ -46,7 +46,7 @@ output "bosh_db_username" {
 }
 
 output "bosh_db_dbname" {
-  value = aws_db_instance.bosh.name
+  value = aws_db_instance.bosh.db_name
 }
 
 output "bosh_az" {
@@ -77,3 +77,6 @@ output "bosh_security_group_id" {
   value = aws_security_group.bosh.id
 }
 
+output "concourse_egress_cidrs" {
+  value = var.concourse_egress_cidrs
+}
