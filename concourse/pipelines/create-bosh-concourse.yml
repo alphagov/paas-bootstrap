@@ -2240,6 +2240,7 @@ jobs:
                   --passwords \
                   --ssh \
                   --rsa \
+                  --preserve credhub_encryption_password \
                   > modified-bosh-vars-store/bosh-vars-store.yml
         on_success:
           in_parallel:
