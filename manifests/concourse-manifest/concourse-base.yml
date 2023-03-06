@@ -89,8 +89,7 @@ instance_groups:
             host_public_key: ((concourse_tsa_host_key.public_key))
             worker_key: ((concourse_worker_key))
           tags: [colocated-with-web]
-          garden:
-            allow_host_access: true
+          runtime: containerd
           baggageclaim:
             driver: overlay
 
@@ -129,8 +128,7 @@ instance_groups:
           worker_gateway:
             worker_key: ((concourse_worker_key))
             host_public_key: ((concourse_tsa_host_key.public_key))
-          garden:
-            allow_host_access: true
+          runtime: containerd
           baggageclaim:
             driver: overlay
 
