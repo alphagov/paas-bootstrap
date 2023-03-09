@@ -7,6 +7,10 @@ set -euo pipefail
   $FLY_CMD \
   $FLY_TARGET
 
+USER="${USER:-unknown}"
+
+echo $USER
+
 if [ "$USER" == "root" ] ; then
   # We are running in Concourse
   # Required env vars
