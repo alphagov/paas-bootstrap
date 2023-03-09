@@ -1,13 +1,13 @@
 #!/bin/bash
 set -euo pipefail
-env
+
 # Required env vars
 # shellcheck disable=SC2086
 : $CONCOURSE_URL \
   $FLY_CMD \
   $FLY_TARGET
 
-USER="${USER:-unknown}"
+USER="${USER:-$(whoami)}"
 
 echo $USER
 
