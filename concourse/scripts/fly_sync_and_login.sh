@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-
+env
 # Required env vars
 # shellcheck disable=SC2086
 : $CONCOURSE_URL \
