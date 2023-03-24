@@ -23,13 +23,16 @@ export CONCOURSE_WEB_USER CONCOURSE_WEB_PASSWORD
 export VAGRANT_DEFAULT_PROVIDER="aws"
 export VAGRANT_BOX_NAME="aws_vagrant_box"
 
-if ! aws ec2 describe-key-pairs --key-name "${VAGRANT_SSH_KEY_NAME}" >/dev/null 2>&1 ; then
-  # Create the key pair online.
-  aws ec2 create-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}" | jq -r ".KeyMaterial" > "${VAGRANT_SSH_KEY}"
-
-  # Secure the local key.
-  chmod 600 "${VAGRANT_SSH_KEY}"
+if aws ec2 describe-key-pairs --key-name "${VAGRANT_SSH_KEY_NAME}" >/dev/null 2>&1 ; then
+  # Remove the aws key pair
+  aws ec2 delete-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}"
 fi
+
+# Create the key pair online.
+aws ec2 create-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}" | jq -r ".KeyMaterial" > "${VAGRANT_SSH_KEY}"
+
+# Secure the local key.
+chmod 600 "${VAGRANT_SSH_KEY}"
 
 # Install aws dummy box if not present
 if ! vagrant box list | grep -qe "^${VAGRANT_BOX_NAME} "; then
