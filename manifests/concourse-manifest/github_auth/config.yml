@@ -19,7 +19,6 @@ instance_groups:
                   github:
                     users:
                     - AP-Hunt
-                    - cadmiumcat
                     - corlettb
                     - kr8n3r
                     - jackjoy-gds
