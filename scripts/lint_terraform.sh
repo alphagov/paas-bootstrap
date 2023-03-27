@@ -11,7 +11,7 @@ CWD=$(pwd)
 
 for dir in terraform/*/; do
   cd "${dir}"
-  terraform init -backend=false >/dev/null
+  terraform init >/dev/null
   terraform validate >/dev/null
   terraform fmt -check -diff
   cd "${CWD}"

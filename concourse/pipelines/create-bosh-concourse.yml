@@ -209,6 +209,28 @@ resources:
       initial_version: "-"
       initial_content_text: ""
 
+  - name: bootstrap-cyber-tfstate
+    type: s3-iam
+    source:
+      bucket: ((state_bucket))
+      versioned_file: bootstrap-cyber.tfstate
+      region_name: ((aws_region))
+      initial_version: "-"
+      initial_content_text: |
+        {
+            "version": 1,
+            "serial": 0,
+            "modules": [
+                {
+                    "path": [
+                        "root"
+                    ],
+                    "outputs": {},
+                    "resources": {}
+                }
+            ]
+        }
+
   - name: ssh-private-key
     type: s3-iam
     source:
@@ -568,6 +590,7 @@ jobs:
         - get: pipeline-trigger
           trigger: true
           passed: ['check-for-secrets']
+        - get: vpc-tfstate
         - get: git-ssh-public-key
         - get: git-ssh-private-key
 
@@ -613,6 +636,9 @@ jobs:
           image_resource: *terraform-image-resource
           inputs:
           - name: paas-bootstrap
+          - name: vpc-tfstate
+          outputs:
+          - name: updated-vpc-tfstate
           params:
             TF_VAR_env: ((deploy_env))
             AWS_DEFAULT_REGION: ((aws_region))
@@ -623,17 +649,20 @@ jobs:
             - -c
             - |
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
+              cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               cd paas-bootstrap/terraform/vpc || exit
-
-              terraform init --reconfigure \
-                -backend-config="bucket=((state_bucket))" \
-                -backend-config="region=((aws_region))"
+              terraform init
 
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars"
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../updated-vpc-tfstate/vpc.tfstate
+        ensure:
+          put: vpc-tfstate
+          params:
+            file: updated-vpc-tfstate/vpc.tfstate
 
   - name: cyber-terraform
     serial: true
@@ -647,6 +676,7 @@ jobs:
         - get: paas-bootstrap
           passed: ['check-for-secrets']
         - get: bootstrap-cyber-tfvars
+        - get: bootstrap-cyber-tfstate
 
       - task: terraform-apply
         config:
@@ -654,7 +684,10 @@ jobs:
           image_resource: *terraform-image-resource
           inputs:
             - name: paas-bootstrap
+            - name: bootstrap-cyber-tfstate
             - name: bootstrap-cyber-tfvars
+          outputs:
+            - name: updated-bootstrap-cyber-tfstate
           params:
             DEPLOY_ENV: ((deploy_env))
             AWS_DEFAULT_REGION: ((aws_region))
@@ -666,18 +699,23 @@ jobs:
               - -e
               - -c
               - |
+                cp bootstrap-cyber-tfstate/bootstrap-cyber.tfstate \
+                   updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
                 cd paas-bootstrap/terraform/cyber || exit
-
-                terraform init --reconfigure \
-                  -backend-config="bucket=((state_bucket))" \
-                  -backend-config="region=((aws_region))"
+                terraform init
 
                 terraform apply \
                   -auto-approve=true \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
-                  -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
+                  -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                  -state=../../../updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+
+        ensure:
+          put: bootstrap-cyber-tfstate
+          params:
+            file: updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
   - name: generate-secrets
     serial: true
@@ -806,6 +844,8 @@ jobs:
         - get: bosh-secrets
           passed: ['generate-secrets']
         - get: vpc-tfstate
+          passed: ['vpc']
+        - get: bosh-tfstate
         - get: bootstrap-cyber-tfvars
           passed: ['cyber-terraform']
         - get: ssh-public-key
@@ -839,8 +879,11 @@ jobs:
           inputs:
             - name: paas-bootstrap
             - name: terraform-variables
+            - name: bosh-tfstate
             - name: ssh-public-key
             - name: bootstrap-cyber-tfvars
+          outputs:
+            - name: updated-bosh-tfstate
           params:
             DEPLOY_ENV: ((deploy_env))
             AWS_DEFAULT_REGION: ((aws_region))
@@ -861,11 +904,9 @@ jobs:
                 cp ssh-public-key/id_rsa.pub paas-bootstrap/terraform/bosh
                 CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
+                cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 cd paas-bootstrap/terraform/bosh || exit
-
-                terraform init --reconfigure \
-                  -backend-config="bucket=((state_bucket))" \
-                  -backend-config="region=((aws_region))"
+                terraform init
 
                 terraform apply \
                   -auto-approve=true \
@@ -873,7 +914,12 @@ jobs:
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
-                  -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
+                  -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
+                  -state=../../../updated-bosh-tfstate/bosh.tfstate
+        ensure:
+          put: bosh-tfstate
+          params:
+            file: updated-bosh-tfstate/bosh.tfstate
 
   - name: generate-bosh-config
     serial_groups: [bosh-deploy]
@@ -890,7 +936,9 @@ jobs:
         - get: bosh-ca
         - get: bosh-vars-store
         - get: vpc-tfstate
+          passed: ['bosh-terraform']
         - get: bosh-tfstate
+          passed: ['bosh-terraform']
         - get: bosh-uaa-google-oauth-secrets
         - get: bosh-cyber-secrets
         - get: paas-trusted-people
@@ -1077,27 +1125,6 @@ jobs:
         - get: bosh-init-state
         - get: ssh-private-key
 
-        # task to work around potential bosh state corruption on build re-runs - 184281154
-      - task: fetch-bosh-init-state
-        config:
-          platform: linux
-          image_resource: *awscli-image-resource
-          params:
-            AWS_DEFAULT_REGION: ((aws_region))
-            BOSH_MANIFEST_STATE: ((bosh_manifest_state))
-          outputs:
-            - name: bosh-init-state
-          run:
-            path: sh
-            args:
-            - -e
-            - -x
-            - -u
-            - -c
-            - |
-              cd bosh-init-state
-              aws s3 cp "s3://((state_bucket))/${BOSH_MANIFEST_STATE}" .
-
       - task: bosh-create-env
         config:
           platform: linux
@@ -1238,6 +1265,8 @@ jobs:
         - get: vpc-tfstate
           passed: ['bosh-terraform']
         - get: bosh-tfstate
+          passed: ['bosh-terraform']
+        - get: concourse-tfstate
         - get: git-ssh-public-key
 
       - task: terraform-outputs-to-sh
@@ -1274,7 +1303,10 @@ jobs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
+          - name: concourse-tfstate
           - name: git-ssh-public-key
+          outputs:
+          - name: updated-concourse-tfstate
           params:
             TF_VAR_env: ((deploy_env))
             TF_VAR_concourse_hostname: ((concourse_hostname))
@@ -1293,17 +1325,20 @@ jobs:
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
               CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
+              cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               cd paas-bootstrap/terraform/concourse || exit
-
-              terraform init --reconfigure \
-                -backend-config="bucket=((state_bucket))" \
-                -backend-config="region=((aws_region))"
+              terraform init
 
               terraform apply \
                 -auto-approve=true \
                 -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
-                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars"
+                -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../updated-concourse-tfstate/concourse.tfstate
+        ensure:
+          put: concourse-tfstate
+          params:
+            file: updated-concourse-tfstate/concourse.tfstate
 
   - name: generate-concourse-config
     serial: true
@@ -1317,6 +1352,7 @@ jobs:
         - get: vpc-tfstate
           passed: ['concourse-terraform']
         - get: concourse-tfstate
+          passed: ['concourse-terraform']
         - get: bosh-secrets
           passed: ['generate-bosh-config']
         - get: bosh-tfstate
@@ -2011,6 +2047,7 @@ jobs:
           passed: ['post-deploy']
         - get: vpc-tfstate
         - get: bosh-tfstate
+        - get: concourse-tfstate
         - get: bootstrap-cyber-tfvars
 
       - task: terraform-outputs-to-sh
@@ -2045,6 +2082,9 @@ jobs:
           image_resource: *terraform-image-resource
           inputs:
           - name: paas-bootstrap
+          - name: vpc-tfstate
+          outputs:
+          - name: updated-vpc-tfstate
           params:
             TF_VAR_env: ((deploy_env))
             AWS_DEFAULT_REGION: ((aws_region))
@@ -2054,18 +2094,21 @@ jobs:
             - -e
             - -c
             - |
+              cp vpc-tfstate/vpc.tfstate updated-vpc-tfstate/vpc.tfstate
               cd paas-bootstrap/terraform/vpc || exit
-
-              terraform init --reconfigure \
-                -backend-config="bucket=((state_bucket))" \
-                -backend-config="region=((aws_region))"
+              terraform init
 
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
-                -target=aws_subnet.infra
+                -target=aws_subnet.infra \
+                -state=../../../updated-vpc-tfstate/vpc.tfstate
+        ensure:
+          put: vpc-tfstate
+          params:
+            file: updated-vpc-tfstate/vpc.tfstate
 
       - task: remove-concourse-ip-from-bosh-sg
         config:
@@ -2074,7 +2117,10 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
+          - name: bosh-tfstate
           - name: bootstrap-cyber-tfvars
+          outputs:
+          - name: updated-bosh-tfstate
           params:
             TF_VAR_env: ((deploy_env))
             TF_VAR_system_dns_zone_name: ((system_dns_zone_name))
@@ -2092,17 +2138,21 @@ jobs:
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
 
+              cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               cd paas-bootstrap/terraform/bosh || exit
-              terraform init --reconfigure \
-                -backend-config="bucket=((state_bucket))" \
-                -backend-config="region=((aws_region))"
+              terraform init
 
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.bosh \
+                -state=../../../updated-bosh-tfstate/bosh.tfstate \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
+        ensure:
+          put: bosh-tfstate
+          params:
+            file: updated-bosh-tfstate/bosh.tfstate
 
       - task: remove-concourse-ip-from-concourse-sg
         config:
@@ -2112,6 +2162,9 @@ jobs:
           - name: paas-bootstrap
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
+          - name: concourse-tfstate
+          outputs:
+          - name: updated-concourse-tfstate
           params:
             TF_VAR_env: ((deploy_env))
             TF_VAR_concourse_hostname: ((concourse_hostname))
@@ -2128,16 +2181,20 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               . bosh-terraform-outputs/tfvars.sh
 
+              cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               cd paas-bootstrap/terraform/concourse || exit
-              terraform init --reconfigure \
-                -backend-config="bucket=((state_bucket))" \
-                -backend-config="region=((aws_region))"
+              terraform init
 
               terraform apply \
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
+                -state=../../../updated-concourse-tfstate/concourse.tfstate
+        ensure:
+          put: concourse-tfstate
+          params:
+            file: updated-concourse-tfstate/concourse.tfstate
 
   - name: clear-concourse-credentials
     plan:
