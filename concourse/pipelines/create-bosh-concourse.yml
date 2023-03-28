@@ -1114,7 +1114,17 @@ jobs:
             - -c
             - |
               cd bosh-init-state
-              aws s3 cp "s3://((state_bucket))/${BOSH_MANIFEST_STATE}" .
+              
+              error_message=$(aws s3 cp "s3://((state_bucket))/${BOSH_MANIFEST_STATE}" .)
+              if [ $? -ne 0 ]; then
+                if [ -n "$error_message" ]; then
+                  echo $error_message
+                  exit 1
+                else
+                  echo "No state file found in S3, initialising new state file"
+                  touch ${BOSH_MANIFEST_STATE}
+                fi
+              fi
 
       - task: bosh-create-env
         config:
