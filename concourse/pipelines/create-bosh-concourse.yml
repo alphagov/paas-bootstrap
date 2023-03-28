@@ -93,6 +93,12 @@ resource_types:
     repository: ghcr.io/alphagov/paas/git-resource
     tag: 1f84d4a76b4a2491283e0107ae7ed4bc83c84d1b
 
+- name: key-value
+  type: registry-image
+  source:
+    repository: ghcr.io/alphagov/paas/keyval-resource
+    tag: d467945db218918c73ffc804dcc3f5b6281c7164
+
 resources:
   - name: paas-bootstrap
     type: git
@@ -365,6 +371,9 @@ resources:
       region_name: ((aws_region))
       versioned_file: paas-bootstrap-cloud-config.yml
 
+  - name: initial-trigger
+    type: key-value
+
 jobs:
   - name: update-pipeline
     serial: true
@@ -468,6 +477,8 @@ jobs:
             TARGET_CONCOURSE: ((target_concourse))
           inputs:
             - name: self-update-pipeline-status
+          outputs:
+            - name: initial-trigger
           run:
             path: sh
             args:
@@ -494,10 +505,16 @@ jobs:
 
                 echo 'self-update-pipeline failed'
                 exit 1
+      - put: initial-trigger
+        params:
+          directory: initial-trigger
 
   - name: init-bucket
     serial: true
     plan:
+      - get: initial-trigger
+        trigger: true
+        passed: ['update-pipeline']
       - get: paas-bootstrap
         trigger: true
         passed: ['update-pipeline']
@@ -510,6 +527,7 @@ jobs:
             AWS_DEFAULT_REGION: ((aws_region))
           inputs:
             - name: paas-bootstrap
+            - name: initial-trigger
           outputs:
             - name: bucket-state
           run:
