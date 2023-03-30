@@ -4,6 +4,11 @@ display:
 
 meta:
   containers:
+    alpine: &alpine-image-resource
+      type: registry-image
+      source:
+        repository: ghcr.io/alphagov/paas/alpine
+        tag: b25554b10d0efb9da2aef192f9a890199863f59e
     awscli: &awscli-image-resource
       type: registry-image
       source:
@@ -611,6 +616,7 @@ jobs:
         - get: vpc-tfstate
         - get: git-ssh-public-key
         - get: git-ssh-private-key
+        - get: paas-trusted-people
 
       - task: generate-git-ssh-keys
         config:
@@ -648,6 +654,26 @@ jobs:
               params:
                 file: generated-git-ssh-keys/git_id_rsa
 
+      - task: create-static-cdrs
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+          - name: paas-bootstrap
+          - name: paas-trusted-people
+          outputs:
+          - name: static-cidrs-tfvars
+          params:
+            AWS_ACCOUNT: ((aws_account))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              cd paas-trusted-people
+              ruby ../paas-bootstrap/concourse/scripts/get_static_cidrs.rb > ../static-cidrs-tfvars/user_static_cidrs.tfvars
+
       - task: deploy-vpc
         config:
           platform: linux
@@ -655,6 +681,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          - name: static-cidrs-tfvars
           outputs:
           - name: updated-vpc-tfstate
           params:
@@ -673,6 +700,7 @@ jobs:
               terraform apply \
                 -auto-approve=true \
                 -var="set_concourse_egress_cidrs=true" \
+                -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-vpc-tfstate/vpc.tfstate
@@ -866,6 +894,7 @@ jobs:
           passed: ['cyber-terraform']
         - get: ssh-public-key
           passed: ['generate-secrets']
+        - get: paas-trusted-people
 
       - task: extract-terraform-variables
         config:
@@ -875,8 +904,12 @@ jobs:
             - name: paas-bootstrap
             - name: vpc-tfstate
             - name: bosh-secrets
+            - name: paas-trusted-people
           outputs:
             - name: terraform-variables
+            - name: static-cidrs-tfvars
+          params:
+            AWS_ACCOUNT: ((aws_account))
           run:
             path: sh
             args:
@@ -887,6 +920,8 @@ jobs:
                 < vpc-tfstate/vpc.tfstate > terraform-variables/vpc.tfvars.sh
                 ruby paas-bootstrap/concourse/scripts/extract_tf_vars_from_yaml.rb \
                 < bosh-secrets/bosh-secrets.yml > terraform-variables/bosh-secrets.tfvars.sh
+                cd paas-trusted-people
+                ruby ../paas-bootstrap/concourse/scripts/get_static_cidrs.rb > ../static-cidrs-tfvars/user_static_cidrs.tfvars
 
       - task: terraform-apply
         config:
@@ -898,6 +933,7 @@ jobs:
             - name: bosh-tfstate
             - name: ssh-public-key
             - name: bootstrap-cyber-tfvars
+            - name: static-cidrs-tfvars
           outputs:
             - name: updated-bosh-tfstate
           params:
@@ -926,6 +962,7 @@ jobs:
                   -auto-approve=true \
                   -var="set_concourse_egress_cidrs=true" \
                   -var env="((deploy_env))" \
+                  -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                   -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars" \
@@ -1162,6 +1199,7 @@ jobs:
                 chmod 400 bosh-init-working-dir/.ssh/id_rsa
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
+
                 bosh -n create-env bosh-init-working-dir/bosh-manifest.yml \
                   --state=bosh-init-working-dir/bosh-manifest-state.json
         ensure:
@@ -1283,6 +1321,27 @@ jobs:
           passed: ['bosh-terraform']
         - get: concourse-tfstate
         - get: git-ssh-public-key
+        - get: paas-trusted-people
+
+      - task: create-static-cdrs
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+          - name: paas-bootstrap
+          - name: paas-trusted-people
+          outputs:
+          - name: static-cidrs-tfvars
+          params:
+            AWS_ACCOUNT: ((aws_account))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              cd paas-trusted-people
+              ruby ../paas-bootstrap/concourse/scripts/get_static_cidrs.rb > ../static-cidrs-tfvars/user_static_cidrs.tfvars
 
       - task: terraform-outputs-to-sh
         config:
@@ -1292,6 +1351,7 @@ jobs:
           - name: paas-bootstrap
           - name: vpc-tfstate
           - name: bosh-tfstate
+          - name: paas-trusted-people
           outputs:
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
@@ -1320,6 +1380,7 @@ jobs:
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
           - name: git-ssh-public-key
+          - name: static-cidrs-tfvars
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -1346,6 +1407,7 @@ jobs:
               terraform apply \
                 -auto-approve=true \
                 -var="set_concourse_egress_cidrs=true" \
+                -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate
@@ -2063,6 +2125,27 @@ jobs:
         - get: bosh-tfstate
         - get: concourse-tfstate
         - get: bootstrap-cyber-tfvars
+        - get: paas-trusted-people
+
+      - task: create-static-cdrs
+        config:
+          platform: linux
+          image_resource: *ruby-slim-image-resource
+          inputs:
+          - name: paas-bootstrap
+          - name: paas-trusted-people
+          outputs:
+          - name: static-cidrs-tfvars
+          params:
+            AWS_ACCOUNT: ((aws_account))
+          run:
+            path: sh
+            args:
+            - -e
+            - -c
+            - |
+              cd paas-trusted-people
+              ruby ../paas-bootstrap/concourse/scripts/get_static_cidrs.rb > ../static-cidrs-tfvars/user_static_cidrs.tfvars
 
       - task: terraform-outputs-to-sh
         config:
@@ -2097,6 +2180,7 @@ jobs:
           inputs:
           - name: paas-bootstrap
           - name: vpc-tfstate
+          - name: static-cidrs-tfvars
           outputs:
           - name: updated-vpc-tfstate
           params:
@@ -2116,6 +2200,7 @@ jobs:
                 -auto-approve=true \
                 -target=aws_security_group.office-access-ssh \
                 -var="set_concourse_egress_cidrs=false" \
+                -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -target=aws_subnet.infra \
@@ -2134,6 +2219,7 @@ jobs:
           - name: vpc-terraform-outputs
           - name: bosh-tfstate
           - name: bootstrap-cyber-tfvars
+          - name: static-cidrs-tfvars
           outputs:
           - name: updated-bosh-tfstate
           params:
@@ -2162,6 +2248,7 @@ jobs:
                 -target=aws_security_group.bosh \
                 -state=../../../updated-bosh-tfstate/bosh.tfstate \
                 -var="set_concourse_egress_cidrs=false" \
+                -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -var-file="../../../bootstrap-cyber-tfvars/bootstrap-cyber.tfvars"
@@ -2179,6 +2266,7 @@ jobs:
           - name: vpc-terraform-outputs
           - name: bosh-terraform-outputs
           - name: concourse-tfstate
+          - name: static-cidrs-tfvars
           outputs:
           - name: updated-concourse-tfstate
           params:
@@ -2205,6 +2293,7 @@ jobs:
                 -auto-approve=true \
                 -target=aws_security_group.concourse \
                 -var="set_concourse_egress_cidrs=false" \
+                -var-file="../../../static-cidrs-tfvars/user_static_cidrs.tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                 -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
                 -state=../../../updated-concourse-tfstate/concourse.tfstate

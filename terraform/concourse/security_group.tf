@@ -27,6 +27,7 @@ resource "aws_security_group" "concourse" {
       concat(
         var.admin_cidrs,
         [format("%s/32", var.microbosh_static_private_ip)],
+        var.user_static_cidrs,
       ),
     )
   }
@@ -74,6 +75,7 @@ resource "aws_security_group" "concourse-worker" {
       concat(
         var.admin_cidrs,
         [format("%s/32", var.microbosh_static_private_ip)],
+        var.user_static_cidrs,
       ),
     )
   }
