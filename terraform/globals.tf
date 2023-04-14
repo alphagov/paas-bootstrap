@@ -69,9 +69,10 @@ variable "infra_subnet_ids" {
   default     = ""
 }
 
-variable "concourse_egress_cidr" {
-  description = "Public egress IP address of concourse running the pipeline"
-  default     = ""
+variable "set_concourse_egress_cidrs" {
+  description = "Allow or restrict public egress IP address of concourse workers"
+  type        = bool
+  default     = false
 }
 
 variable "microbosh_static_private_ip" {

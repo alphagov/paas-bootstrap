@@ -6,4 +6,3 @@ provider "aws" {
   alias  = "codecommit"
   region = "us-east-1"
 }
-

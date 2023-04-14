@@ -252,7 +252,6 @@ jobs:
               . vpc-terraform-outputs/tfvars.sh
               export TF_VAR_secrets_bosh_postgres_password=""
               export TF_VAR_bosh_az=""
-              CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
               cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
               cd paas-bootstrap/terraform/bosh || exit
@@ -262,7 +261,7 @@ jobs:
 
               terraform apply \
                 -auto-approve=true \
-                -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                -var="set_concourse_egress_cidrs=true" \
                 -target=aws_security_group.bosh \
                 -state=../../../updated-bosh-tfstate/bosh.tfstate \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -570,16 +569,15 @@ jobs:
                 . terraform-variables/bosh-secrets.tfvars.sh
 
                 touch paas-bootstrap/terraform/bosh/id_rsa.pub
-                CONCOURSE_EGRESS_IP=$(wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4)
 
                 cp bosh-tfstate/bosh.tfstate updated-bosh-tfstate/bosh.tfstate
                 cd paas-bootstrap/terraform/bosh || exit
                 terraform init
 
-                sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bosh-tfstate/bosh.tfstate
+                sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-bosh-tfstate/bosh.tfstate
 
                 terraform destroy -auto-approve \
-                  -var concourse_egress_cidr="${CONCOURSE_EGRESS_IP}/32" \
+                  -var="set_concourse_egress_cidrs=true" \
                   -var env="((deploy_env))" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
                   -var-file="../../../paas-bootstrap/terraform/((aws_region)).tfvars" \
@@ -623,7 +621,7 @@ jobs:
               cd paas-bootstrap/terraform/vpc || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-vpc-tfstate/vpc.tfstate
+              sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-vpc-tfstate/vpc.tfstate
 
               terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \
@@ -669,7 +667,7 @@ jobs:
               cd paas-bootstrap/terraform/cyber || exit
               terraform init
 
-              sh paas-bootstrap/terraform/./update-terraform-providers.sh updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
+              sh ../../../paas-bootstrap/terraform/./update-terraform-providers.sh ../../../updated-bootstrap-cyber-tfstate/bootstrap-cyber.tfstate
 
               terraform destroy -auto-approve \
                 -var-file="../../../paas-bootstrap/terraform/((aws_account)).tfvars" \

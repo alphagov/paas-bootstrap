@@ -44,7 +44,7 @@ output "git_concourse_pool_clone_full_url_ssh" {
 }
 
 output "concourse_db_name" {
-  value = aws_db_instance.concourse.name
+  value = aws_db_instance.concourse.db_name
 }
 
 output "concourse_db_username" {
@@ -62,5 +62,9 @@ output "concourse_db_address" {
 
 output "concourse_db_port" {
   value = aws_db_instance.concourse.port
+}
+
+output "set_concourse_egress_cidrs" {
+  value = var.set_concourse_egress_cidrs
 }
 
