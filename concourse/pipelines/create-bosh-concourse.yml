@@ -1344,7 +1344,7 @@ jobs:
           passed: ['concourse-terraform']
         - get: pipeline-trigger
           trigger: true
-          passed: ['concourse-terraform']
+          passed: ['concourse-terraform', 'generate-bosh-config']
         - get: vpc-tfstate
           passed: ['concourse-terraform']
         - get: concourse-tfstate
