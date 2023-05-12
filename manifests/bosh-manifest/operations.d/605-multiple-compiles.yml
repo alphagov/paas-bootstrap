@@ -1,6 +1,4 @@
 
-# - type: replace
-#   path: /compilation/-
-#   value:
-#     name: workers
-#     type: 2
+- type: replace
+  path: /cloud_provider/compilation?/workers
+  value: 2
