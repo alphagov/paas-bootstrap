@@ -1,0 +1,6 @@
+
+- type: replace
+  path: /compilation/-
+  value:
+    name: workers
+    type: 2

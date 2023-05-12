@@ -1,4 +1,4 @@
 ---
 - type: replace
   path: /resource_pools/name=vms/cloud_properties/instance_type
-  value: m5.large
+  value: m6i.xlarge
