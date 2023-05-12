@@ -2,3 +2,15 @@
 - type: replace
   path: /cloud_provider/compilation?/workers
   value: 2
+
+- type: replace
+  path: /compilation?/workers
+  value: 2
+
+- type: replace
+  path: /cloud_provider/properties/compilation?/workers
+  value: 2
+
+- type: replace
+  path: /cloud_provider/template/compilation?/workers
+  value: 2
