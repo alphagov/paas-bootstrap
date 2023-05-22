@@ -155,8 +155,8 @@ RSpec.describe "generic manifest validations" do
       context "when not in development" do
         let(:manifest) { manifest_for_account("prod") }
 
-        it "is m5.large" do
-          expect(instance_type).to eq("m5.large")
+        it "is c6i.xlarge" do
+          expect(instance_type).to eq("c6i.xlarge")
         end
       end
     end
