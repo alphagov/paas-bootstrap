@@ -26,14 +26,14 @@ resource "aws_security_group" "office-access-ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = compact(concat(var.admin_cidrs, var.set_concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)))
+    cidr_blocks = compact(concat(var.admin_cidrs, var.user_static_cidrs, var.set_concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)))
   }
 
   ingress {
     from_port   = 8443
     to_port     = 8443
     protocol    = "tcp"
-    cidr_blocks = compact(concat(var.admin_cidrs, var.set_concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)))
+    cidr_blocks = compact(concat(var.admin_cidrs, var.user_static_cidrs, var.set_concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips)))
   }
 
   tags = {

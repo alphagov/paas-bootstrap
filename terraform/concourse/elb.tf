@@ -72,6 +72,7 @@ resource "aws_security_group" "concourse-elb" {
       distinct(
         concat(
           var.admin_cidrs,
+          var.user_static_cidrs,
           ["${aws_eip.concourse.public_ip}/32"],
           var.set_concourse_egress_cidrs == false ? [] : formatlist("%s/32", data.aws_instances.concourse_workers.public_ips),
         ),

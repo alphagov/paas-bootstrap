@@ -16,4 +16,3 @@ resource "aws_s3_bucket_acl" "bosh-blobstore_acl" {
 
   depends_on = [aws_s3_bucket_ownership_controls.bosh-blobstore]
 }
-

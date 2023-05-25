@@ -11,10 +11,13 @@ resource "aws_security_group" "bosh_lb" {
   }
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.admin_cidrs
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+    cidr_blocks = concat(
+      var.admin_cidrs,
+      var.user_static_cidrs,
+    )
   }
 
   tags = {
@@ -97,4 +100,3 @@ resource "aws_route53_record" "bosh_uaa_external" {
     evaluate_target_health = false
   }
 }
-
