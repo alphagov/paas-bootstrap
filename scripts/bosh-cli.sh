@@ -1,6 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
+if [[ -n "${PAAS_IN_BOSH_CLI_SUBSHELL:-}" ]]; then
+  echo "You're already in a BOSH CLI subshell"
+  exit 1
+fi
+
+bosh_config_dir="$(mktemp -dt "bosh-cli--${DEPLOY_ENV}")"
+if [[ ! -d "${bosh_config_dir}" ]]; then
+  echo "Failed to create temporary directory: ${bosh_config_dir}"
+  exit 1
+fi
+
 tunnel_mux='/tmp/bosh-ssh-tunnel.mux'
 
 function cleanup() {
@@ -9,13 +20,14 @@ function cleanup() {
 
   # Avoid keeping sensitive tokens in bosh config when we don't need them.
   # This will mean we have to sign in to bosh every time we run this script.
-  rm -f ~/.bosh/config
+  echo 'Cleaning up BOSH config'
+  rm -f "${tunnel_mux}"
+  rm -rf "${bosh_config_dir}"
 }
 
 trap cleanup EXIT
 
 echo 'Getting BOSH settings'
-
 BOSH_CA_CERT="$(aws s3 cp "s3://gds-paas-${DEPLOY_ENV}-state/bosh-CA.crt" -)"
 
 echo 'Opening SSH tunnel'
@@ -26,13 +38,16 @@ ssh -qfNC -4 -D 25555 \
   -o UserKnownHostsFile=/dev/null \
   -o ServerAliveInterval=30 \
   -M \
-  -S "$tunnel_mux" \
+  -S "${tunnel_mux}" \
   paas_bosh_ssh
 
 export BOSH_CA_CERT
 export BOSH_ALL_PROXY="socks5://localhost:25555"
 export BOSH_ENVIRONMENT="bosh.${SYSTEM_DNS_ZONE_NAME}"
 export BOSH_DEPLOYMENT="${DEPLOY_ENV}"
+export BOSH_CONFIG="${bosh_config_dir}/config"
+
+export PAAS_IN_BOSH_CLI_SUBSHELL=true
 
 echo "
   ,--.                 .--.
@@ -44,5 +59,8 @@ echo "
   2. Skip entering a username and password
   3. Enter the passcode from https://bosh-uaa-external.${SYSTEM_DNS_ZONE_NAME}/passcode
 "
-
-PS1="BOSH ($DEPLOY_ENV) $ " bash --login --norc --noprofile
+if [[ "${SHELL}" == *bash ]]; then
+  PS1="BOSH ($DEPLOY_ENV) $ " ${SHELL} --login --norc --noprofile
+else
+  ${SHELL}
+fi
