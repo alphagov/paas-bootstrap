@@ -144,3 +144,7 @@ variable "user_static_cidrs" {
   description = "user static cidrs populated with values from paas-trusted-people"
   default     = []
 }
+
+data "aws_s3_bucket" "account_region_wide_alb_access_logs" {
+  bucket = "gds-paas-${var.aws_account}-account-wide-alb-access-logs-${var.region}"
+}

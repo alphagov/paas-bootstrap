@@ -35,6 +35,11 @@ resource "aws_elb" "concourse" {
     lb_protocol        = "ssl"
     ssl_certificate_id = aws_acm_certificate_validation.system.certificate_arn
   }
+  access_logs {
+    bucket        = data.aws_s3_bucket.account_region_wide_alb_access_logs.bucket
+    bucket_prefix = "${var.env}/concourse"
+    enabled       = true
+  }
 
   tags = {
     Name = "${var.env}-concourse-elb"
@@ -113,4 +118,3 @@ resource "aws_route53_record" "concourse" {
   ttl     = "60"
   records = [aws_elb.concourse.dns_name]
 }
-
