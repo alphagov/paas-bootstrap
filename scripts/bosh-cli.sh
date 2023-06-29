@@ -6,7 +6,7 @@ if [[ -n "${PAAS_IN_BOSH_CLI_SUBSHELL:-}" ]]; then
   exit 1
 fi
 
-bosh_config_dir="$(mktemp -dt "bosh-cli--${DEPLOY_ENV}")"
+bosh_config_dir="$(mktemp -d)"
 if [[ ! -d "${bosh_config_dir}" ]]; then
   echo "Failed to create temporary directory: ${bosh_config_dir}"
   exit 1
