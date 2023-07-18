@@ -8,47 +8,47 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/alpine
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     awscli: &awscli-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/bosh-cli-v2
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     certstrap: &certstrap-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/certstrap
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     git-ssh: &git-ssh-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/git-ssh
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     ruby-slim: &ruby-slim-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/ruby
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     self-update-pipelines: &self-update-pipelines-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/self-update-pipelines
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     spruce: &spruce-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/spruce
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
     terraform: &terraform-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/terraform
-        tag: b25554b10d0efb9da2aef192f9a890199863f59e
+        tag: 540813b98e23f9865b33c206a840a8d5633287e9
 
 groups:
   - name: all
