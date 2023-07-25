@@ -8,7 +8,7 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: 540813b98e23f9865b33c206a840a8d5633287e9
+        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
 
 resources:
   - name: delete-timer
