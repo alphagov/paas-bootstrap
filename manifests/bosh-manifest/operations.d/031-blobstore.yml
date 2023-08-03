@@ -1,25 +1,26 @@
+
+- type: remove
+  path: /instance_groups/name=bosh/jobs/name=blobstore
+
 - type: replace
-  path: /instance_groups/name=bosh/properties/blobstore
+  path: /instance_groups/name=bosh/properties/blobstore?
   value:
     provider: s3
     credentials_source: env_or_profile
     bucket_name: ((bosh_blobstore_bucket_name))
     s3_region: ((region))
 
+- type: remove
+  path: /instance_groups/name=bosh/properties/agent/env/bosh/blobstores
+
 - type: replace
-  path: /resource_pools/0/env/bosh/blobstores/0?
+  path: /instance_groups/name=bosh/properties/agent/env/bosh/blobstores?/-
   value:
     options:
       bucket_name: ((bosh_blobstore_bucket_name))
       credentials_source: env_or_profile
-      s3_region: ((region))
+      region: ((region))
     provider: s3
-
-- type: remove
-  path: /instance_groups/name=bosh/properties/agent/env
-
-- type: remove
-  path: /instance_groups/name=bosh/jobs/name=blobstore
 
 - type: remove
   path: /variables/name=blobstore_ca
