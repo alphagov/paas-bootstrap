@@ -48,7 +48,7 @@ releases:
     sha1: f2a5fc665b8d6581c302bc90aaa49a7ccd72efb9
     properties: {}
 
-  - name: node-exporter
-    version: "4.2.0"
-    url: "https://bosh.io/d/github.com/cloudfoundry-community/node-exporter-boshrelease?v=4.2.0"
-    sha1: "b4ffebacc55fbb9934425ac792bb7179eed7e61c"
+  - name: "node-exporter"
+    version: "5.3.0"
+    url: "https://bosh.io/d/github.com/cloudfoundry-community/node-exporter-boshrelease?v=5.3.0"
+    sha1: "4f47c84cb79a543f41fab4412daa930eff12e35b"
