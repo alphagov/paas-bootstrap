@@ -2,10 +2,15 @@
   path: /instance_groups/name=bosh/properties/aws/max_retries?
   value: 16
 
+# We cache the cpi compile in the bosh-cli-v2 docker image.
+# You should update the cpi version here first.
+# See: https://github.com/alphagov/paas-docker-cloudfoundry-tools/blob/main/bosh-cli-v2/Dockerfile
+# If a different version is used in the image versus the below you will add 3-4 mins to the deploy time.
+
 - path: /releases/name=bosh-aws-cpi
   type: replace
   value:
     name: "bosh-aws-cpi"
-    version: "97"
-    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=97"
-    sha1: "b6aa84bc178e5cc99faa55a89943214c33488d5f"
+    version: "99"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=99"
+    sha1: "ffc4a06d6728d88eb108418f886f46428c2a1bf2"

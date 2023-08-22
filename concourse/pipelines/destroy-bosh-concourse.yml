@@ -8,12 +8,12 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/bosh-cli-v2
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     ruby-slim: &ruby-slim-image-resource
       type: registry-image
       source:
@@ -23,12 +23,12 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/self-update-pipelines
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     terraform: &terraform-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/terraform
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
 
 resource_types:
 - name: s3-iam

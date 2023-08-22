@@ -17,3 +17,12 @@
 
 - type: remove
   path: /variables/name=blobstore_server_tls
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/agent/env?/bosh/blobstores?/-
+  value:
+    provider: s3
+    options:
+      bucket_name: ((bosh_blobstore_bucket_name))
+      credentials_source: env_or_profile
+      region: ((region))

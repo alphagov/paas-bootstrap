@@ -8,47 +8,47 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/alpine
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     awscli: &awscli-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/bosh-cli-v2
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     certstrap: &certstrap-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/certstrap
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     git-ssh: &git-ssh-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/git-ssh
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     ruby-slim: &ruby-slim-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/ruby
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     self-update-pipelines: &self-update-pipelines-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/self-update-pipelines
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     spruce: &spruce-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/spruce
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
     terraform: &terraform-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/terraform
-        tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+        tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
 
 groups:
   - name: all
@@ -102,7 +102,7 @@ resource_types:
   type: registry-image
   source:
     repository: ghcr.io/alphagov/paas/keyval-resource
-    tag: d233a6d5064fc720fb90fdb1c1e773ac21f3857c
+    tag: acff07cc3f0d4f478f54a7dedd40d47c90ad62f7
 
 resources:
   - name: paas-bootstrap
@@ -1199,6 +1199,10 @@ jobs:
                 chmod 400 bosh-init-working-dir/.ssh/id_rsa
                 cp bosh-manifest/bosh-manifest.yml bosh-init-working-dir/bosh-manifest.yml
                 cp bosh-init-state/"${BOSH_MANIFEST_STATE}" bosh-init-working-dir/bosh-manifest-state.json
+
+                # uncomment if you want to force a bosh recreate each time
+                # RANDOM=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 20 | head -n 1)
+                # yq -i ".tags.random = \"${RANDOM}\"" bosh-init-working-dir/bosh-manifest.yml
 
                 bosh -n create-env bosh-init-working-dir/bosh-manifest.yml \
                   --state=bosh-init-working-dir/bosh-manifest-state.json
