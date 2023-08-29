@@ -40,13 +40,6 @@ resource "aws_lb" "bosh" {
   tags = {
     Name = "${var.env}-bosh-lb"
   }
-
-  access_logs {
-    bucket  = data.aws_s3_bucket.account_wide_alb_access_logs.id
-    prefix  = "${var.env}/bosh"
-    enabled = true
-  }
-
 }
 
 resource "aws_lb_listener" "bosh_tls" {
