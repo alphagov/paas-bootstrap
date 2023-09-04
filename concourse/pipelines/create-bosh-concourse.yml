@@ -1107,7 +1107,7 @@ jobs:
               - -e
               - -c
               - |
-                if ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb \
+                if ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb --min-remaining-days 400 \
                   --skip-ca-certs \
                   bosh-vars-store-cleaned/bosh-vars-store.yml ; then
 
@@ -2455,6 +2455,6 @@ jobs:
             - -e
             - -c
             - |
-              ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb \
+              ./paas-bootstrap/manifests/shared/scripts/check-certificates.rb --min-remaining-days 400 \
                   bosh-manifest-pre-vars/bosh-manifest-pre-vars.yml \
                   bosh-vars-store/bosh-vars-store.yml
