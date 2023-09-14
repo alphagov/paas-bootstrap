@@ -2,7 +2,7 @@
 meta:
   stemcell:
     name: bosh-aws-xen-hvm-ubuntu-jammy-go_agent
-    version: "1.199"
+    version: "1.222"
 
 name: concourse
 
