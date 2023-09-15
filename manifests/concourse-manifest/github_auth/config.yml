@@ -27,7 +27,6 @@ instance_groups:
                     - malcgds
                     - nimalank7
                     - risicle
-                    - whi-tw
                 - name: pipeline-operator
                   github:
                     users:

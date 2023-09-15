@@ -18,7 +18,6 @@ instance_groups:
                     users:
                     - AP-Hunt
                     - kr8n3r
-                    - whi-tw
                     - risicle
                     - nimalank7
                     - malcgds
