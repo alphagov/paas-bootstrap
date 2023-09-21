@@ -28,6 +28,12 @@ resource "aws_security_group" "bosh_rds" {
   }
 }
 
+resource "aws_db_parameter_group" "bosh_pg_11" {
+  name        = "${var.env}-pg11-bosh"
+  family      = "postgres11"
+  description = "RDS Postgres 11 default parameter group"
+}
+
 resource "aws_db_parameter_group" "bosh_pg_13" {
   name        = "${var.env}-pg13-bosh"
   family      = "postgres13"
