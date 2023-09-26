@@ -85,6 +85,10 @@ variable "admin_cidrs" {
   description = "CSV of CIDR addresses with access to operator/admin endpoints"
 
   default = [
+    "217.196.229.80/32", # GDS BYOD VPN (Sep 2023)
+    "217.196.229.81/32",
+    "217.196.229.77/32", # GovWifi (Sep 2023)
+    "217.196.229.79/32", # Brattain (Sep 2023)
     "213.86.153.211/32", # New BYOD VPN IP
     "213.86.153.212/32",
     "213.86.153.213/32",
