@@ -28,10 +28,17 @@ resource "aws_security_group" "bosh_rds" {
   }
 }
 
+# TODO remove once all envs have been upgraded past 11
 resource "aws_db_parameter_group" "bosh_pg_11" {
   name        = "${var.env}-pg11-bosh"
   family      = "postgres11"
   description = "RDS Postgres 11 default parameter group"
+}
+
+resource "aws_db_parameter_group" "bosh_pg_13" {
+  name        = "${var.env}-pg13-bosh"
+  family      = "postgres13"
+  description = "RDS Postgres 13 default parameter group"
 }
 
 resource "aws_db_instance" "bosh" {
@@ -40,12 +47,12 @@ resource "aws_db_instance" "bosh" {
   allocated_storage          = 100
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "11.16"
+  engine_version             = "13.10"
   instance_class             = var.bosh_db_instance_class
   username                   = "dbadmin"
   password                   = var.secrets_bosh_postgres_password
   db_subnet_group_name       = aws_db_subnet_group.bosh_rds.name
-  parameter_group_name       = aws_db_parameter_group.bosh_pg_11.id
+  parameter_group_name       = aws_db_parameter_group.bosh_pg_13.id
   backup_window              = "01:00-02:00"
   maintenance_window         = var.bosh_db_maintenance_window
   multi_az                   = var.bosh_db_multi_az
@@ -71,7 +78,8 @@ resource "aws_db_instance" "bosh" {
       #
       # This lifecycle rule is here to allow RDS to manage
       # auto_minor_version_upgrades
-      engine_version,
+      # TODO uncomment once all envs have been upgraded past 11
+      #engine_version,
     ]
   }
 }
