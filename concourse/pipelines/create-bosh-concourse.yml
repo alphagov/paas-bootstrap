@@ -8,47 +8,47 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/alpine
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     awscli: &awscli-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     bosh-cli-v2: &gov-paas-bosh-cli-v2-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/bosh-cli-v2
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     certstrap: &certstrap-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/certstrap
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     git-ssh: &git-ssh-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/git-ssh
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     ruby-slim: &ruby-slim-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/ruby
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     self-update-pipelines: &self-update-pipelines-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/self-update-pipelines
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     spruce: &spruce-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/spruce
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
     terraform: &terraform-image-resource
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/terraform
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
 
 groups:
   - name: all
@@ -642,7 +642,6 @@ jobs:
                 cp git-ssh-private-key/git_id_rsa generated-git-ssh-keys
                 exit 0
               fi
-              apk add --update openssh
               cd generated-git-ssh-keys
               ssh-keygen -t rsa -b 4096 -f git_id_rsa -N ''
         on_success:
@@ -1403,7 +1402,7 @@ jobs:
               . bosh-terraform-outputs/tfvars.sh
               export TF_VAR_git_rsa_id_pub
               TF_VAR_git_rsa_id_pub=$(cat git-ssh-public-key/git_id_rsa.pub)
-              
+
               cp concourse-tfstate/concourse.tfstate updated-concourse-tfstate/concourse.tfstate
               cd paas-bootstrap/terraform/concourse || exit
               terraform init
