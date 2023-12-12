@@ -8,7 +8,7 @@ meta:
       type: registry-image
       source:
         repository: ghcr.io/alphagov/paas/awscli
-        tag: cb9acdf5752562c68781cdd358a9a6710219e3c7
+        tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
 
 resources:
   - name: delete-timer
@@ -45,4 +45,3 @@ jobs:
 
             aws ec2 delete-key-pair --key-name "${VAGRANT_SSH_KEY_NAME}"
             aws ec2 terminate-instances --instance-ids "${AWS_INSTANCE_ID}"
-
