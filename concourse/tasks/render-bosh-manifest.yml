@@ -4,7 +4,7 @@ image_resource:
   type: registry-image
   source:
     repository: ghcr.io/alphagov/paas/bosh-cli-v2
-    tag: 9d7b91294e91172c6f2d63caae4c7b645fc46036
+    tag: 10f7bb56a8f4c0493acdd303ca08571ef3ecc8e9
 inputs:
   - name: bosh-vars-store
     optional: true
