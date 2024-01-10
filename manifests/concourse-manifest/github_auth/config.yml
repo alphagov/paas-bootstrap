@@ -1,5 +1,4 @@
 ---
-
 instance_groups:
   - name: concourse
     jobs:
@@ -18,7 +17,6 @@ instance_groups:
                     - admin
                   github:
                     users:
-                    - AP-Hunt
                     - corlettb
                     - dark5un
                     - fearoffish
