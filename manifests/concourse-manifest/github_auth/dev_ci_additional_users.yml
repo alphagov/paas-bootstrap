@@ -1,6 +1,4 @@
-
 ---
-
 instance_groups:
   - name: concourse
     jobs:
@@ -16,7 +14,6 @@ instance_groups:
                     - admin
                   github:
                     users:
-                    - AP-Hunt
                     - kr8n3r
                     - risicle
                     - nimalank7
