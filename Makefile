@@ -95,7 +95,7 @@ dev: globals ## Set Environment to DEV
 	$(eval export SKIP_COMMIT_VERIFICATION=true)
 	$(eval export AWS_DEFAULT_REGION ?= eu-west-1)
 	$(eval export CYBER_PASSWORD_STORE_DIR?=${HOME}/.paas-pass)
-	$(eval export CONCOURSE_INSTANCE_TYPE=c6a.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE=c7a.xlarge)
 	@true
 
 .PHONY: $(filter-out dev%,$(MAKECMDGOALS))
@@ -171,7 +171,7 @@ build-concourse: ## Setup profiles for deploying a build concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-build)
 	$(eval export CONCOURSE_TYPE=build-concourse)
 	$(eval export CONCOURSE_HOSTNAME=concourse)
-	$(eval export CONCOURSE_INSTANCE_TYPE=c6a.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE=c7a.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=concourse-build)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 4)
 	@true
@@ -183,7 +183,7 @@ deployer-concourse: ## Setup profiles for deploying a paas-cf deployer concourse
 	$(eval export BOSH_INSTANCE_PROFILE=bosh-director-cf)
 	$(eval export CONCOURSE_TYPE=deployer-concourse)
 	$(eval export CONCOURSE_HOSTNAME=deployer)
-	$(eval export CONCOURSE_INSTANCE_TYPE ?= m6i.xlarge)
+	$(eval export CONCOURSE_INSTANCE_TYPE ?= m7i.xlarge)
 	$(eval export CONCOURSE_INSTANCE_PROFILE=deployer-concourse)
 	$(eval export CONCOURSE_WORKER_INSTANCES ?= 1)
 	@true
