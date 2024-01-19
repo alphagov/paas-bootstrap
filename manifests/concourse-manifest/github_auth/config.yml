@@ -23,8 +23,9 @@ instance_groups:
                     - kr8n3r
                     - jackjoy-gds
                     - malcgds
-                    - nimalank7
                     - risicle
+                    - DominicGriffin
+                    - CorinWilkins
                 - name: pipeline-operator
                   github:
                     users:
