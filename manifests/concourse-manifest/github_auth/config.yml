@@ -1,5 +1,4 @@
 ---
-
 instance_groups:
   - name: concourse
     jobs:
@@ -18,15 +17,15 @@ instance_groups:
                     - admin
                   github:
                     users:
-                    - AP-Hunt
                     - corlettb
                     - dark5un
                     - fearoffish
                     - kr8n3r
                     - jackjoy-gds
                     - malcgds
-                    - nimalank7
                     - risicle
+                    - DominicGriffin
+                    - CorinWilkins
                 - name: pipeline-operator
                   github:
                     users:

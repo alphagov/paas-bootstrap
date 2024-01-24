@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-key_servers=( "hkp://keyserver.ubuntu.com" "hkps://keys.openpgp.org")
+key_servers=( "hkps://keys.openpgp.org")
 exit_code="0"
 
 while read -r key; do
