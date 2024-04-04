@@ -18,7 +18,6 @@ instance_groups:
                   github:
                     users:
                     - corlettb
-                    - jackjoy-gds
                     - risicle
                     - DominicGriffin
                     - CorinWilkins

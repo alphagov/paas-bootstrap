@@ -15,7 +15,6 @@ instance_groups:
                   github:
                     users:
                     - risicle
-                    - jackjoy-gds
                     - corlettb
                     - DominicGriffin
                     - CorinWilkins
