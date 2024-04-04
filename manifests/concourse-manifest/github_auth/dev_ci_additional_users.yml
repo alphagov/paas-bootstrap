@@ -16,7 +16,6 @@ instance_groups:
                     users:
                     - risicle
                     - jackjoy-gds
-                    - dark5un
                     - corlettb
                     - DominicGriffin
                     - CorinWilkins
