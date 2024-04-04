@@ -14,7 +14,6 @@ instance_groups:
                     - admin
                   github:
                     users:
-                    - kr8n3r
                     - risicle
                     - jackjoy-gds
                     - dark5un
