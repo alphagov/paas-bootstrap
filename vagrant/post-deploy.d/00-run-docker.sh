@@ -27,13 +27,13 @@ export CONCOURSE_EXTERNAL_URL="$CONCOURSE_URL"
 
 mkdir -p /tmp/keys
 
-sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.10.0 \
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.11.2 \
   generate-key -t rsa -f /keys/session_signing_key
 
-sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.10.0 \
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.11.2 \
   generate-key -t ssh -f /keys/tsa_host_key
 
-sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.10.0 \
+sudo docker run --rm -v /tmp/keys:/keys concourse/concourse:7.11.2 \
   generate-key -t ssh -f /keys/worker_key
 
 sudo -E docker-compose up -d
