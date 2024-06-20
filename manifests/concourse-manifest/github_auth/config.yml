@@ -22,7 +22,6 @@ instance_groups:
                     - DominicGriffin
                     - CorinWilkins
                     - monotypical
-                    - bnjn-mt
                     - Harsh291104
                 - name: pipeline-operator
                   github:
