@@ -23,6 +23,7 @@ instance_groups:
                     - CorinWilkins
                     - monotypical
                     - Harsh291104
+                    - EduardoAquinta
                 - name: pipeline-operator
                   github:
                     users:
