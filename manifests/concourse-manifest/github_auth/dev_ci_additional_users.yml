@@ -14,7 +14,6 @@ instance_groups:
                     - admin
                   github:
                     users:
-                    - corlettb
                     - DominicGriffin
                     - CorinWilkins
                     - monotypical
