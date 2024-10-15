@@ -43,7 +43,7 @@ jobs:
 
       - name: "Install Bosh CLI ${{env.BOSH_CLI_VERSION}}"
         run: |
-          wget "https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64"
+          wget "https://github.com/cloudfoundry/bosh-cli/releases/download/v${BOSH_CLI_VERSION}/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64"
           sudo mv "bosh-cli-${BOSH_CLI_VERSION}-linux-amd64" /usr/local/bin/bosh && chmod +x /usr/local/bin/bosh
 
       - name: "Install Go ${{env.GO_VERSION}}"
