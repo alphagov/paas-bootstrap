@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rake", "~>13.0"
+gem "rake", "~>13.2"
 gem "rspec", "~> 3"
 gem "rubocop-govuk", "~> 4"
 
