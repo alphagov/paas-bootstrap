@@ -1,6 +1,6 @@
 - type: replace
   path: /cloud_provider/mbus
-  value: "https://mbus:((mbus_bootstrap_password))@((bosh_fqdn_external)):6868"
+  value: "https://mbus:((mbus_bootstrap_password))@((bosh_fqdn)):6868"
 
 - type: replace
   path: /cloud_provider/properties/agent/mbus
