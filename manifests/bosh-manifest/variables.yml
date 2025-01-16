@@ -7,7 +7,7 @@ internal_dns: [10.0.0.2]
 # - http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html
 # - http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.SSL
 #
-# This bundle was sourced from https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem on 28/07/2023.
+# This bundle was sourced from https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 aws_rds_combined_ca_bundle: |
   -----BEGIN CERTIFICATE-----
