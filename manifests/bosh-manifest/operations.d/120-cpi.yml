@@ -11,6 +11,6 @@
   type: replace
   value:
     name: "bosh-aws-cpi"
-    version: "105.0.1"
-    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=105.0.1"
-    sha1: "d048049ee85435991cdcb49206f06a8de4687b5b"
+    version: "101"
+    url: "https://bosh.io/d/github.com/cloudfoundry/bosh-aws-cpi-release?v=101"
+    sha1: "12d320570e00636f1e455e588e0462465b02d86a"
