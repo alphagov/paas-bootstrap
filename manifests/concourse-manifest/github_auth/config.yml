@@ -18,7 +18,6 @@ instance_groups:
                   github:
                     users:
                     - DominicGriffin
-                    - CorinWilkins
                     - monotypical
                     - EduardoAquinta
                     - NahomCO
