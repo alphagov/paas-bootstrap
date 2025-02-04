@@ -218,6 +218,21 @@ bootstrap-destroy: check-env-vars ## Destroy bootstrap
 	$(eval export TARGET_CONCOURSE=bootstrap)
 	./vagrant/destroy.sh
 
+.PHONY: teardown
+teardown: check-env-vars ## Tear down the DEPLOY_ENV aws resources
+	@./scripts/teardown-aws/rds.sh
+	@./scripts/teardown-aws/route53.sh
+	@./scripts/teardown-aws/iam.sh
+	@./scripts/teardown-aws/ec2.sh
+	@./scripts/teardown-aws/target-group.sh
+	@./scripts/teardown-aws/s3.sh
+	@./scripts/teardown-aws/vpc.sh
+	@./scripts/teardown-aws/certificates.sh
+	@./scripts/teardown-aws/cloudwatch.sh
+	@echo "Cleanup complete for resources associated with ${DEPLOY_ENV}!"
+
+
+
 .PHONY: showenv
 showenv: check-env-vars ## Display environment information
 	$(eval export TARGET_CONCOURSE=bootstrap)
