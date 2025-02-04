@@ -86,6 +86,31 @@ else
   echo "No volumes found with deploy_env=${DEPLOY_ENV}"
 fi
 
+##5. Detach & Delete VPC endpoint
+vpc_endpoints=$(aws ec2 describe-vpc-endpoints \
+                         --filters "Name=tag:Name,Values=*${DEPLOY_ENV}*" \
+                         --query "VpcEndpoints[*].[VpcEndpointId,Tags]" \
+                         --output text)
+for vpc_id in $vpc_endpoints; do
+      # Delete the VPC endpoint
+      echo "Deleting VPC Endpoint: $vpc_id..."
+      delete_response=$(aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$vpc_id" 2>&1)
+      if [ $? -eq 0 ]; then
+          echo "Successfully deleted VPC Endpoint: $vpc_id"
+      else
+          echo "Failed to delete VPC Endpoint: $vpc_id"
+          echo "Error: $delete_response"
+      fi
+#  aws ec2 detach-vpc_endpoint --internet-gateway-id "vpc_endpoint" --vpc-id "$vpc_id"
+#  aws ec2 delete-internet-gateway --internet-gateway-id "vpc_endpoint"
+#
+#  if [ $? -eq 0 ]; then
+#    echo "Successfully deleted vpc endpoint: vpc_endpoint"
+#  else
+#    echo "[ERROR] Failed to delete vpc endpoint: vpc_endpoint"
+#  fi
+done
+
 ## 4. Delete Security Groups and Network Interfaces
 delete_network_interfaces() {
   sg_id=$1
@@ -128,9 +153,28 @@ else
   echo "No security groups found for ${DEPLOY_ENV}"
 fi
 #
+# Function to delete a key pair
+delete_key_pair() {
+  local key_name=$1
+
+  if [ -n "$key_name" ]; then
+    echo "Deleting key pair: $key_name..."
+    aws ec2 delete-key-pair --key-name "$key_name" >/dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+      echo "Successfully deleted key pair: $key_name"
+    else
+      echo "Failed to delete key pair: $key_name"
+    fi
+  else
+    echo "Invalid key pair name: $key_name"
+  fi
+}
+
 # 5. Delete EC2 Key Pairs
 echo "Deleting EC2 Key Pairs..."
-aws ec2 describe-key-pairs --query "KeyPairs[?contains(KeyName, '${DEPLOY_ENV}')].KeyName" --output text | \
-  xargs -I {} aws ec2 delete-key-pair --key-name "{}"
+key_pairs=$(aws ec2 describe-key-pairs --query "KeyPairs[?contains(KeyName, '${DEPLOY_ENV}')].KeyName" --output text)
 
-echo "Cleanup complete for resources associated with ${DEPLOY_ENV}!"
+for key_pair in $key_pairs; do
+  delete_key_pair "$key_pair"
+done

@@ -35,6 +35,19 @@ delete_rds_instances() {
       log_error "Empty or invalid RDS Instance identifier."
     fi
   done
+# Get the list of instances that match the DEPLOY_ENV
+  instance_list=$(aws rds describe-db-instances \
+    --query "DBInstances[?contains(TagList[?Key=='Broker Name'].Value, '${DEPLOY_ENV}')].DBInstanceIdentifier" \
+    --output text)
+
+  # Loop through each instance identifier and delete it
+  for instance_id in $instance_list; do
+    if [ -n "$instance_id" ]; then
+      delete_rds_instance "$instance_id"
+    else
+      log_error "Empty or invalid RDS Instance identifier."
+    fi
+  done
 }
 
 # Helper function to delete a single RDS Subnet Group
