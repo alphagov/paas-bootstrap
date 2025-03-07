@@ -48,7 +48,7 @@ val_from_yaml() {
 }
 
 setup_env() {
-  export PASSWORD_STORE_DIR=${GITHUB_PASSWORD_STORE_DIR}
+  export PASSWORD_STORE_DIR="${GITHUB_PASSWORD_STORE_DIR}"
   secrets_uri="s3://gds-paas-${DEPLOY_ENV}-state/github-oauth-secrets.yml"
 }
 
