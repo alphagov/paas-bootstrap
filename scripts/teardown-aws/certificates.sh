@@ -16,12 +16,11 @@ echo "$CERT_ARN_LIST"
 # Iterate and delete each certificate
 for CERT_ARN in $CERT_ARN_LIST; do
   echo "Deleting certificate: $CERT_ARN"
-  aws acm delete-certificate --certificate-arn "$CERT_ARN" --region "$AWS_REGION"
-
-  if [[ $? -eq 0 ]]; then
-    echo "Successfully deleted $CERT_ARN"
-  else
+  
+  if aws acm delete-certificate --certificate-arn "$CERT_ARN" --region "$AWS_REGION"; then
     echo "Failed to delete $CERT_ARN"
+  else
+    echo "Successfully deleted $CERT_ARN"
   fi
 done
 

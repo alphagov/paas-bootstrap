@@ -17,12 +17,11 @@ delete_security_groups() {
 
   for sg_id in $security_group_ids; do
     echo "Deleting Security Group: $sg_id"
-    aws ec2 delete-security-group --group-id "$sg_id"
-
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted Security Group: $sg_id"
-    else
+    
+    if aws ec2 delete-security-group --group-id "$sg_id"; then
       echo "[ERROR] Failed to delete Security Group: $sg_id"
+    else
+      echo "Successfully deleted Security Group: $sg_id"
     fi
   done
 }

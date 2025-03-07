@@ -21,11 +21,10 @@ clb_lb_names=$(aws elb describe-load-balancers \
 if [ -n "$alb_lb_arns" ]; then
   for lb_arn in $alb_lb_arns; do
     echo "Deleting ALB/NLB: $lb_arn"
-    aws elbv2 delete-load-balancer --load-balancer-arn "$lb_arn"
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted ALB/NLB: $lb_arn"
-    else
+    if aws elbv2 delete-load-balancer --load-balancer-arn "$lb_arn"; then
       echo "[ERROR] Failed to delete ALB/NLB: $lb_arn"
+    else
+      echo "Successfully deleted ALB/NLB: $lb_arn"
     fi
   done
 fi
@@ -34,33 +33,33 @@ fi
 if [ -n "$clb_lb_names" ]; then
   for lb_name in $clb_lb_names; do
     echo "Deleting CLB: $lb_name"
-    aws elb delete-load-balancer --load-balancer-name "$lb_name"
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted CLB: $lb_name"
-    else
+    
+    if aws elb delete-load-balancer --load-balancer-name "$lb_name"; then
       echo "[ERROR] Failed to delete CLB: $lb_name"
+    else
+      echo "Successfully deleted CLB: $lb_name"
     fi
   done
 fi
 
 # 2. Terminate EC2 Instances
 terminate_instances() {
-  deploy_env=$1
-  echo "Terminating EC2 instances for DEPLOY_ENV=${deploy_env}..."
+  env=$1
+  echo "Terminating EC2 instances for DEPLOY_ENV=${env}..."
 
   instance_ids=$(aws ec2 describe-instances \
-    --filters "Name=tag:deploy_env,Values=$deploy_env" \
+    --filters "Name=tag:deploy_env,Values=$env" \
     --query "Reservations[].Instances[?State.Name != 'terminated'].InstanceId" \
     --output text)
 
   if [ -z "$instance_ids" ]; then
-    echo "No EC2 instances found for DEPLOY_ENV=${deploy_env}"
+    echo "No EC2 instances found for DEPLOY_ENV=${env}"
     return
   fi
 
   echo "Terminating instances: $instance_ids"
-  aws ec2 terminate-instances --instance-ids $instance_ids
-  aws ec2 wait instance-terminated --instance-ids $instance_ids
+  aws ec2 terminate-instances --instance-ids "$instance_ids"
+  aws ec2 wait instance-terminated --instance-ids "$instance_ids"
   echo "Termination complete for instances: $instance_ids"
 }
 
@@ -75,11 +74,10 @@ volume_ids=$(aws ec2 describe-volumes \
 if [ -n "$volume_ids" ]; then
   for volume_id in $volume_ids; do
     echo "Deleting volume: $volume_id"
-    aws ec2 delete-volume --volume-id "$volume_id"
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted volume: $volume_id"
-    else
+    if aws ec2 delete-volume --volume-id "$volume_id"; then
       echo "[ERROR] Failed to delete volume: $volume_id"
+    else
+      echo "Successfully deleted volume: $volume_id"
     fi
   done
 else
@@ -94,12 +92,10 @@ vpc_endpoints=$(aws ec2 describe-vpc-endpoints \
 for vpc_id in $vpc_endpoints; do
       # Delete the VPC endpoint
       echo "Deleting VPC Endpoint: $vpc_id..."
-      delete_response=$(aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$vpc_id" 2>&1)
-      if [ $? -eq 0 ]; then
-          echo "Successfully deleted VPC Endpoint: $vpc_id"
-      else
+      if aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$vpc_id"; then
           echo "Failed to delete VPC Endpoint: $vpc_id"
-          echo "Error: $delete_response"
+      else
+          echo "Successfully deleted VPC Endpoint: $vpc_id"
       fi
 #  aws ec2 detach-vpc_endpoint --internet-gateway-id "vpc_endpoint" --vpc-id "$vpc_id"
 #  aws ec2 delete-internet-gateway --internet-gateway-id "vpc_endpoint"
@@ -146,7 +142,7 @@ security_group_ids=$(aws ec2 describe-security-groups \
 
 if [ -n "$security_group_ids" ]; then
   for sg_id in $security_group_ids; do
-    echo $sg_id
+    echo "Deleting security group: $sg_id"
     delete_security_group "$sg_id"
   done
 else
@@ -159,12 +155,11 @@ delete_key_pair() {
 
   if [ -n "$key_name" ]; then
     echo "Deleting key pair: $key_name..."
-    aws ec2 delete-key-pair --key-name "$key_name" >/dev/null 2>&1
 
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted key pair: $key_name"
-    else
+    if aws ec2 delete-key-pair --key-name "$key_name" >/dev/null; then
       echo "Failed to delete key pair: $key_name"
+    else
+      echo "Successfully deleted key pair: $key_name"
     fi
   else
     echo "Invalid key pair name: $key_name"

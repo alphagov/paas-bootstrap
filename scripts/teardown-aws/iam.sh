@@ -86,10 +86,9 @@ delete_iam_user() {
 
   # 10. Attempt to delete the IAM user
   echo "Attempting to delete IAM user: $user_name"
-  aws iam delete-user --user-name "$user_name"
-
+  
   # Check for success or failure
-  if [ $? -ne 0 ]; then
+  if aws iam delete-user --user-name "$user_name"; then
     echo "[ERROR] Failed to delete IAM User: $user_name. Check for active resources or session."
   else
     echo "Successfully deleted IAM user: $user_name"

@@ -16,12 +16,11 @@ echo "$LOG_GROUPS"
 # Iterate and delete each log group
 for LOG_GROUP in $LOG_GROUPS; do
   echo "Deleting log group: $LOG_GROUP"
-  aws logs delete-log-group --log-group-name "$LOG_GROUP" --region "$AWS_REGION"
   
-  if [[ $? -eq 0 ]]; then
-    echo "Successfully deleted log group $LOG_GROUP"
-  else
+  if aws logs delete-log-group --log-group-name "$LOG_GROUP" --region "$AWS_REGION"; then
     echo "Failed to delete log group $LOG_GROUP"
+  else
+    echo "Successfully deleted log group $LOG_GROUP"
   fi
 done
 
