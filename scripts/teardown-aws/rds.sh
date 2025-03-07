@@ -7,11 +7,7 @@ delete_rds_instance() {
   echo "Deleting RDS Instance: $instance_id"
 
   # Attempt to delete the RDS instance
-  aws rds delete-db-instance \
-    --db-instance-identifier "$instance_id" \
-    --skip-final-snapshot
-
-  if [ $? -ne 0 ]; then
+  if aws rds delete-db-instance --db-instance-identifier "$instance_id" --skip-final-snapshot; then
     log_error "Failed to delete RDS Instance: $instance_id"
   else
     echo "Successfully deleted RDS Instance: $instance_id"
@@ -43,11 +39,9 @@ delete_rds_subnet_group() {
   echo "Attempting to delete RDS Subnet Group: $subnet_group_name"
 
   # Check if the subnet group exists before attempting deletion
-  aws rds describe-db-subnet-groups --db-subnet-group-name "$subnet_group_name" > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  if aws rds describe-db-subnet-groups --db-subnet-group-name "$subnet_group_name" > /dev/null 2>&1; then
     # The subnet group exists, proceed with deletion
-    aws rds delete-db-subnet-group --db-subnet-group-name "$subnet_group_name"
-    if [ $? -ne 0 ]; then
+    if aws rds delete-db-subnet-group --db-subnet-group-name "$subnet_group_name"; then
       log_error "Failed to delete RDS Subnet Group: $subnet_group_name"
     else
       echo "Successfully deleted RDS Subnet Group: $subnet_group_name"
@@ -83,11 +77,9 @@ delete_rds_parameter_group() {
   echo "Attempting to delete RDS Parameter Group: $parameter_group_name"
 
   # Check if the parameter group exists before attempting deletion
-  aws rds describe-db-parameter-groups --db-parameter-group-name "$parameter_group_name" > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  if aws rds describe-db-parameter-groups --db-parameter-group-name "$parameter_group_name" > /dev/null 2>&1; then
     # The parameter group exists, proceed with deletion
-    aws rds delete-db-parameter-group --db-parameter-group-name "$parameter_group_name"
-    if [ $? -ne 0 ]; then
+    if aws rds delete-db-parameter-group --db-parameter-group-name "$parameter_group_name"; then
       log_error "Failed to delete RDS Parameter Group: $parameter_group_name"
     else
       echo "Successfully deleted RDS Parameter Group: $parameter_group_name"

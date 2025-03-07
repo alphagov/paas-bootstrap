@@ -18,12 +18,11 @@ delete_internet_gateways() {
   for igw_id in $igw_ids; do
     echo "Detaching and deleting Internet Gateway: $igw_id"
     aws ec2 detach-internet-gateway --internet-gateway-id "$igw_id" --vpc-id "$vpc_id"
-    aws ec2 delete-internet-gateway --internet-gateway-id "$igw_id"
 
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted Internet Gateway: $igw_id"
-    else
+    if aws ec2 delete-internet-gateway --internet-gateway-id "$igw_id"; then
       echo "[ERROR] Failed to delete Internet Gateway: $igw_id"
+    else
+      echo "Successfully deleted Internet Gateway: $igw_id"
     fi
   done
 }
@@ -43,12 +42,11 @@ delete_subnets() {
 
   for subnet_id in $subnet_ids; do
     echo "Deleting Subnet: $subnet_id"
-    aws ec2 delete-subnet --subnet-id "$subnet_id"
-
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted Subnet: $subnet_id"
-    else
+  
+    if aws ec2 delete-subnet --subnet-id "$subnet_id"; then
       echo "[ERROR] Failed to delete Subnet: $subnet_id"
+    else
+      echo "Successfully deleted Subnet: $subnet_id"
     fi
   done
 }
@@ -82,16 +80,13 @@ delete_route_tables() {
     done
 
     # Attempt to delete the route table
-    aws ec2 delete-route-table --route-table-id "$rt_id"
-
-    if [ $? -eq 0 ]; then
-      echo "Successfully deleted Route Table: $rt_id"
-    else
+    if aws ec2 delete-route-table --route-table-id "$rt_id"; then
       echo "[ERROR] Failed to delete Route Table: $rt_id"
+    else
+      echo "Successfully deleted Route Table: $rt_id"
     fi
   done
 }
-
 
 delete_vpc() {
   vpc_id=$1

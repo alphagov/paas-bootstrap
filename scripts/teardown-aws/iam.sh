@@ -13,8 +13,7 @@ delete_iam_user() {
   if [ -n "$access_keys" ]; then
     echo "Deleting access keys for user $user_name..."
     for access_key in $access_keys; do
-      aws iam delete-access-key --access-key-id "$access_key" --user-name "$user_name"
-      if [ $? -ne 0 ]; then
+      if aws iam delete-access-key --access-key-id "$access_key" --user-name "$user_name"; then
         echo "Failed to delete access key $access_key for user $user_name"
       fi
     done
@@ -25,8 +24,7 @@ delete_iam_user() {
   if [ -n "$user_groups" ]; then
     echo "Removing user $user_name from groups..."
     for group in $user_groups; do
-      aws iam remove-user-from-group --group-name "$group" --user-name "$user_name"
-      if [ $? -ne 0 ]; then
+      if aws iam remove-user-from-group --group-name "$group" --user-name "$user_name"; then
         echo "Failed to remove user $user_name from group $group"
       fi
     done
@@ -37,8 +35,7 @@ delete_iam_user() {
   if [ -n "$user_inline_policies" ]; then
     echo "Deleting inline policies for user $user_name..."
     for policy in $user_inline_policies; do
-      aws iam delete-user-policy --user-name "$user_name" --policy-name "$policy"
-      if [ $? -ne 0 ]; then
+      if aws iam delete-user-policy --user-name "$user_name" --policy-name "$policy"; then
         echo "Failed to delete inline policy $policy for user $user_name"
       fi
     done
@@ -49,8 +46,7 @@ delete_iam_user() {
   if [ -n "$user_policies" ]; then
     echo "Detaching policies from user $user_name..."
     for policy in $user_policies; do
-      aws iam detach-user-policy --user-name "$user_name" --policy-arn "$policy"
-      if [ $? -ne 0 ]; then
+      if aws iam detach-user-policy --user-name "$user_name" --policy-arn "$policy"; then
         echo "Failed to detach policy $policy from user $user_name"
       fi
     done
@@ -58,10 +54,9 @@ delete_iam_user() {
 
   # Now attempt to delete the IAM user after ensuring all resources are cleared
   echo "Attempting to delete IAM user: $user_name"
-  aws iam delete-user --user-name "$user_name"
 
   # Check for success or failure
-  if [ $? -ne 0 ]; then
+  if aws iam delete-user --user-name "$user_name"; then
     echo "[ERROR] Failed to delete IAM User: $user_name. Check for active resources or session."
   else
     echo "Successfully deleted IAM user: $user_name"
