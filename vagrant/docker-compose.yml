@@ -47,7 +47,7 @@ services:
     - CONCOURSE_TSA_WORKER_PRIVATE_KEY=/keys/worker_key
     - CONCOURSE_WORKER_WORK_DIR=/tmp/worker-colocated
     - CONCOURSE_TAG=colocated-with-web
-    - CONCOURSE_GARDEN_DNS_SERVER=169.254.169.253
+    - CONCOURSE_RUNTIME=containerd
 
   concourse-worker-normal:
     image: concourse/concourse:7.11.2
@@ -64,4 +64,4 @@ services:
     - CONCOURSE_TSA_PUBLIC_KEY=/keys/tsa_host_key.pub
     - CONCOURSE_TSA_WORKER_PRIVATE_KEY=/keys/worker_key
     - CONCOURSE_WORKER_WORK_DIR=/tmp/worker-normal
-    - CONCOURSE_GARDEN_DNS_SERVER=169.254.169.253
+    - CONCOURSE_RUNTIME=containerd
