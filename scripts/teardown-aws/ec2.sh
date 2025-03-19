@@ -57,9 +57,15 @@ terminate_instances() {
   fi
 
   echo "Terminating instances: $instance_ids"
-  aws ec2 terminate-instances --instance-ids "$instance_ids"
-  aws ec2 wait instance-terminated --instance-ids "$instance_ids"
-  echo "Termination complete for instances: $instance_ids"
+
+  # Terminate all instances at once
+  if aws ec2 terminate-instances --instance-ids $instance_ids; then
+    echo "Waiting for instances to terminate..."
+    aws ec2 wait instance-terminated --instance-ids $instance_ids
+    echo "All instances terminated successfully."
+  else
+    echo "[ERROR] Failed to terminate instances: $instance_ids"
+  fi
 }
 
 terminate_instances "$DEPLOY_ENV"
@@ -130,4 +136,4 @@ echo "Deleting EC2 Key Pairs..."
 aws ec2 describe-key-pairs --query "KeyPairs[?contains(KeyName, '${DEPLOY_ENV}')].KeyName" --output text | \
   xargs -I {} aws ec2 delete-key-pair --key-name "{}"
 
-echo "Cleanup complete for resources associated with ${DEPLOY_ENV}!"
+echo "EC2 Cleanup complete for resources associated with ${DEPLOY_ENV}!"
