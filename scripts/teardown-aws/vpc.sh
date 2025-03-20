@@ -31,6 +31,29 @@ delete_internet_gateways() {
   done
 }
 
+# Function to delete VPC Endpoints
+delete_vpc_endpoints() {
+  vpc_id=$1
+  echo "Retrieving VPC Endpoints associated with VPC: $vpc_id..."
+  endpoint_ids=$(aws ec2 describe-vpc-endpoints \
+    --filters "Name=vpc-id,Values=$vpc_id" \
+    --query "VpcEndpoints[].VpcEndpointId" --output text)
+
+  if [ -z "$endpoint_ids" ]; then
+    echo "No VPC Endpoints found for VPC: $vpc_id"
+    return
+  fi
+
+  for endpoint_id in $endpoint_ids; do
+    echo "Deleting VPC Endpoint: $endpoint_id"
+    if ! aws ec2 delete-vpc-endpoints --vpc-endpoint-ids "$endpoint_id"; then
+      echo "[ERROR] Failed to delete VPC Endpoint: $endpoint_id"
+    else
+      echo "Successfully deleted VPC Endpoint: $endpoint_id"
+    fi
+  done
+}
+
 # Function to delete Subnets
 delete_subnets() {
   vpc_id=$1
@@ -98,6 +121,7 @@ delete_vpc() {
   vpc_id=$1
   echo "Deleting VPC: $vpc_id"
 
+  delete_vpc_endpoints "$vpc_id"
   delete_internet_gateways "$vpc_id"
   delete_subnets "$vpc_id"
   delete_route_tables "$vpc_id"
