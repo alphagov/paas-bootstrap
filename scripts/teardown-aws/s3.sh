@@ -1,3 +1,5 @@
+#!/bin/bash
+
 delete_s3_buckets() {
   echo "Deleting S3 Buckets..."
 
