@@ -59,9 +59,9 @@ terminate_instances() {
   echo "Terminating instances: $instance_ids"
 
   # Terminate all instances at once
-  if aws ec2 terminate-instances --instance-ids $instance_ids; then
+  if aws ec2 terminate-instances --instance-ids "$instance_ids"; then
     echo "Waiting for instances to terminate..."
-    aws ec2 wait instance-terminated --instance-ids $instance_ids
+    aws ec2 wait instance-terminated --instance-ids "$instance_ids"
     echo "All instances terminated successfully."
   else
     echo "[ERROR] Failed to terminate instances: $instance_ids"
