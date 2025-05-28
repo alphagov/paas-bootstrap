@@ -48,7 +48,7 @@ resource "aws_db_instance" "concourse" {
   allocated_storage          = 100
   storage_type               = "gp2"
   engine                     = "postgres"
-  engine_version             = "13.16"
+  engine_version             = "13.20"
   instance_class             = var.concourse_db_instance_class
   username                   = "concourse"
   password                   = random_password.concourse_rds_password.result
