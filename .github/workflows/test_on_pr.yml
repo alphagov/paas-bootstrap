@@ -6,7 +6,7 @@ env:
   BOSH_CLI_VERSION: "6.1.1"
   CERTSTRAP_VERSION: "1.2.0"
   SHELLCHECK_VERSION: "0.7.0"
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23"
   RUBY_VERSION: "3.1.0"
 jobs:
   test:
